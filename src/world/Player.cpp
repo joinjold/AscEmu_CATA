@@ -859,12 +859,13 @@ bool Player::Create(WorldPacket& data)
     setGender(gender);
     SetPowerType(powertype);
 
-    SetUInt32Value(UNIT_FIELD_BYTES_2, (U_FIELD_BYTES_FLAG_PVP << 8));
+    SetByteFlag(UNIT_FIELD_BYTES_2, 1, U_FIELD_BYTES_FLAG_PVP);
+    SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
+    SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_ENABLE_POWER_REGEN);
 
     if (class_ == WARRIOR)
         SetShapeShift(FORM_BATTLESTANCE);
 
-    SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
     SetStat(STAT_STRENGTH, info->strength);
     SetStat(STAT_AGILITY, info->ability);
     SetStat(STAT_STAMINA, info->stamina);
@@ -886,12 +887,32 @@ bool Player::Create(WorldPacket& data)
     //SetMinDamage(info->mindmg);
     //SetMaxDamage(info->maxdmg);
     SetAttackPower(info->attackpower);
-    SetUInt32Value(PLAYER_BYTES, ((skin) | (face << 8) | (hairStyle << 16) | (hairColor << 24)));
+
+    //SetUInt32Value(PLAYER_BYTES, ((skin) | (face << 8) | (hairStyle << 16) | (hairColor << 24)));
     //PLAYER_BYTES_2                               GM ON/OFF     BANKBAGSLOTS   RESTEDSTATE
-    SetUInt32Value(PLAYER_BYTES_2, (facialHair /*| (0xEE << 8)*/ | (0x02 << 24)));//no bank slot by default!
+    //SetUInt32Value(PLAYER_BYTES_2, (facialHair /*| (0xEE << 8)*/ | (0x02 << 24)));//no bank slot by default!
+
+    // Set Byte Values
+    SetByte(PLAYER_BYTES, 0, skin);
+    SetByte(PLAYER_BYTES, 1, face);
+    SetByte(PLAYER_BYTES, 2, hairStyle);
+    SetByte(PLAYER_BYTES, 3, hairColor);
+
+    //Set Byte2 Values
+    SetByte(PLAYER_BYTES_2, 0, facialHair);
+    //SetByte(PLAYER_BYTES_2, 1, 0);  // unknown
+    //SetByte(PLAYER_BYTES_2, 2, 0);  // unknown
+    SetByte(PLAYER_BYTES_2, 3, RESTSTATE_NORMAL);
+
+    //Set Byte3 Values
+    SetByte(PLAYER_BYTES_3, 0, gender);
+    SetByte(PLAYER_BYTES_3, 1, 0);  // drunkenstate?
+    SetByte(PLAYER_BYTES_3, 2, 0);  // unknown
+    SetByte(PLAYER_BYTES_3, 3, GetPVPRank());  // pvp rank
+
 
     //PLAYER_BYTES_3                           DRUNKENSTATE                 PVPRANK
-    SetUInt32Value(PLAYER_BYTES_3, ((gender) | (0x00 << 8) | (0x00 << 16) | (GetPVPRank() << 24)));
+    //SetUInt32Value(PLAYER_BYTES_3, ((gender) | (0x00 << 8) | (0x00 << 16) | (GetPVPRank() << 24)));
     SetNextLevelXp(400);
     SetUInt32Value(PLAYER_FIELD_BYTES, 0x08);
     SetCastSpeedMod(1.0f);
