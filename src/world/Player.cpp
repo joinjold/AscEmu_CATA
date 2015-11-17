@@ -9031,7 +9031,7 @@ void Player::PvPToggle()
     this->SetUInt32Value(PLAYER_FIELD_KILLS, uint16(this->m_killsToday) | (this->m_killsYesterday << 16));
     this->SetUInt32Value(PLAYER_FIELD_TODAY_CONTRIBUTION, this->m_honorToday);
     this->SetUInt32Value(PLAYER_FIELD_YESTERDAY_CONTRIBUTION, this->m_honorYesterday);
-    this->SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORBALE_KILLS, this->m_killsLifetime);
+    this->SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, this->m_killsLifetime);
     this->SetHonorCurrency(this->m_honorPoints);
 
     this->UpdateKnownCurrencies(43308, true); //Honor Points
@@ -10149,7 +10149,7 @@ void Player::_AddSkillLine(uint32 SkillLine, uint32 Curr_sk, uint32 Max_sk)
         return;
 
     // force to be within limits
-#if PLAYER_LEVEL_CAP==80
+#if PLAYER_LEVEL_CAP==85
     Curr_sk = (Curr_sk > 450 ? 450 : (Curr_sk < 1 ? 1 : Curr_sk));
     Max_sk = (Max_sk > 450 ? 450 : Max_sk);
 #else
@@ -10408,7 +10408,7 @@ void Player::_UpdateMaxSkillCounts()
         }
 
         // force to be within limits
-#if PLAYER_LEVEL_CAP==80
+#if PLAYER_LEVEL_CAP==85
         if (new_max > 450)
             new_max = 450;
 #else

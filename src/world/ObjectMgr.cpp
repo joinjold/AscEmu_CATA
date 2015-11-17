@@ -478,7 +478,7 @@ void ObjectMgr::LoadPlayersInfo()
                 delete result2;
             }
 
-            if (pn->race == RACE_HUMAN || pn->race == RACE_DWARF || pn->race == RACE_GNOME || pn->race == RACE_NIGHTELF || pn->race == RACE_DRAENEI)
+            if (pn->race == RACE_HUMAN || pn->race == RACE_DWARF || pn->race == RACE_GNOME || pn->race == RACE_NIGHTELF || pn->race == RACE_DRAENEI || pn->race == RACE_WORGEN)
                 pn->team = 0;
             else
                 pn->team = 1;
@@ -2137,7 +2137,7 @@ void ObjectMgr::GenerateLevelUpInfo()
             continue;
 
         // Search for a playercreateinfo.
-        for (uint32 Race = RACE_HUMAN; Race <= RACE_DRAENEI; ++Race)
+        for (uint32 Race = RACE_HUMAN; Race <= RACE_WORGEN; ++Race)
         {
             PCI = GetPlayerCreateInfo(static_cast<uint8>(Race), static_cast<uint8>(Class));
 
