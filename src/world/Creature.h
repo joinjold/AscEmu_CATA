@@ -25,6 +25,7 @@
 #include "UnitDefines.hpp"
 #include "Map.h"
 #include "Unit.h"
+#include "DB2/DB2Structure.hpp"
 
 class CreatureTemplate;
 class GossipScript;

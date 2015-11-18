@@ -20,7 +20,7 @@
  */
 
 #include "StdAfx.h"
-
+#include "DB2/DB2Stores.hpp"
 
 #define SPELL_CHANNEL_UPDATE_INTERVAL 1000
 
@@ -6263,14 +6263,15 @@ void Spell::writeAmmoToPacket(WorldPacket* data)
 			// ^ ^ ^
             if (uint32 item_id = m_caster->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + i))
             {
-				if (ItemEntry* itemEntry = dbcItemEntry.LookupRowForced(item_id))
+                if (ItemPrototype* itemEntry = ItemPrototypeStorage.LookupEntry(item_id))
+				//if (ItemEntry* itemEntry = dbcItemEntry.LookupRowForced(item_id))
                 {
                     if (itemEntry->Class == ITEM_CLASS_WEAPON)
                     {
                         switch (itemEntry->SubClass)
                         {
                             case ITEM_SUBCLASS_WEAPON_THROWN:
-								ammoDisplayID = itemEntry->DisplayId;
+								ammoDisplayID = itemEntry->DisplayInfoID;
                                 ammoInventoryType = itemEntry->InventoryType;
                                 break;
                             case ITEM_SUBCLASS_WEAPON_BOW:

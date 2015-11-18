@@ -56,10 +56,10 @@ SERVER_DECL DBCStorage<EnchantEntry> dbcEnchant;
 SERVER_DECL DBCStorage<GemPropertyEntry> dbcGemProperty;
 SERVER_DECL DBCStorage<GlyphPropertyEntry> dbcGlyphProperty;
 SERVER_DECL DBCStorage<GlyphSlotEntry> dbcGlyphSlot;
-SERVER_DECL DBCStorage<ItemExtendedCostEntry> dbcItemExtendedCost;
+//SERVER_DECL DBCStorage<ItemExtendedCostEntry> dbcItemExtendedCost;
 SERVER_DECL DBCStorage<ItemLimitCategoryEntry> dbcItemLimitCategory;
 SERVER_DECL DBCStorage<ItemRandomSuffixEntry> dbcItemRandomSuffix;
-SERVER_DECL DBCStorage<ItemEntry> dbcItemEntry;
+//SERVER_DECL DBCStorage<ItemEntry> dbcItemEntry;
 SERVER_DECL DBCStorage<ItemSetEntry> dbcItemSet;
 SERVER_DECL DBCStorage<Lock> dbcLock;
 SERVER_DECL DBCStorage<MapEntry> dbcMap;
@@ -292,7 +292,7 @@ const char* spellentryFormat =
 "i"
 ;
 
-const char* itemextendedcostFormat = "uuuxuuuuuuuuuuux";
+//const char* itemextendedcostFormat = "uuuxuuuuuuuuuuux";
 const char* talententryFormat = "uuuuuuuuuxxxxuxxuxxxxxx";
 const char* talenttabentryFormat = "uxxxxxxxxxxxxxxxxxxxuuux";
 const char* spellcasttimeFormat = "uuxx";
@@ -378,7 +378,7 @@ bool LoadDBCs()
     LOAD_DBC("DBC/CharTitles.dbc", CharTitlesEntryfmt, true, dbcCharTitlesEntry, true);
     LOAD_DBC("DBC/CurrencyTypes.dbc", CurrencyTypesEntryFormat, true, dbcCurrencyTypesStore, true);
     LOAD_DBC("DBC/BarberShopStyle.dbc", BarberShopStyleEntryFormat, true, dbcBarberShopStyleStore, true);
-    LOAD_DBC("DBC/Item.dbc", ItemEntryFormat, true, dbcItemEntry, true);
+    //LOAD_DBC("DBC/Item.dbc", ItemEntryFormat, true, dbcItemEntry, true);
     LOAD_DBC("DBC/ItemSet.dbc", ItemSetFormat, true, dbcItemSet, true);
     LOAD_DBC("DBC/Lock.dbc", LockFormat, true, dbcLock, false);
     LOAD_DBC("DBC/EmotesText.dbc", EmoteEntryFormat, true, dbcEmoteEntry, false);
@@ -389,7 +389,7 @@ bool LoadDBCs()
     LOAD_DBC("DBC/GlyphSlot.dbc", GlyphSlotEntryFormat, true, dbcGlyphSlot, false);
     LOAD_DBC("DBC/SkillLine.dbc", skilllineentrYFormat, true, dbcSkillLine, true);
     LOAD_DBC("DBC/Spell.dbc", spellentryFormat, true, dbcSpell, true);
-    LOAD_DBC("DBC/ItemExtendedCost.dbc", itemextendedcostFormat, true, dbcItemExtendedCost, false);
+    //LOAD_DBC("DBC/ItemExtendedCost.dbc", itemextendedcostFormat, true, dbcItemExtendedCost, false);
     LOAD_DBC("DBC/Talent.dbc", talententryFormat, true, dbcTalent, false);
     LOAD_DBC("DBC/TalentTab.dbc", talenttabentryFormat, true, dbcTalentTab, false);
     LOAD_DBC("DBC/SpellCastTimes.dbc", spellcasttimeFormat, true, dbcSpellCastTime, false);

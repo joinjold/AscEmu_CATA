@@ -22,6 +22,7 @@
 #include "Threading/Mutex.h"
 #include "WorldPacket.h"
 #include "StdAfx.h"
+#include "DB2/DB2Stores.hpp"
 
 OpcodeHandler WorldPacketHandlers[NUM_MSG_TYPES];
 
@@ -1262,7 +1263,7 @@ void WorldSession::SendRefundInfo(uint64 GUID)
         if (RefundEntry.first == 0 || RefundEntry.second == 0)
             return;
 
-        ItemExtendedCostEntry* ex = dbcItemExtendedCost.LookupEntryForced(RefundEntry.second);
+        ItemExtendedCostEntry* ex = dbcItemExtendedCost.LookupEntry(RefundEntry.second);
         if (ex == NULL)
             return;
 

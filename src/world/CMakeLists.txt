@@ -10,6 +10,7 @@ set(sources
    DBC/DBCLoader.cpp
    DBC/DBCRecord.cpp
    DBC/DBCSQL.cpp
+   DB2/DB2Stores.cpp
    AchievementMgr.cpp 
    CollideInterface.cpp 
 	VoiceChatHandler.cpp 
@@ -218,6 +219,8 @@ set(headers
     DBC/DBCStorage.hpp
 	DBC/DBCStores.h
     DBC/DBCStructures.hpp
+    DB2/DB2Stores.hpp
+    DB2/DB2Structure.hpp
 	DeathKnight.h
 	Definitions.h
 	Druid.h

@@ -21,6 +21,7 @@
 
 #include "StdAfx.h"
 #include <CrashHandler.h>
+#include "DB2/DB2Stores.hpp"
 
 
 initialiseSingleton(World);
@@ -428,7 +429,7 @@ bool World::SetInitialWorldSettings()
     // Start
 
     uint32 start_time = getMSTime();
-
+    LoadDB2Stores();
     Log.Success("World", "Loading DBC files...");
     if (!LoadDBCs())
     {

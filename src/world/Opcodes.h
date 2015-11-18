@@ -152,7 +152,6 @@ enum Opcodes
     MSG_MOVE_SET_RUN_MODE                           = 0x0C2,
     MSG_MOVE_SET_WALK_MODE                          = 0x0C3,
     MSG_MOVE_TOGGLE_LOGGING                         = 0x0C4,
-    MSG_MOVE_TELEPORT                               = 0x0C5,
     MSG_MOVE_TELEPORT_CHEAT                         = 0x0C6,
     MSG_MOVE_TELEPORT_ACK                           = 0x0C7,
     MSG_MOVE_TOGGLE_FALL_LOGGING                    = 0x0C8,
@@ -1277,6 +1276,7 @@ enum Opcodes
     MSG_MOVE_SET_PITCH                                  = 0x7312,
     MSG_MOVE_START_STRAFE_LEFT                          = 0x3A16,
     MSG_MOVE_START_STRAFE_RIGHT                         = 0x3A02,
+    MSG_MOVE_TELEPORT                                   = 0x55A0,
 
     // LFG Check packet sending in LfgHandler.cpp
     SMSG_LFG_PLAYER_INFO                                = 0x1370,   // not updated

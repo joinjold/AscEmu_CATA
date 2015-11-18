@@ -21,6 +21,7 @@
 
 #include "StdAfx.h"
 #include "QuestLogEntry.hpp"
+#include "DB2/DB2Stores.hpp"
 
 initialiseSingleton(ObjectMgr);
 
@@ -1521,7 +1522,7 @@ void ObjectMgr::LoadVendors()
             itm.incrtime = fields[4].GetUInt32();
             if (fields[5].GetUInt32() > 0)
             {
-                ec = dbcItemExtendedCost.LookupEntryForced(fields[5].GetUInt32());
+                ec = dbcItemExtendedCost.LookupEntry(fields[5].GetUInt32());
                 if (ec == NULL)
                     Log.Error("LoadVendors", "Extendedcost for item %u references nonexistent EC %u", fields[1].GetUInt32(), fields[5].GetUInt32());
             }

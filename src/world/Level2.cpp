@@ -20,6 +20,7 @@
  */
 
 #include "StdAfx.h"
+#include "DB2/DB2Stores.hpp"
 
 
 bool ChatHandler::HandleResetReputationCommand(const char* args, WorldSession* m_session)
@@ -266,8 +267,8 @@ bool ChatHandler::HandleItemCommand(const char* args, WorldSession* m_session)
     if (pcostid)
         costid = atoi(pcostid);
 
-    ItemExtendedCostEntry* ec = (costid > 0) ? dbcItemExtendedCost.LookupEntryForced(costid) : NULL;
-    if (costid > 0 && dbcItemExtendedCost.LookupEntryForced(costid) == NULL)
+    ItemExtendedCostEntry* ec = dbcItemExtendedCost.LookupEntry(costid);
+    if (costid > 0 && dbcItemExtendedCost.LookupEntry(costid) == NULL)
     {
         SystemMessage(m_session, "You've entered invalid extended cost id.");
         return true;

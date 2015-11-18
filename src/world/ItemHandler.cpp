@@ -20,6 +20,7 @@
  */
 
 #include "StdAfx.h"
+#include "DB2/DB2Stores.hpp"
 
 bool VerifyBagSlots(int8 ContainerSlot, int8 Slot)
 {

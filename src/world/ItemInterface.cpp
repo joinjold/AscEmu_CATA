@@ -24,6 +24,7 @@
 #include "Container.h"
 #include "ItemPrototype.h"
 #include "Player.h"
+#include "DB2/DB2Structure.hpp"
 
 
 ItemInterface::ItemInterface(Player* pPlayer) : m_EquipmentSets(pPlayer->GetLowGUID())

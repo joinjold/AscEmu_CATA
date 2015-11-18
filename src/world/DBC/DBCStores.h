@@ -22,6 +22,7 @@
 
 #include "DBCGlobals.hpp"
 #include "Definitions.h"
+#include "DB2/DB2Structure.hpp"
 
 class Player;
 
@@ -510,18 +511,6 @@ struct CurrencyTypesEntry
     uint32 ItemId;                  // 1 used as real index
     //uint32 Category;              // 2 may be category
     uint32 BitIndex;                // 3 bit index in PLAYER_FIELD_KNOWN_CURRENCIES (1 << (index-1))
-};
-
-struct ItemEntry
-{
-   uint32   ID;                         // 0
-   uint32   Class;                      // 1
-   uint32   SubClass;                   // 2 some items have strange subclasses
-   int32    SoundOverrideSubclass;      // 3
-   int32    Material;                   // 4
-   uint32   DisplayId;                  // 5
-   uint32   InventoryType;              // 6
-   uint32   Sheath;                     // 7
 };
 
 struct ItemSetEntry
@@ -1057,16 +1046,6 @@ struct SpellRuneCostEntry
     uint32 frostRuneCost;
     uint32 unholyRuneCost;
     uint32 runePowerGain;
-};
-
-struct ItemExtendedCostEntry
-{
-    uint32 costid;
-    uint32 honor;
-    uint32 arena;
-    uint32 item[5];
-    uint32 count[5];
-    uint32 personalrating;
 };
 
 struct TalentEntry
@@ -1903,7 +1882,9 @@ class SERVER_DECL DBCStorage
             for (i = 0; i < rows; ++i)
             {
                 memset(&m_heapBlock[i], 0, sizeof(T));
-                ReadEntry(f, &m_heapBlock[i], format, cols, filename);
+                bool read_success = ReadEntry(f, &m_heapBlock[i], format, cols, filename);
+                if (!read_success)
+                    continue;
 
                 if (load_indexed)
                 {
@@ -1934,7 +1915,7 @@ class SERVER_DECL DBCStorage
             return true;
         }
 
-        void ReadEntry(FILE* f, T* dest, const char* format, uint32 cols, const char* filename)
+        bool ReadEntry(FILE* f, T* dest, const char* format, uint32 cols, const char* filename)
         {
             const char* t = format;
             uint32* dest_ptr = (uint32*)dest;
@@ -1942,14 +1923,17 @@ class SERVER_DECL DBCStorage
             uint32 val;
             size_t len = strlen(format);
             if (len != cols)
+            {
                 sLog.outError("!!! possible invalid format in file %s (us: %u, them: %u)", filename, len, cols);
+                return false;
+            }
 
             while (*t != 0)
             {
                 if ((++c) > cols)
                 {
                     ++t;
-                    sLog.outError("!!! Read buffer overflow in DBC reading of file %s", filename);
+                    //sLog.outError("!!! Read buffer overflow in DBC reading of file %s", filename);
                     continue;
                 }
 
@@ -1995,6 +1979,7 @@ class SERVER_DECL DBCStorage
 
                 ++t;
             }
+            return true;
         }
 
         inline uint32 GetNumRows()
@@ -2101,7 +2086,7 @@ extern SERVER_DECL DBCStorage<BarberShopStyleEntry> dbcBarberShopStyleStore;
 extern SERVER_DECL DBCStorage<GemPropertyEntry> dbcGemProperty;
 extern SERVER_DECL DBCStorage<GlyphPropertyEntry> dbcGlyphProperty;
 extern SERVER_DECL DBCStorage<GlyphSlotEntry> dbcGlyphSlot;
-extern SERVER_DECL DBCStorage<ItemEntry> dbcItemEntry;
+//extern SERVER_DECL DBCStorage<ItemEntry> dbcItemEntry;
 extern SERVER_DECL DBCStorage<ItemSetEntry> dbcItemSet;
 extern SERVER_DECL DBCStorage<Lock> dbcLock;
 extern SERVER_DECL DBCStorage<SpellEntry> dbcSpell;
@@ -2133,7 +2118,7 @@ extern SERVER_DECL DBCStorage<CharRaceEntry> dbcCharRace;
 extern SERVER_DECL DBCStorage<MapEntry> dbcMap;
 extern SERVER_DECL DBCStorage <HolidaysEntry> dbcHolidaysStore;
 extern SERVER_DECL DBCStorage<SpellRuneCostEntry> dbcSpellRuneCost;
-extern SERVER_DECL DBCStorage<ItemExtendedCostEntry> dbcItemExtendedCost;
+//extern SERVER_DECL DBCStorage<ItemExtendedCostEntry> dbcItemExtendedCost;
 extern SERVER_DECL DBCStorage<ItemRandomSuffixEntry> dbcItemRandomSuffix;
 extern SERVER_DECL DBCStorage<CombatRatingDBC> dbcCombatRating;
 extern SERVER_DECL DBCStorage<ChatChannelDBC> dbcChatChannels;

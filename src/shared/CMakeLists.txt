@@ -35,6 +35,7 @@ set(sources
     Config/Config.cpp
     Database/Database.cpp
 		Database/Field.cpp
+      Database/DB2FileLoader.cpp
     Database/MySQLDatabase.cpp
     Database/CreateInterface.cpp
     Network/CircularBuffer.cpp
@@ -47,6 +48,7 @@ set(headers
 	Array.h
 	AuthCodes.h
 	ByteBuffer.h
+   ByteConverter.hpp
 	CallBack.h
 	CircularQueue.h
 	Common.h
@@ -94,6 +96,8 @@ set(headers
 	Database/DataStore.h
 	Database/Field.h
 	Database/MySQLDatabase.h
+   Database/DB2FileLoader.hpp
+   Database/DB2Store.hpp
 	Network/CircularBuffer.h
 	Network/ListenSocketFreeBSD.h
 	Network/ListenSocketLinux.h
