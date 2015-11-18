@@ -153,9 +153,9 @@
 #define SKILL_PET_RAVAGER             767
 #define SKILL_PET_SERPENT             768
 #define SKILL_INTERNAL                769
-#define SKILL_BLOOD                   770
-#define SKILL_FROST2                  771
-#define SKILL_UNHOLY                  772
+#define SKILL_DK_BLOOD                770
+#define SKILL_DK_FROST                771
+#define SKILL_DK_UNHOLY               772
 #define SKILL_INSCRIPTION             773
 #define SKILL_PET_MOTH                775
 #define SKILL_RUNEFORGING             776
@@ -174,6 +174,7 @@
 #define SKILL_RACIAL_GOLBLIN          790
 #define SKILL_LANG_GILNEAN            791
 #define SKILL_LANG_GOBLIN             792
+#define SKILL_ARCHAEOLOGY             794
 
 #define SKILL_TYPE_ATTRIBUTES           5
 #define SKILL_TYPE_WEAPON               6
