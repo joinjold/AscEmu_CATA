@@ -174,15 +174,19 @@ bool ChatHandler::HandleStartCommand(const char* args, WorldSession* m_session)
             raceid = 7;
         else if (race == "troll")
             raceid = 8;
+        else if (race == "goblin")
+            raceid = 9;
         else if (race == "bloodelf" || race == "be")
             raceid = 10;
         else if (race == "draenei")
             raceid = 11;
+        else if (race == "worgen")
+            raceid = 22;
         else if (race == "deathknight" || race == "dk")
             classid = 6;
         else
         {
-            RedSystemMessage(m_session, "Invalid start location! Valid locations are: human, dwarf, gnome, nightelf, draenei, orc, troll, tauren, undead, bloodelf, deathknight");
+            RedSystemMessage(m_session, "Invalid start location! Valid locations are: human, dwarf, gnome, nightelf, draenei, orc, troll, goblin, tauren, undead, bloodelf, worgen, deathknight");
             return true;
         }
     }
