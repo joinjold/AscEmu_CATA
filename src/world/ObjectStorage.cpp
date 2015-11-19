@@ -203,7 +203,7 @@ void ObjectMgr::LoadExtraCreatureProtoStuff()
     }
 
     // Load AI Agents
-    if (Config.MainConfig.GetBoolDefault("Server", "LoadAIAgents", true))
+    /*if (Config.MainConfig.GetBoolDefault("Server", "LoadAIAgents", true))
     {
         QueryResult* result = WorldDatabase.Query("SELECT * FROM ai_agents");
         CreatureProto* cn;
@@ -307,6 +307,7 @@ void ObjectMgr::LoadExtraCreatureProtoStuff()
                     if (sp->spelltargetType== 0)
                         sp->spelltargetType = RecommandAISpellTargetType(sp->spell);
                         */
+               /*
                 }
 
                 if (sp->agent == AGENT_RANGED)
@@ -348,7 +349,7 @@ void ObjectMgr::LoadExtraCreatureProtoStuff()
 
             delete result;
         }
-    }
+    }*/
 }
 
 void ObjectMgr::LoadExtraItemStuff()

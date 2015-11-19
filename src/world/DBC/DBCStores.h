@@ -31,12 +31,16 @@ class Player;
 struct WorldMapOverlay
 {
     uint32 ID;              // 0
-    //uint32 worldMapID;    // 1
+    uint32 Category;    // 1
     uint32 areaID;          // 2 - index to AreaTable
     uint32 areaID_2;        // 3 - index to AreaTable
     uint32 areaID_3;        // 4 - index to AreaTable
     uint32 areaID_4;        // 5 - index to AreaTable
-// any of the four above indexes is enough to uncover the fragment
+    uint32 HasSubstitution; // 5
+    uint32 SubstitutionId;                                  // 6
+    uint32 TotalCap;                                        // 7
+    uint32 WeekCap;                                         // 8
+    uint32 Flags;                                           // 9	
 };
 
 #ifdef ENABLE_ACHIEVEMENTS
@@ -497,19 +501,15 @@ struct BankSlotPrice
 struct CharTitlesEntry
 {
     uint32 ID;                      // 0, title ids
-    uint32 unk1;                    // 1 flags?
     const char* name;               // 2-17, unused
-    uint32 name_flag;               // 18 string flag, unused
-    const char* name2;              // 19-34, unused
-    const char* name2_flag;         // 35 string flag, unused
     uint32 bit_index;               // 36 used in PLAYER_CHOSEN_TITLE and 1<<index in PLAYER__FIELD_KNOWN_TITLES
 };
 
 struct CurrencyTypesEntry
 {
-    //uint32 ID;                    // 0 not used
+    uint32 ID;                      // 0 not used
     uint32 ItemId;                  // 1 used as real index
-    //uint32 Category;              // 2 may be category
+    uint32 Category;                // 2 may be category
     uint32 BitIndex;                // 3 bit index in PLAYER_FIELD_KNOWN_CURRENCIES (1 << (index-1))
 };
 
@@ -517,10 +517,7 @@ struct ItemSetEntry
 {
     uint32 id;                      //1
     const char* name;               //2
-  //uint32 unused_shit[15];         //3 - 9
-  //uint32 localeflag;              //10 constant
-    uint32 itemid[8];               //11 - 18
-  //uint32 more_unused_shit[9];     //19 - 27
+    uint32 itemid[10];               //11 - 18
     uint32 SpellID[8];              //28 - 35
     uint32 itemscount[8];           //36 - 43
     uint32 RequiredSkillID;         //44
@@ -530,12 +527,12 @@ struct ItemSetEntry
 struct ItemLimitCategoryEntry
 {
     uint32 Id;              // 0    - Id
-    char* name;             // 1    - Displayed name
     uint32 maxAmount;       // 18   - Max amount of items
     uint32 equippedFlag;    // 19   - equipped (bool?)
 };
 
-#define LOCK_NUM_CASES 8
+#define LOCK_NUM_CASES 5
+#define LOCK_NUM_ACTIONS 8
 
 struct Lock
 {
@@ -543,7 +540,7 @@ struct Lock
     uint32 locktype[LOCK_NUM_CASES];        /// If this is 1, then the next lockmisc is an item ID, if it's 2, then it's an iRef to LockTypes.dbc.
     uint32 lockmisc[LOCK_NUM_CASES];        /// Item to unlock or iRef to LockTypes.dbc depending on the locktype.
     uint32 minlockskill[LOCK_NUM_CASES];    /// Required skill needed for lockmisc (if locktype = 2).
-    //uint32 action[8];                     /// Something to do with direction / opening / closing.
+    uint32 action[LOCK_NUM_ACTIONS];                     /// Something to do with direction / opening / closing.
 };
 
 struct emoteentry
@@ -575,8 +572,8 @@ struct skilllinespell
     uint32 Id;
     uint32 skilline;
     uint32 spell;
-  //uint32 raceMask;
-  //uint32 classMask;
+    uint32 raceMask;
+    uint32 classMask;
   //uint32 excludeRace;
   //uint32 excludeClass;
     uint32 minSkillLineRank;
@@ -586,6 +583,7 @@ struct skilllinespell
     uint32 green;
   //uint32 abandonable;
     uint32 reqTP;
+    uint32 prev;
 };
 
 struct EnchantEntry
@@ -596,26 +594,18 @@ struct EnchantEntry
     int32 max[3];
     uint32 spell[3];
     const char* Name;
-  //uint32 NameAlt1;
-  //uint32 NameAlt2;
-  //uint32 NameAlt3;
-  //uint32 NameAlt4;
-  //uint32 NameAlt5;
-  //uint32 NameAlt6;
-  //uint32 NameAlt7;
-  //uint32 NameAlt8;
-  //uint32 NameAlt9;
-  //uint32 NameAlt10;
-  //uint32 NameAlt11;
-  //uint32 NameAlt12;
-  //uint32 NameAlt13;
-  //uint32 NameAlt14;
-  //uint32 NameAlt15;
-  //uint32 NameFlags;
     uint32 visual;
     uint32 EnchantGroups;
     uint32 GemEntry;
     uint32 unk7;        /// Gem Related
+    uint32 required_skill;
+    uint32 required_skill_rank;
+    uint32 unk10;
+    uint32 req_itemlevel;
+    uint32 custom_enchant_group;
+    uint32 custom_enchant_maxstack;
+    uint32 custom_GearScore;
+    uint32 custom_ScriptCreated;
 
 };
 
@@ -623,9 +613,9 @@ struct GemPropertyEntry
 {
     uint32 Entry;
     uint32 EnchantmentID;
-    uint32 unk1;            /// bool
-    uint32 unk2;            /// bool
+    uint32 SocketMaskMustMatch;            /// bool
     uint32 SocketMask;
+    uint32 unk3;
 };
 
 //GlyphProperties.dbc
@@ -649,14 +639,9 @@ struct skilllineentry
 {
     uint32 id;
     uint32 type;
-    uint32 skillCostsID;
     const char* Name;
-  //int32 NameAlt[15];
-  //uint32 NameFlags;
-  //uint32 Description;
-  //uint32 DescriptionAlt[15];
-  //uint32 DescriptionFlags;
-  //uint32 spellIconID;
+    uint32 spellIcon;
+    uint32 canLink;
 };
 
 #define MAX_SPELL_EFFECTS 3
@@ -1187,26 +1172,9 @@ struct FactionTemplateDBC
 struct AuctionHouseDBC
 {
     uint32 id;
-    uint32 unk;
+    uint32 faction;
     uint32 fee;
     uint32 tax;
-    //char* name;
-    //char* nameAlt1;
-    //char* nameAlt2;
-    //char* nameAlt3;
-    //char* nameAlt4;
-    //char* nameAlt5;
-    //char* nameAlt6;
-    //char* nameAlt7;
-    //char* nameAlt8;
-    //char* nameAlt9;
-    //char* nameAlt10;
-    //char* nameAlt11;
-    //char* nameAlt12;
-    //char* nameAlt13;
-    //char* nameAlt14;
-    //char* nameAlt15;
-    //char* nameFlags;
 };
 
 struct FactionDBC
@@ -1219,9 +1187,10 @@ struct FactionDBC
     uint32 repFlags[4];
     uint32 parentFaction;
     const char* Name;
-    //uint32 poo[16];
-    //uint32 Description;
-    //uint32 poo2[16];
+    float spilloverRateIn;
+    float spilloverRateOut;
+    uint32 spilloverMaxRankIn;
+    uint32 groupExpansion;
 };
 
 struct DBCTaxiNode
@@ -1231,25 +1200,10 @@ struct DBCTaxiNode
     float x;
     float y;
     float z;
-    //uint32 name;
-    //uint32 namealt1;
-    //uint32 namealt2;
-    //uint32 namealt3;
-    //uint32 namealt4;
-    //uint32 namealt5;
-    //uint32 namealt6;
-    //uint32 namealt7;
-    //uint32 namealt8;
-    //uint32 namealt9;
-    //uint32 namealt10;
-    //uint32 namealt11;
-    //uint32 namealt12;
-    //uint32 namealt13;
-    //uint32 namealt14;
-    //uint32 namealt15;
-    //uint32 nameflags;
+    char* name;
     uint32 horde_mount;
     uint32 alliance_mount;
+    uint32 flags;
 };
 
 struct DBCTaxiPath
@@ -1287,37 +1241,27 @@ struct CreatureSpellDataEntry
 struct CharRaceEntry
 {
     uint32 race_id;
+    uint32 flags;
+    uint32 FactionID;
+    uint32 model_m;
+    uint32 model_f;
     uint32 team_id;
     uint32 cinematic_id;
     const char* name1;
+    uint32 expansion;
 };
 
 struct CharClassEntry
 {
     uint32 class_id;
-    //uint32 unk1;
     uint32 power_type;
-    //uint32 unk2;
     const char* name;
-    //uint32 namealt1;
-    //uint32 namealt2;
-    //uint32 namealt3;
-    //uint32 namealt4;
-    //uint32 namealt5;
-    //uint32 namealt6;
-    //uint32 namealt7;
-    //uint32 namealt8;
-    //uint32 namealt9;
-    //uint32 namealt10;
-    //uint32 namealt11;
-    //uint32 namealt12;
-    //uint32 namealt13;
-    //uint32 namealt14;
-    //uint32 namealt15;
-    //uint32 nameflags;
-    //uint32 unk3;
-    //uint32 unk4;
-    //uint32 unk5;
+    uint32 spellfamily;
+    uint32 cinematic_id;
+    uint32 expansion;
+    uint32 APPerStrenth;
+    uint32 APPerAgility;
+    uint32 RAPPerAgility;
 };
 
 struct CreatureFamilyEntry
@@ -1331,11 +1275,8 @@ struct CreatureFamilyEntry
     uint32 tameable;        /// second skill line - 270 Generic
     uint32 petdietflags;
     uint32 talenttree;      /// -1 = none, 0 = ferocity(410), 1 = tenacity(409), 2 = cunning(411)
-    //uint32 unk;           /// some index 0 - 63
+    uint32 unk;           /// some index 0 - 63
     const char* name;
-    //uint32 namealt[15];
-    //uint32 nameflags;
-    //uint32 iconFile;
 };
 
 #define MAX_HOLIDAY_DURATIONS 10
@@ -1361,29 +1302,27 @@ struct HolidaysEntry
 struct MapEntry
 {
     uint32 id;
-    const char* name_internal;
     uint32 map_type;
     uint32 is_pvp_zone;
     const char* real_name;
     uint32 linked_zone;             /// common zone for instance and continent map
-    const char* hordeIntro;         /// text for PvP Zones
-    const char* allianceIntro;      /// text for PvP Zones
     uint32 multimap_id;
-    const char* normalReqText;      /// normal mode requirement text
-    const char* heroicReqText;      /// heroic mode requirement text
     int32 parent_map;               /// map_id of parent map
     float start_x;                  /// enter x coordinate (if exist single entry)
     float start_y;                  /// enter y coordinate (if exist single entry)
-    //uint32 resetTimeRaid;         /// REMOVED IN 3.2.0
-    //uint32 resetTimeHeroic;       /// REMOVED IN 3.2.0
     uint32 addon;                   /// 0-original maps, 1-tbc addon, 2-wotlk addon
+    uint32 expireTime;   
+    uint32 maxPlayers;
+    int32 rootPhaseMap;
 };
 
+#define SUFFIX_ENCHANT_COUNT 5
 struct ItemRandomSuffixEntry
 {
     uint32 id;
-    uint32 enchantments[3];
-    uint32 prefixes[3];
+    char* nameSuffix;
+    uint32 enchantments[SUFFIX_ENCHANT_COUNT];
+    uint32 prefixes[SUFFIX_ENCHANT_COUNT];
 };
 
 struct BarberShopStyleEntry
@@ -1467,7 +1406,11 @@ struct ScalingStatValuesEntry
 {
     uint32 id;
     uint32 level;
-    uint32 multiplier[16];
+    uint32 dps_mod[6];
+    uint32 spellBonus;
+    uint32 multiplier[5];
+    uint32 armor[8][4];
+    uint32 cloak_armor;
 };
 
 struct QuestXP
@@ -1494,15 +1437,8 @@ struct WMOAreaTableEntry
     int32 rootId;           // 1
     int32 adtId;            // 2
     int32 groupId;          // 3
-    //uint32 field4;
-    //uint32 field5;
-    //uint32 field6;
-    //uint32 field7;
-    //uint32 field8;
     uint32 flags;           // 9
     uint32 areaId;          // 10  ref -> AreaTableEntry
-    //char Name[16];
-    //uint32 nameflags;
 };
 
 enum SummonControlTypes
@@ -2077,7 +2013,7 @@ extern SERVER_DECL DBCStorage<WorldMapOverlay> dbcWorldMapOverlayStore;
 #ifdef ENABLE_ACHIEVEMENTS
 extern SERVER_DECL DBCStorage<AchievementEntry> dbcAchievementStore;
 extern SERVER_DECL DBCStorage<AchievementCriteriaEntry> dbcAchievementCriteriaStore;
-extern SERVER_DECL DBCStorage<AchievementCategoryEntry> dbcAchievementCategoryStore;
+//extern SERVER_DECL DBCStorage<AchievementCategoryEntry> dbcAchievementCategoryStore;
 #endif
 //extern SERVER_DECL DBCStorage<BattlemasterListEntry> dbcBattlemasterListStore;
 extern SERVER_DECL DBCStorage<CharTitlesEntry> dbcCharTitlesEntry;

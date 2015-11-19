@@ -430,7 +430,7 @@ bool World::SetInitialWorldSettings()
 
     uint32 start_time = getMSTime();
     LoadDB2Stores();
-    Log.Success("World", "Loading DBC files...");
+    Log.Debug("World", "Loading DBC files...");
     if (!LoadDBCs())
     {
         Log.LargeErrorMessage("One or more of the DBC files are missing.", "These are absolutely necessary for the server to function.", "The server will not start without them.", NULL);
@@ -500,8 +500,10 @@ bool World::SetInitialWorldSettings()
     new ChatHandler;
     new SpellProcMgr;
 
-    ApplyNormalFixes();
+    //Log.Debug("ApplyNormalFixes", "Loading...");
+    //ApplyNormalFixes();
 
+    Log.Debug("SpellFactoryMgr", "Loading...");
     new SpellFactoryMgr;
 
 #define MAKE_TASK(sp, ptr) tl.AddTask(new Task(new CallbackP0<sp>(sp::getSingletonPtr(), &sp::ptr)))
@@ -524,16 +526,16 @@ bool World::SetInitialWorldSettings()
     MAKE_TASK(ObjectMgr, LoadInstanceBossInfos);
     MAKE_TASK(ObjectMgr, LoadCreatureWaypoints);
     MAKE_TASK(ObjectMgr, LoadCreatureTimedEmotes);
-    MAKE_TASK(ObjectMgr, LoadTrainers);
-    MAKE_TASK(ObjectMgr, LoadSpellSkills);
-    MAKE_TASK(ObjectMgr, LoadSpellOverride);
+    //MAKE_TASK(ObjectMgr, LoadTrainers);
+    //MAKE_TASK(ObjectMgr, LoadSpellSkills);
+    //MAKE_TASK(ObjectMgr, LoadSpellOverride);
     MAKE_TASK(ObjectMgr, LoadVendors);
-    MAKE_TASK(ObjectMgr, LoadAIThreatToSpellId);
-    MAKE_TASK(ObjectMgr, LoadSpellProcs);
-    MAKE_TASK(ObjectMgr, LoadSpellEffectsOverride);
-    MAKE_TASK(ObjectMgr, LoadSpellTargetConstraints);
-    MAKE_TASK(ObjectMgr, LoadDefaultPetSpells);
-    MAKE_TASK(ObjectMgr, LoadPetSpellCooldowns);
+    //MAKE_TASK(ObjectMgr, LoadAIThreatToSpellId);
+    //MAKE_TASK(ObjectMgr, LoadSpellProcs);
+    //MAKE_TASK(ObjectMgr, LoadSpellEffectsOverride);
+    //MAKE_TASK(ObjectMgr, LoadSpellTargetConstraints);
+    //MAKE_TASK(ObjectMgr, LoadDefaultPetSpells);
+    //MAKE_TASK(ObjectMgr, LoadPetSpellCooldowns);
     MAKE_TASK(ObjectMgr, LoadGuildCharters);
     MAKE_TASK(ObjectMgr, LoadGMTickets);
     MAKE_TASK(ObjectMgr, SetHighestGuids);
@@ -588,16 +590,16 @@ bool World::SetInitialWorldSettings()
     sLocalizationMgr.Reload(false);
 
     CommandTableStorage::getSingleton().Load();
-    Log.Success("WordFilter", "Loading...");
+    Log.Debug("WordFilter", "Loading...");
 
     g_characterNameFilter = new WordFilter();
     g_chatFilter = new WordFilter();
     g_characterNameFilter->Load("wordfilter_character_names");
     g_chatFilter->Load("wordfilter_chat");
 
-    Log.Success("WordFilter", "Done.");
+    Log.Debug("WordFilter", "Done.");
 
-    Log.Success("World", "Database loaded in %ums.", getMSTime() - start_time);
+    Log.Debug("World", "Database loaded in %ums.", getMSTime() - start_time);
 
     if (Collision)
     {
@@ -622,13 +624,13 @@ bool World::SetInitialWorldSettings()
     Log.Notice("World", "Player size: %u bytes", sizeof(Player) + sizeof(ItemInterface) + 50000 + 30000 + 1000 + sizeof(AIInterface));
     Log.Notice("World", "GameObject size: %u bytes", sizeof(GameObject));
 
-    Log.Success("World", "Starting Transport System...");
-    objmgr.LoadTransporters();
+    Log.Success("World", "Transport System Deactivated...");
+    //objmgr.LoadTransporters();
 
     //Start the Achievement system :D
 #ifdef ENABLE_ACHIEVEMENTS
-    Log.Success("World", "Starting Achievement System..");
-    objmgr.LoadAchievementCriteriaList();
+    Log.Success("World", "Achievement System Deactivated..");
+    //objmgr.LoadAchievementCriteriaList();
 #endif
     // start mail system
     MailSystem::getSingleton().StartMailSystem();

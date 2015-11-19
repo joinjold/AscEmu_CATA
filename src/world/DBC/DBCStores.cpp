@@ -99,257 +99,75 @@ SERVER_DECL DBC::DBCStorage<DBC::Structures::LFGDungeonEntry> sLFGDungeonStore(D
 SERVER_DECL DBCStorage< VehicleEntry > dbcVehicle;
 SERVER_DECL DBCStorage< VehicleSeatEntry > dbcVehicleSeat;
 
-const char* WorldMapOverlayStoreFormat = "nxiiiixxxxxxxxxxx";
-const char* BarberShopStyleEntryFormat = "nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxi";
-const char* ItemEntryFormat="uiiiiiii";
-const char* ItemSetFormat = "ulxxxxxxxxxxxxxxxxuuuuuuuuxxxxxxxxxuuuuuuuuuuuuuuuuuu";
-const char* LockFormat = "uuuuuuuuuuuuuuuuuuuuuuuuuxxxxxxxx";
+const char* WorldMapOverlayStoreFormat = "nxiiiixxxxxxxxx";
+const char* BarberShopStyleEntryFormat = "nxxxxxxi";
+//const char* ItemEntryFormat="uiiiiiii";
+const char* ItemSetFormat = "usuuuuuuuuxxxxxxxxxuuuuuuuuuuuuuuuuuu";
+const char* LockFormat = "uuuuuuxxxuuuuuxxxuuuuuxxxxxxxxxxx";
 const char* EmoteEntryFormat = "uxuuuuxuxuxxxxxxxxx";
-const char* skilllinespellFormat = "uuuxxxxuuuuuxx";
-const char* EnchantEntrYFormat = "uxuuuuuuuuuuuusxxxxxxxxxxxxxxxxuuuuxxx";
-const char* GemPropertyEntryFormat = "uuuuu";
-const char* GlyphPropertyEntryFormat = "uuuu";
-const char* GlyphSlotEntryFormat = "uuu";
-const char* skilllineentrYFormat = "uuulxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
-const char* VehicleEntryfmt = "niffffiiiiiiiifffffffffffffffssssfifiixx";
-const char* VehicleSeatEntryfmt = "niiffffffffffiiiiiifffffffiiifffiiiiiiiffiiiiixxxxxxxxxxxx";
+const char* skilllinespellFormat = "iiiiiiiiiiiiix";
+const char* EnchantEntrYFormat = "uxuuuuuuuuuuuusuuuuuuuu";
+const char* GemPropertyEntryFormat = "uuuuux";
+const char* GlyphPropertyEntryFormat = "niii";
+const char* GlyphSlotEntryFormat = "nii";
+const char* skilllineentrYFormat = "uusxxxx";
+const char* VehicleEntryfmt = "uuffffuuuuuuuufffffffffffffffssssfufuxxx";
+const char* VehicleSeatEntryfmt = "uuiffffffffffiiiiiifffffffiiifffiiiiiiiffiiiiixxxxxxxxxxxxxxxxxxxx";
 
-// const char* BattlemasterListEntryFormat = "uiiiiiiiiuuuuuiiiiiiiiiiiiiiiiiiuux";
-// const char* BattlemasterListEntryFormat = "uiiiiiiiiuuiiiiiiiiiiiiiiiiiuux";
-//const char* BattlemasterListEntryFormat = "uiiiiiiiiuuiiiiiiiiiiiiiiiiiuux";
 
-const char* CharTitlesEntryfmt =
-"u" // ID
-"u" // unk1
-"lxxxxxxxxxxxxxxx" // name
-"u" // name_flag
-"lxxxxxxxxxxxxxxx" // name2
-"u" // name2_flag
-"u" // bit_index
-;
+const char* CharTitlesEntryfmt = "uxsxux";
 
-const char* CurrencyTypesEntryFormat = "xnxu";
+const char* CurrencyTypesEntryFormat = "xnxuxxxxxxx";
 
 #ifdef ENABLE_ACHIEVEMENTS
-const char* AchievementStoreFormat =
-"n" // ID
-"i" // factionFlag
-"i" // mapID
-"u" // unknown1
-"lxxxxxxxxxxxxxxx" // name
-"u" // name_flags
-"lxxxxxxxxxxxxxxx" // description
-"u" // desc_flags
-"i" // categoryId
-"i" // points
-"u" // orderInCategory
-"i" // flags
-"u" // flags2
-"lxxxxxxxxxxxxxxx" // rewardName
-"u" // rewardName_flags
-"u" // count
-"u" // refAchievement
-;
-
-const char* AchievementCategoryStoreFormat =
-"n" // ID
-"u" // parentCategory
-"lxxxxxxxxxxxxxxx" // name
-"u" // name_flags
-"u" // sortOrder
-;
-
-const char* AchievementCriteriaStoreFormat =
-"n" // ID
-"i" // referredAchievement
-"i" // requiredType
-"i" // raw.field3
-"i" // raw.field4
-"i" // raw.additionalRequirement1_type
-"i" // raw.additionalRequirement1_value
-"i" // raw.additionalRequirement2_type
-"i" // raw.additionalRequirement2_value
-"lxxxxxxxxxxxxxxx" // name
-"u" // name_flags
-"i" // completionFlag
-"i" // groupFlag
-"u" // unk1
-"i" // timeLimit
-"u" // index
-;
+const char* AchievementStoreFormat = "niiussiiuiusuu";
+const char* AchievementCriteriaStoreFormat = "niiiiliiisixiiixxxxxxxx";
 #endif
 
-const char* spelldifficultyentryformat = "niiii";
+//const char* spelldifficultyentryformat = "niiii";
 
-const char* spellentryFormat =
-"u" // Id
-"u" // Category
-"u" // DispelType
-"u" // MechanicsType
-"u" // Attributes
-"u" // AttributesEx
-"u" // AttributesExB
-"u" // AttributesExC
-"u" // AttributesExD
-"u" // AttributesExE
-"u" // AttributesExF
-"u" // AttributesExG
-"u" // RequiredShapeShift
-"x" // unk 3.2.0
-"u" // ShapeshiftExclude
-"x" // unk 3.2.0
-"u" // Targets
-"u" // TargetCreatureType
-"u" // RequiresSpellFocus
-"u" // FacingCasterFlags
-"u" // CasterAuraState
-"u" // TargetAuraState
-"u" // ExcludeCasterAuraState
-"u" // ExcludeTargetAuraState
-"u" // casterAuraSpell
-"u" // targetAuraSpell
-"u" // ExcludeCasterAuraState
-"u" // ExcludeTargetAuraState
-"u" // CastingTimeIndex
-"u" // RecoveryTime
-"u" // CategoryRecoveryTime
-"u" // InterruptFlags
-"u" // AuraInterruptFlags
-"u" // ChannelInterruptFlags
-"u" // procFlags
-"u" // procChance
-"u" // procCharges
-"u" // maxLevel
-"u" // baseLevel
-"u" // spellLevel
-"u" // DurationIndex
-"u" // powerType
-"u" // manaCost
-"u" // manaCostPerlevel
-"u" // manaPerSecond
-"u" // manaPerSecondPerLevel
-"u" // rangeIndex
-"f" // speed
-"u" // modalNextSpell
-"u" // maxstack
-"uu" // Totem[2]
-"uuuuuuuu" // Reagent[8]
-"uuuuuuuu" // ReagentCount[8]
-"u" // EquippedItemClass
-"u" // EquippedItemSubClass
-"u" // RequiredItemFlags
-"uuu" // Effect[3]
-"uuu" // EffectDieSides[3]
-"uuu" // EffectRealPointsPerLevel[3]
-"uuu" // EffectBasePoints[3]
-"uuu" // EffectMechanic[3]
-"uuu" // EffectImplicitTargetA[3]
-"uuu" // EffectImplicitTargetB[3]
-"uuu" // EffectRadiusIndex[3]
-"uuu" // EffectApplyAuraName[3]
-"uuu" // EffectAmplitude[3]
-"uuu" // Effectunknown[3]
-"uuu" // EffectChainTarget[3]
-"uuu" // EffectSpellGroupRelation[3]
-"uuu" // EffectMiscValue[3]
-"uuu" // EffectMiscValueB[3]
-"uuu" // EffectTriggerSpell[3]
-"uuu" // EffectPointsPerComboPoint[3]
-"uuu" // EffectUnk0[3]
-"uuu" // EffectUnk1[3]
-"uuu" // EffectUnk2[3]
-"u" // SpellVisual
-"u" // field114
-"u" // spellIconID
-"u" // activeIconID
-"u" // spellPriority
-"lxxxxxxxxxxxxxxxx" // Name
-"lxxxxxxxxxxxxxxxx" // Rank
-"lxxxxxxxxxxxxxxxx" // Description
-"lxxxxxxxxxxxxxxxx" // BuffDescription
-"u" // ManaCostPercentage
-"u" // unkflags
-"u" // StartRecoveryTime
-"u" // StartRecoveryCategory
-"u" // MaxTargetLevel
-"u" // SpellFamilyName
-"uu" // SpellGroupType
-"u" // MaxTargets
-"u" // Spell_Dmg_Type
-"u" // PreventionType
-"u" // StanceBarOrder
-"fff" // dmg_multiplier[3]
-"u" // MinFactionID
-"u" // MinReputation
-"u" // RequiredAuraVision
-"uu" // TotemCategory[2]
-"i" // RequiresAreaId
-"u" // School
-"ux"
-"x" //Added in 3.1
-"xxx" // unk 3.2.0, float!
-"x" // unk 3.2.0
-"i"
-;
+const char* spellentryFormat = "uuuuuuuuuuuxuuuufuuuussssuuuuufuuuuuuuuuuuuuuuuu";
 
 //const char* itemextendedcostFormat = "uuuxuuuuuuuuuuux";
-const char* talententryFormat = "uuuuuuuuuxxxxuxxuxxxxxx";
-const char* talenttabentryFormat = "uxxxxxxxxxxxxxxxxxxxuuux";
+const char* talententryFormat = "uuuuuuuuuxuxxxxuxxx";
+const char* talenttabentryFormat = "uxxuuuxxxuu";
 const char* spellcasttimeFormat = "uuxx";
 const char* spellradiusFormat = "ufxf";
-const char* spellrangeFormat = "uffffxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+const char* spellrangeFormat = "uffffxxx";
 const char* SpellRuneCostFormat = "uuuuu";
 const char* spelldurationFormat = "uuuu";
-const char* randompropsFormat = "uxuuuxxxxxxxxxxxxxxxxxxx";
+const char* randompropsFormat = "uxuuuxxx";
 const char* areagroupFormat = "uuuuuuuu";
-const char* areatableFormat = "uuuuuxxxuxulxxxxxxxxxxxxxxxxuxxxxxxx";
+const char* areatableFormat = "uuuuuxxxxxusuxxxxxxxxxxxxx";
 const char* factiontemplatedbcFormat = "uuuuuuuuuuuuuu";
-const char* auctionhousedbcFormat = "uuuuxxxxxxxxxxxxxxxxx";
-const char* factiondbcFormat = "uiuuuuuuuuiiiiuuuuulxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+const char* auctionhousedbcFormat = "uuuux";
+const char* factiondbcFormat = "uiuuuuuuuuiiiiuuuuuxxxxsxx";
 
-const char* dbctaxinodeFormat = "uufffxxxxxxxxxxxxxxxxxuu";
+const char* dbctaxinodeFormat = "uufffxuuuff";
 const char* dbctaxipathFormat = "uuuu";
 const char* dbctaxipathnodeFormat = "uuuufffuuxx";
 const char* creaturespelldataFormat = "uuuuuuuuu";
-const char* charraceFormat = "uxxxxxxuxxxxuxlxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
-const char* charclassFormat = "uxuxlxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
-const char* creaturefamilyFormat = "ufufuuuuuxlxxxxxxxxxxxxxxxxx";
-const char* mapentryFormat =
-"u"                    // 0 id
-"s"                    // 1 name_internal
-"u"                    // 2 map_type
-"u"                    // 3 is_pvp_zone
-"x"
-"lxxxxxxxxxxxxxxxx"    // 5-21 real_name
-"u"                    // 22 linked_zone
-"xxxxxxxxxxxxxxxxx" // 23-39 hordeIntro
-"xxxxxxxxxxxxxxxxx" // 40-56 allianceIntro
-"u"                    // 57 multimap_id
-"x"                    // 58 unk_float (all 1 but arathi 1.25)
-"u"                    // 59 parent_map
-"u"                    // 60 start_x
-"u"                    // 61 start_y
-"x"                    // 62 unk
-"u"                    // 63 addon
-"x"                    // 64 unk
-"x";                // 65 unk, but as it is always one of the following ones, it could be a max. player count: 0, 5, 10, 20, 25, 40
+const char* charraceFormat = "nxixiixixxxxixsxxxxxixxx";
+const char* charclassFormat = "uuxsxxxxxxxxxx";
+const char* creaturefamilyFormat = "ufufuuuuuusx";
+const char* mapentryFormat = "nxixxxsixxixiffxixxx";
 
 const char* HolidayEntryFormat = "uiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiixxsiix";
-const char* itemrandomsuffixformat = "uxxxxxxxxxxxxxxxxxxuuuxxuuuxx";//19, 20, 21, 24, 25, 26
-const char* chatchannelformat = "iixssssssssssssssslxxxxxxxxxxxxxxxxxx";
+const char* itemrandomsuffixformat = "uxxuuuuuuuuuu";
+const char* chatchannelformat = "uuxsx";
 const char* durabilityqualityFormat = "uf";
 const char* durabilitycostsFormat = "uuuuuuuuuuuuuuuuuuuuuuuuuuuuuu";
 const char* bankslotpriceformat = "uu";
-const char* barbershopstyleFormat = "nulxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxuuu";
-const char* gtfloatformat = "f";
-const char* areatriggerformat = "uuffffffff";
-const char* scalingstatdistributionformat = "uiiiiiiiiiiuuuuuuuuuuu";
-const char* scalingstatvaluesformat = "uuuuuuuuuuuuuuuuuuxxxxxx";
-const char* itemlimitcategoryformat = "usxxxxxxxxxxxxxxxxuu";
-const char* spellshapeshiftformformat = "uxxxxxxxxxxxxxxxxxxuuxuuuxxuuuuuuuu";
+const char* barbershopstyleFormat = "nxxxxxxi";
+const char* gtfloatformat = "uf";
+const char* areatriggerformat = "uufffxxxxxxxx";
+const char* scalingstatdistributionformat = "uiiiiiiiiiiuuuuuuuuuuxu";
+const char* scalingstatvaluesformat = "iniiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii";
+const char* itemlimitcategoryformat = "uxux";
+const char* spellshapeshiftformformat = "uxxiixiiixxiiiiiiiixx";
 const char* questxpformat = "uxuuuuuuuux";
-const char* mailTemplateEntryFormat = "nsxxxxxxxxxxxxxxxxsxxxxxxxxxxxxxxxx";
-const char* wmoareaformat = "uiiixxxxxuuxxxxxxxxxxxxxxxxx";
+const char* mailTemplateEntryFormat = "uss";
+const char* wmoareaformat = "uiiixxxxxuuxxxx";
 const char* summonpropertiesformat = "uuuuuu";
 const char* namegenentryformat = "usuu";
 
@@ -370,7 +188,7 @@ bool LoadDBCs()
 
     LOAD_DBC("DBC/WorldMapOverlay.dbc", WorldMapOverlayStoreFormat, true, dbcWorldMapOverlayStore, true);
 #ifdef ENABLE_ACHIEVEMENTS
-    LOAD_DBC("DBC/Achievement_Category.dbc", AchievementCategoryStoreFormat, true, dbcAchievementCategoryStore, true);
+    //LOAD_DBC("DBC/Achievement_Category.dbc", AchievementCategoryStoreFormat, true, dbcAchievementCategoryStore, true);
     LOAD_DBC("DBC/Achievement_Criteria.dbc", AchievementCriteriaStoreFormat, true, dbcAchievementCriteriaStore, true);
     LOAD_DBC("DBC/Achievement.dbc", AchievementStoreFormat, true, dbcAchievementStore, true);
 #endif
@@ -385,20 +203,20 @@ bool LoadDBCs()
     LOAD_DBC("DBC/SkillLineAbility.dbc", skilllinespellFormat, false, dbcSkillLineSpell, false);
     LOAD_DBC("DBC/SpellItemEnchantment.dbc", EnchantEntrYFormat, true, dbcEnchant, true);
     LOAD_DBC("DBC/GemProperties.dbc", GemPropertyEntryFormat, true, dbcGemProperty, false);
-    LOAD_DBC("DBC/GlyphProperties.dbc", GlyphPropertyEntryFormat, true, dbcGlyphProperty, false);
-    LOAD_DBC("DBC/GlyphSlot.dbc", GlyphSlotEntryFormat, true, dbcGlyphSlot, false);
+    LOAD_DBC("DBC/GlyphProperties.dbc", GlyphPropertyEntryFormat, true, dbcGlyphProperty, true);
+    LOAD_DBC("DBC/GlyphSlot.dbc", GlyphSlotEntryFormat, true, dbcGlyphSlot, true);
     LOAD_DBC("DBC/SkillLine.dbc", skilllineentrYFormat, true, dbcSkillLine, true);
     LOAD_DBC("DBC/Spell.dbc", spellentryFormat, true, dbcSpell, true);
     //LOAD_DBC("DBC/ItemExtendedCost.dbc", itemextendedcostFormat, true, dbcItemExtendedCost, false);
     LOAD_DBC("DBC/Talent.dbc", talententryFormat, true, dbcTalent, false);
     LOAD_DBC("DBC/TalentTab.dbc", talenttabentryFormat, true, dbcTalentTab, false);
     LOAD_DBC("DBC/SpellCastTimes.dbc", spellcasttimeFormat, true, dbcSpellCastTime, false);
-    LOAD_DBC("DBC/SpellDifficulty.dbc", spelldifficultyentryformat, true, dbcSpellDifficultyEntry, false);
+    //LOAD_DBC("DBC/SpellDifficulty.dbc", spelldifficultyentryformat, true, dbcSpellDifficultyEntry, false);
     LOAD_DBC("DBC/SpellRadius.dbc", spellradiusFormat, true, dbcSpellRadius, false);
     LOAD_DBC("DBC/SpellRange.dbc", spellrangeFormat, true, dbcSpellRange, false);
     LOAD_DBC("DBC/SpellRuneCost.dbc", SpellRuneCostFormat, true, dbcSpellRuneCost, false);
     LOAD_DBC("DBC/SpellDuration.dbc", spelldurationFormat, true, dbcSpellDuration, false);
-    LOAD_DBC("DBC/SpellShapeshiftForm.dbc", spellshapeshiftformformat, true, dbcSpellShapeshiftForm, false);
+    LOAD_DBC("DBC/SpellShapeshiftForm.dbc", spellshapeshiftformformat, false, dbcSpellShapeshiftForm, false);
     LOAD_DBC("DBC/ItemRandomProperties.dbc", randompropsFormat, true, dbcRandomProps, false);
     LOAD_DBC("DBC/AreaGroup.dbc", areagroupFormat, true, dbcAreaGroup, true);
 
@@ -414,7 +232,7 @@ bool LoadDBCs()
     LOAD_DBC("DBC/ChrRaces.dbc", charraceFormat, true, dbcCharRace, true);
     LOAD_DBC("DBC/ChrClasses.dbc", charclassFormat, true, dbcCharClass, true);
     LOAD_DBC("DBC/Map.dbc", mapentryFormat, true, dbcMap, true);
-    LOAD_DBC("DBC/Holidays.dbc", HolidayEntryFormat, true, dbcHolidayEntry, true);
+    //LOAD_DBC("DBC/Holidays.dbc", HolidayEntryFormat, true, dbcHolidayEntry, true);
     LOAD_DBC("DBC/AuctionHouse.dbc", auctionhousedbcFormat, true, dbcAuctionHouse, false);
     LOAD_DBC("DBC/ItemRandomSuffix.dbc", itemrandomsuffixformat, true, dbcItemRandomSuffix, false);
     LOAD_DBC("DBC/gtCombatRatings.dbc", gtfloatformat, false, dbcCombatRating, false);
@@ -422,26 +240,26 @@ bool LoadDBCs()
     LOAD_DBC("DBC/DurabilityQuality.dbc", durabilityqualityFormat, true, dbcDurabilityQuality, false);
     LOAD_DBC("DBC/DurabilityCosts.dbc", durabilitycostsFormat, true, dbcDurabilityCosts, false);
     LOAD_DBC("DBC/BankBagSlotPrices.dbc", bankslotpriceformat, true, dbcBankSlotPrices, false);
-    LOAD_DBC("DBC/StableSlotPrices.dbc", bankslotpriceformat, true, dbcStableSlotPrices, false);
+    //LOAD_DBC("DBC/StableSlotPrices.dbc", bankslotpriceformat, true, dbcStableSlotPrices, false);
     LOAD_DBC("DBC/gtBarberShopCostBase.dbc", gtfloatformat, false, dbcBarberShopPrices, false);
     LOAD_DBC("DBC/gtChanceToMeleeCrit.dbc", gtfloatformat, false, dbcMeleeCrit, false);
     LOAD_DBC("DBC/gtChanceToMeleeCritBase.dbc", gtfloatformat, false, dbcMeleeCritBase, false);
     LOAD_DBC("DBC/gtChanceToSpellCrit.dbc", gtfloatformat, false, dbcSpellCrit, false);
     LOAD_DBC("DBC/gtChanceToSpellCritBase.dbc", gtfloatformat, false, dbcSpellCritBase, false);
     LOAD_DBC("DBC/gtRegenMPPerSpt.dbc", gtfloatformat, false, dbcManaRegenBase, false); //it's not a mistake.
-    LOAD_DBC("DBC/gtOCTRegenMP.dbc", gtfloatformat, false, dbcManaRegen, false); //it's not a mistake.
-    LOAD_DBC("DBC/gtRegenHPPerSpt.dbc", gtfloatformat, false, dbcHPRegenBase, false); //it's not a mistake.
-    LOAD_DBC("DBC/gtOCTRegenHP.dbc", gtfloatformat, false, dbcHPRegen, false); //it's not a mistake.
+    //LOAD_DBC("DBC/gtOCTRegenMP.dbc", gtfloatformat, false, dbcManaRegen, false); //it's not a mistake.
+    //LOAD_DBC("DBC/gtRegenHPPerSpt.dbc", gtfloatformat, false, dbcHPRegenBase, false); //it's not a mistake.
+    //LOAD_DBC("DBC/gtOCTRegenHP.dbc", gtfloatformat, false, dbcHPRegen, false); //it's not a mistake.
     LOAD_DBC("DBC/AreaTrigger.dbc", areatriggerformat, true, dbcAreaTrigger, true);
     LOAD_DBC("DBC/ScalingStatDistribution.dbc", scalingstatdistributionformat, true, dbcScalingStatDistribution, false);
     LOAD_DBC("DBC/ScalingStatValues.dbc", scalingstatvaluesformat, true, dbcScalingStatValues, false);
     LOAD_DBC("DBC/ItemLimitCategory.dbc", itemlimitcategoryformat, true, dbcItemLimitCategory, true);
-    LOAD_DBC("DBC/QuestXP.dbc", questxpformat, true, dbcQuestXP, false);
+    LOAD_DBC("DBC/QuestXP.dbc", questxpformat, false, dbcQuestXP, false);
     LOAD_DBC("DBC/MailTemplate.dbc", mailTemplateEntryFormat, true, dbcMailTemplateEntry, true);
     LOAD_DBC("DBC/WMOAreaTable.dbc", wmoareaformat, true, dbcWMOAreaTable, false);
     LOAD_DBC("DBC/SummonProperties.dbc", summonpropertiesformat, true, dbcSummonProperties, false);
-    LOAD_DBC("DBC/NameGen.dbc", namegenentryformat, true, dbcNameGen, true);
-    DBC::LoadDBC(available_dbc_locales, bad_dbc_files, sLFGDungeonStore, dbc_path, "LFGDungeons.dbc");
+    //LOAD_DBC("DBC/NameGen.dbc", namegenentryformat, true, dbcNameGen, true);
+    //DBC::LoadDBC(available_dbc_locales, bad_dbc_files, sLFGDungeonStore, dbc_path, "LFGDungeons.dbc");
     LOAD_DBC("DBC/Vehicle.dbc", VehicleEntryfmt, true, dbcVehicle, true);
     LOAD_DBC("DBC/VehicleSeat.dbc", VehicleSeatEntryfmt, true, dbcVehicleSeat, false);
 

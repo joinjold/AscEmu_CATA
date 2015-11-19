@@ -28,7 +28,7 @@ namespace DBC
     {
         namespace
         {
-            char const area_table_entry_format[] = "iiinixxxxxissssssssssssssssxiiiiixxx";
+            char const area_table_entry_format[] = "iiinixxxxxisiiiiixxxxxxxxx";
             const char LFGDungeonEntryformat[] = "nssssssssssssssssxiiiiiiiiixxixixxxxxxxxxxxxxxxxx";
         }
 
@@ -42,7 +42,7 @@ namespace DBC
             uint32 flags;                                           // 4, unknown value but 312 for all cities
             // 5-9 unused
             int32   area_level;                                     // 10
-            char*   area_name[16];                                  // 11-26
+            char*   area_name;                                  // 11-26
             // 27, string flags, unused
             uint32  team;                                           // 28
             uint32  liquid_type_override[4];                        // 29-32 liquid override by type

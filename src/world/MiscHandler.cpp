@@ -2386,7 +2386,7 @@ void WorldSession::HandleOpenItemOpcode(WorldPacket& recv_data)
 
     Lock* lock = dbcLock.LookupEntryForced(pItem->GetProto()->LockId);
 
-    uint32 removeLockItems[LOCK_NUM_CASES] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+    uint32 removeLockItems[LOCK_NUM_CASES] = { 0, 0, 0, 0, 0 };
 
     if (lock) // locked item
     {
