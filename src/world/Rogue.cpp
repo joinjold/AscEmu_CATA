@@ -38,33 +38,33 @@ void World::InitRogueSpells()
     {
         sp->procChance = 100;
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectTriggerSpell[1] = 31666;
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_DUMMY;
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 31666;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_DUMMY;
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
     }
     sp = dbcSpell.LookupEntryForced(31222);
     if (sp)
     {
         sp->procChance = 100;
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectTriggerSpell[1] = 31666;
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_DUMMY;
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 31666;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_DUMMY;
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
     }
     sp = dbcSpell.LookupEntryForced(31223);
     if (sp)
     {
         sp->procChance = 100;
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectTriggerSpell[1] = 31666;
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_DUMMY;
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 31666;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_DUMMY;
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
     }
     sp = dbcSpell.LookupEntryForced(31665);
     if (sp)
@@ -79,8 +79,8 @@ void World::InitRogueSpells()
     sp = dbcSpell.LookupEntryForced(31666);
     if (sp)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_MOD_DAMAGE_PERCENT_DONE;
-        sp->EffectMiscValue[0] = 127;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_DONE;
+        sp->eff[0].EffectMiscValue = 127;
         sp->RankNumber = 4;
     }
 
@@ -96,8 +96,8 @@ void World::InitRogueSpells()
             auto target_spell = dbcSpell.LookupEntryForced(58427);
             if (source_spell != nullptr && target_spell != nullptr)
             {
-                sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-                sp->EffectTriggerSpell[0] = 58427;
+                sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+                sp->eff[0].EffectTriggerSpell = 58427;
                 sp->procFlags = PROC_ON_CAST_SPELL;
                 sp->procChance = 100;
                 target_spell->DurationIndex = source_spell->DurationIndex;
@@ -106,8 +106,8 @@ void World::InitRogueSpells()
 
     if (sp = dbcSpell.LookupEntryForced(14177))
     {
-        sp->EffectSpellClassMask[0][0] = 637665798;
-        sp->EffectSpellClassMask[0][1] = 262415;
+        sp->SpellClassOptions.SpellFamilyFlags[0][0] = 637665798;
+        sp->eff[0].EffectSpellGroupRelation[1] = 262415;
         sp->AuraInterruptFlags = AURA_INTERRUPT_ON_CAST_SPELL;
     }
 }

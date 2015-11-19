@@ -89,7 +89,6 @@ SERVER_DECL DBCStorage<gtFloat> dbcMeleeCrit;
 SERVER_DECL DBCStorage<gtFloat> dbcMeleeCritBase;
 SERVER_DECL DBCStorage<gtFloat> dbcSpellCrit;
 SERVER_DECL DBCStorage<gtFloat> dbcSpellCritBase;
-SERVER_DECL DBCStorage<SpellShapeshiftForm> dbcSpellShapeshiftForm;
 SERVER_DECL DBCStorage<QuestXP> dbcQuestXP;
 SERVER_DECL DBCStorage<MailTemplateEntry> dbcMailTemplateEntry;
 SERVER_DECL DBCStorage<WMOAreaTableEntry> dbcWMOAreaTable;
@@ -98,6 +97,25 @@ SERVER_DECL DBCStorage< NameGenEntry > dbcNameGen;
 SERVER_DECL DBC::DBCStorage<DBC::Structures::LFGDungeonEntry> sLFGDungeonStore(DBC::Structures::LFGDungeonEntryformat);
 SERVER_DECL DBCStorage< VehicleEntry > dbcVehicle;
 SERVER_DECL DBCStorage< VehicleSeatEntry > dbcVehicleSeat;
+
+SERVER_DECL DBCStorage<SpellEffectEntry>			dbcSpellEffect;
+SERVER_DECL DBCStorage<SpellShapeshiftFormEntry>	dbcSpellShapeshiftForm;
+SERVER_DECL DBCStorage<SpellAuraOptionsEntry>		dbcSpellAuraOptions;
+SERVER_DECL DBCStorage<SpellAuraRestrictionsEntry>	dbcSpellAuraRestrictions;
+SERVER_DECL DBCStorage<SpellCastingRequirementsEntry>	dbcSpellCastingRequirements;
+SERVER_DECL DBCStorage<SpellCategoriesEntry>		dbcSpellCategories;
+SERVER_DECL DBCStorage<SpellClassOptionsEntry>		dbcSpellClassOptions;
+SERVER_DECL DBCStorage<SpellCooldownsEntry>			dbcSpellCooldowns;
+SERVER_DECL DBCStorage<SpellEquippedItemsEntry>		dbcSpellEquippedItems;
+SERVER_DECL DBCStorage<SpellInterruptsEntry>		dbcSpellInterrupts;
+SERVER_DECL DBCStorage<SpellLevelsEntry>			dbcSpellLevels;
+SERVER_DECL DBCStorage<SpellPowerEntry>				dbcSpellPower;
+SERVER_DECL DBCStorage<SpellReagentsEntry>			dbcSpellReagents;
+SERVER_DECL DBCStorage<SpellScalingEntry>			dbcSpellScaling;
+SERVER_DECL DBCStorage<SpellShapeshiftEntry>		dbcSpellShapeshift;
+SERVER_DECL DBCStorage<SpellTargetRestrictionsEntry>	dbcSpellTargetRestrictions;
+SERVER_DECL DBCStorage<SpellTotemsEntry>			dbcSpellTotems;
+SERVER_DECL DBCStorage<gtClassLevelFloat>			dbcGTSpellScale;
 
 const char* WorldMapOverlayStoreFormat = "nxiiiixxxxxxxxx";
 const char* BarberShopStyleEntryFormat = "nxxxxxxi";
@@ -159,7 +177,8 @@ const char* durabilityqualityFormat = "uf";
 const char* durabilitycostsFormat = "uuuuuuuuuuuuuuuuuuuuuuuuuuuuuu";
 const char* bankslotpriceformat = "uu";
 const char* barbershopstyleFormat = "nxxxxxxi";
-const char* gtfloatformat = "uf";
+const char* gtfloatformat = "f";
+const char* gtClassfloatformat = "uf";
 const char* areatriggerformat = "uufffxxxxxxxx";
 const char* scalingstatdistributionformat = "uiiiiiiiiiiuuuuuuuuuuxu";
 const char* scalingstatvaluesformat = "iniiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii";
@@ -170,6 +189,27 @@ const char* mailTemplateEntryFormat = "uss";
 const char* wmoareaformat = "uiiixxxxxuuxxxx";
 const char* summonpropertiesformat = "uuuuuu";
 const char* namegenentryformat = "usuu";
+
+const char* SpellEffectEntryfmt = "xufuuiffiiiiiifiifiiiiiiiix";
+const char* SpellShapeshiftFormfmt = "uxxiixiiixxiiiiiiiixx";
+const char* SpellShapeshiftEntryfmt = "uixixx";
+const char* SpellAuraOptionsEntryfmt = "uuuuu";
+const char* SpellAuraRestrictionsEntryfmt = "uiiiiiiii";
+const char* SpellCastingRequirementsEntryfmt = "uixxixi";
+const char* SpellCategoriesEntryfmt = "uuuuuuu";
+const char* SpellClassOptionsEntryfmt = "uxiiiix";
+
+const char* SpellCooldownsEntryfmt = "uiii";
+const char* SpellEquippedItemsEntryfmt = "uiii";
+const char* SpellInterruptsEntryfmt = "uixixi";
+const char* SpellLevelsEntryfmt = "uiii";
+
+const char* SpellPowerEntryfmt = "uiiiixxx";
+
+const char* SpellReagentsEntryfmt = "uiiiiiiiiiiiiiiii";
+const char* SpellScalingEntryfmt = "uiiiiffffffffffi";
+const char* SpellTargetRestrictionsEntryfmt = "uixiii";
+const char* SpellTotemsEntryfmt = "uiiii";
 
 template<class T>
 bool loader_stub(const char* filename, const char* format, bool ind, T & l, bool loadstrs)
@@ -235,18 +275,18 @@ bool LoadDBCs()
     //LOAD_DBC("DBC/Holidays.dbc", HolidayEntryFormat, true, dbcHolidayEntry, true);
     LOAD_DBC("DBC/AuctionHouse.dbc", auctionhousedbcFormat, true, dbcAuctionHouse, false);
     LOAD_DBC("DBC/ItemRandomSuffix.dbc", itemrandomsuffixformat, true, dbcItemRandomSuffix, false);
-    LOAD_DBC("DBC/gtCombatRatings.dbc", gtfloatformat, false, dbcCombatRating, false);
+    LOAD_DBC("DBC/gtCombatRatings.dbc", gtClassfloatformat, false, dbcCombatRating, false);
     LOAD_DBC("DBC/ChatChannels.dbc", chatchannelformat, true, dbcChatChannels, true);
     LOAD_DBC("DBC/DurabilityQuality.dbc", durabilityqualityFormat, true, dbcDurabilityQuality, false);
     LOAD_DBC("DBC/DurabilityCosts.dbc", durabilitycostsFormat, true, dbcDurabilityCosts, false);
     LOAD_DBC("DBC/BankBagSlotPrices.dbc", bankslotpriceformat, true, dbcBankSlotPrices, false);
     //LOAD_DBC("DBC/StableSlotPrices.dbc", bankslotpriceformat, true, dbcStableSlotPrices, false);
-    LOAD_DBC("DBC/gtBarberShopCostBase.dbc", gtfloatformat, false, dbcBarberShopPrices, false);
-    LOAD_DBC("DBC/gtChanceToMeleeCrit.dbc", gtfloatformat, false, dbcMeleeCrit, false);
-    LOAD_DBC("DBC/gtChanceToMeleeCritBase.dbc", gtfloatformat, false, dbcMeleeCritBase, false);
-    LOAD_DBC("DBC/gtChanceToSpellCrit.dbc", gtfloatformat, false, dbcSpellCrit, false);
-    LOAD_DBC("DBC/gtChanceToSpellCritBase.dbc", gtfloatformat, false, dbcSpellCritBase, false);
-    LOAD_DBC("DBC/gtRegenMPPerSpt.dbc", gtfloatformat, false, dbcManaRegenBase, false); //it's not a mistake.
+    LOAD_DBC("DBC/gtBarberShopCostBase.dbc", gtClassfloatformat, false, dbcBarberShopPrices, false);
+    LOAD_DBC("DBC/gtChanceToMeleeCrit.dbc", gtClassfloatformat, false, dbcMeleeCrit, false);
+    LOAD_DBC("DBC/gtChanceToMeleeCritBase.dbc", gtClassfloatformat, false, dbcMeleeCritBase, false);
+    LOAD_DBC("DBC/gtChanceToSpellCrit.dbc", gtClassfloatformat, false, dbcSpellCrit, false);
+    LOAD_DBC("DBC/gtChanceToSpellCritBase.dbc", gtClassfloatformat, false, dbcSpellCritBase, false);
+    LOAD_DBC("DBC/gtRegenMPPerSpt.dbc", gtClassfloatformat, false, dbcManaRegenBase, false); //it's not a mistake.
     //LOAD_DBC("DBC/gtOCTRegenMP.dbc", gtfloatformat, false, dbcManaRegen, false); //it's not a mistake.
     //LOAD_DBC("DBC/gtRegenHPPerSpt.dbc", gtfloatformat, false, dbcHPRegenBase, false); //it's not a mistake.
     //LOAD_DBC("DBC/gtOCTRegenHP.dbc", gtfloatformat, false, dbcHPRegen, false); //it's not a mistake.
@@ -258,6 +298,25 @@ bool LoadDBCs()
     LOAD_DBC("DBC/MailTemplate.dbc", mailTemplateEntryFormat, true, dbcMailTemplateEntry, true);
     LOAD_DBC("DBC/WMOAreaTable.dbc", wmoareaformat, true, dbcWMOAreaTable, false);
     LOAD_DBC("DBC/SummonProperties.dbc", summonpropertiesformat, true, dbcSummonProperties, false);
+
+    LOAD_DBC("DBC/SpellEffect.dbc", SpellEffectEntryfmt, false, dbcSpellEffect, false);
+    LOAD_DBC("DBC/SpellShapeshiftForm.dbc", SpellShapeshiftFormfmt, false, dbcSpellShapeshiftForm, false);
+    LOAD_DBC("DBC/SpellShapeshift.dbc", SpellShapeshiftEntryfmt, false, dbcSpellShapeshift, false);
+    LOAD_DBC("DBC/SpellAuraOptions.dbc", SpellAuraOptionsEntryfmt, false, dbcSpellAuraOptions, false);
+    LOAD_DBC("DBC/SpellAuraRestrictions.dbc", SpellAuraRestrictionsEntryfmt, false, dbcSpellAuraRestrictions, false);
+    LOAD_DBC("DBC/SpellCastingRequirements.dbc", SpellCastingRequirementsEntryfmt, false, dbcSpellCastingRequirements, false);
+    LOAD_DBC("DBC/SpellCategories.dbc", SpellCategoriesEntryfmt, false, dbcSpellCategories, false);
+    LOAD_DBC("DBC/SpellClassOptions.dbc", SpellClassOptionsEntryfmt, false, dbcSpellClassOptions, false);
+    LOAD_DBC("DBC/SpellCooldowns.dbc", SpellCooldownsEntryfmt, false, dbcSpellCooldowns, false);
+    LOAD_DBC("DBC/SpellEquippedItems.dbc", SpellEquippedItemsEntryfmt, false, dbcSpellEquippedItems, false);
+    LOAD_DBC("DBC/SpellInterrupts.dbc", SpellInterruptsEntryfmt, false, dbcSpellInterrupts, false);
+    LOAD_DBC("DBC/SpellLevels.dbc", SpellLevelsEntryfmt, false, dbcSpellLevels, false);
+    LOAD_DBC("DBC/SpellPower.dbc", SpellPowerEntryfmt, false, dbcSpellPower, false);
+    LOAD_DBC("DBC/SpellReagents.dbc", SpellReagentsEntryfmt, false, dbcSpellReagents, false);
+    LOAD_DBC("DBC/SpellScaling.dbc", SpellScalingEntryfmt, false, dbcSpellScaling, false);
+    LOAD_DBC("DBC/SpellTargetRestrictions.dbc", SpellTargetRestrictionsEntryfmt, false, dbcSpellTargetRestrictions, false);
+    LOAD_DBC("DBC/SpellTotems.dbc", SpellTotemsEntryfmt, false, dbcSpellTotems, false);
+
     //LOAD_DBC("DBC/NameGen.dbc", namegenentryformat, true, dbcNameGen, true);
     //DBC::LoadDBC(available_dbc_locales, bad_dbc_files, sLFGDungeonStore, dbc_path, "LFGDungeons.dbc");
     LOAD_DBC("DBC/Vehicle.dbc", VehicleEntryfmt, true, dbcVehicle, true);
@@ -287,4 +346,15 @@ const WMOAreaTableEntry* GetWMOAreaTableEntryByTriple(int32 root_id, int32 adt_i
     if (iter == sWMOAreaInfoByTripple.end())
         return 0;
     return iter->second;
+}
+
+uint32 SpellEntry::GetRequiredItemFlags()
+{
+    if (SpellEquippedItemsId)
+    {
+        SpellEquippedItemsEntry* see = dbcSpellEquippedItems.LookupEntryForced(SpellEquippedItemsId);
+        if (see)
+            return see->RequiredItemFlags;
+    }
+    return 0;
 }

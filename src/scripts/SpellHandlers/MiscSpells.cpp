@@ -57,7 +57,7 @@ bool MoltenShields(uint32 i, Spell* s)
 
     ReflectSpellSchool* rss = new ReflectSpellSchool;
 
-    rss->chance = s->GetProto()->EffectBasePoints[0];
+    rss->chance = s->GetProto()->eff[0].EffectBasePoints;
     rss->spellId = s->GetProto()->Id;
     rss->require_aura_hash = SPELL_HASH_FIRE_WARD;
     rss->school = SCHOOL_FIRE;
@@ -193,15 +193,15 @@ bool NorthRendInscriptionResearch(uint32 i, Spell* s)
             if (sls->skilline == SKILL_INSCRIPTION && sls->next == 0)
             {
                 SpellEntry* se1 = dbcSpell.LookupEntryForced(sls->spell);
-                if (se1 && se1->Effect[0] == SPELL_EFFECT_CREATE_ITEM)
+                if (se1 && se1->eff[0].Effect == SPELL_EFFECT_CREATE_ITEM)
                 {
-                    ItemPrototype* itm = ItemPrototypeStorage.LookupEntry(se1->EffectItemType[0]);
+                    ItemPrototype* itm = ItemPrototypeStorage.LookupEntry(se1->eff[0].EffectItemType);
                     if (itm && (itm->Spells[0].Id != 0))
                     {
                         SpellEntry* se2 = dbcSpell.LookupEntryForced(itm->Spells[0].Id);
-                        if (se2 && se2->Effect[0] == SPELL_EFFECT_USE_GLYPH)
+                        if (se2 && se2->eff[0].Effect == SPELL_EFFECT_USE_GLYPH)
                         {
-                            GlyphPropertyEntry* gpe = dbcGlyphProperty.LookupEntryForced(se2->EffectMiscValue[0]);
+                            GlyphPropertyEntry* gpe = dbcGlyphProperty.LookupEntryForced(se2->eff[0].EffectMiscValue);
                             if (gpe && gpe->Type == glyphType)
                             {
                                 if (!s->p_caster->HasSpell(sls->spell))

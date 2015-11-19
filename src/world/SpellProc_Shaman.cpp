@@ -44,7 +44,7 @@ class EarthShieldSpellProc : public SpellProc
 
     bool DoEffect(Unit* victim, SpellEntry* CastingSpell, uint32 flag, uint32 dmg, uint32 abs, int* dmg_overwrite, uint32 weapon_damage_type)
     {
-        int32 value = mOrigSpell->EffectBasePoints[0];
+        int32 value = mOrigSpell->eff[0].EffectBasePoints;
         dmg_overwrite[0] = value;
 
         return false;
@@ -89,7 +89,7 @@ class FlametongueWeaponSpellProc : public SpellProc
             if (sp != NULL && sp->NameHash == SPELL_HASH_FLAMETONGUE_WEAPON__PASSIVE_)
             {
                 wp_speed = item->GetProto()->Delay;
-                damage = (sp->EffectBasePoints[0] + 1) * wp_speed / 100000;
+                damage = (sp->eff[0].EffectBasePoints + 1) * wp_speed / 100000;
             }
         }
     }

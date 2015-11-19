@@ -32,15 +32,15 @@ void World::InitDruidSpells()
     {
         sp->apply_on_shapeshift_change = true;
         sp->RequiredShapeShift = 255;
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_DUMMY;
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_DUMMY;
     }
     if (sp = dbcSpell.LookupEntryForced(34300))
     {
         sp->apply_on_shapeshift_change = true;
         sp->RequiredShapeShift = 255;
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_DUMMY;
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_DUMMY;
     }
     if (sp = dbcSpell.LookupEntryForced(17007))
     {
@@ -125,22 +125,22 @@ void World::InitDruidSpells()
     if (sp = dbcSpell.LookupEntryForced(48384))
     {
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 50170;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 50170;
     }
 
     if (sp = dbcSpell.LookupEntryForced(48395))
     {
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 50171;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 50171;
     }
 
     if (sp = dbcSpell.LookupEntryForced(48396))
     {
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 50172;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 50172;
     }
     if (sp = dbcSpell.LookupEntryForced(51185))
     {
@@ -150,13 +150,13 @@ void World::InitDruidSpells()
     {
         sp->NameHash += 1;
     }
-    if (sp = dbcSpell.LookupEntryForced(50334))
+    /*if (sp = dbcSpell.LookupEntryForced(50334))
     {
         sp->EffectSpellClassMask[2][0] = 256;
         sp->EffectSpellClassMask[2][1] = 0;
         sp->EffectSpellClassMask[2][2] = 0;
     }
-    /*if (sp = dbcSpell.LookupEntryForced(17002))
+    if (sp = dbcSpell.LookupEntryForced(17002))
         sp->RequiredShapeShift = 1 | 16 | 128;
         if (sp = dbcSpell.LookupEntryForced(24866))
         sp->RequiredShapeShift = 1 | 16 | 128; */

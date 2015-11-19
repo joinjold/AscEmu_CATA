@@ -1437,6 +1437,6 @@ bool ChatHandler::HandleGetPosCommand(const char* args, WorldSession* m_session)
     uint32 spell = atol(args);
     SpellEntry* se = dbcSpell.LookupEntryForced(spell);
     if (se)
-        BlueSystemMessage(m_session, "SpellIcon for %d is %d", se->Id, se->field114);
+        BlueSystemMessage(m_session, "SpellIcon for %d", se->Id/*, se->field114*/);
     return true;
 }

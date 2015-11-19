@@ -28,7 +28,7 @@ class ButcherySpellProc : public SpellProc
 
     bool DoEffect(Unit* victim, SpellEntry* CastingSpell, uint32 flag, uint32 dmg, uint32 abs, int* dmg_overwrite, uint32 weapon_damage_type)
     {
-        dmg_overwrite[0] = mOrigSpell->EffectBasePoints[0] + 1;
+        dmg_overwrite[0] = mOrigSpell->eff[0].EffectBasePoints + 1;
 
         return false;
     }
@@ -42,9 +42,9 @@ class BladeBarrierSpellProc : public SpellProc
     {
         mProcFlags = PROC_ON_CAST_SPELL;
 
-        mProcClassMask[0] = mOrigSpell->EffectSpellClassMask[0][0];
-        mProcClassMask[1] = mOrigSpell->EffectSpellClassMask[0][1];
-        mProcClassMask[2] = mOrigSpell->EffectSpellClassMask[0][2];
+        mProcClassMask[0] = mOrigSpell->eff[0].EffectSpellGroupRelation[0];
+        mProcClassMask[1] = mOrigSpell->eff[0].EffectSpellGroupRelation[1];
+        mProcClassMask[2] = mOrigSpell->eff[0].EffectSpellGroupRelation[2];
 
         dk = static_cast<DeathKnight*>(mTarget);
     }

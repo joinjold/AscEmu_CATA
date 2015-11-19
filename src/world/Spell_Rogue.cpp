@@ -40,7 +40,7 @@ class CheatDeathAura : public AbsorbAura
                 return 0;
 
             // Check for proc chance
-            if (RandomFloat(100.0f) > GetSpellProto()->EffectBasePoints[0] + 1)
+            if (RandomFloat(100.0f) > GetSpellProto()->eff[0].EffectBasePoints + 1)
                 return 0;
 
             // Check if damage will kill player.

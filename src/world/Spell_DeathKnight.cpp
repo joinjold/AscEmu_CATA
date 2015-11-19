@@ -91,7 +91,7 @@ class BloodStrikeSpell : public Spell
         {
             uint32 count = target->GetAuraCountWithDispelType(DISPEL_DISEASE, m_caster->GetGUID());
             if (count)
-                value += value * count * (GetProto()->EffectBasePoints[2] + 1) / 200;
+                value += value * count * (GetProto()->eff[2].EffectBasePoints + 1) / 200;
         }
 
         return value;
@@ -162,14 +162,14 @@ class AntiMagicShellAura : public AbsorbAura
     {
         Player* caster = GetPlayerCaster();
         if (caster != NULL)
-            return caster->GetMaxHealth() * (GetSpellProto()->EffectBasePoints[1] + 1) / 100;
+            return caster->GetMaxHealth() * (GetSpellProto()->eff[1].EffectBasePoints + 1) / 100;
         else
             return mod->m_amount;
     }
 
     int32 CalcPctDamage()
     {
-        return GetSpellProto()->EffectBasePoints[0] + 1;
+        return GetSpellProto()->eff[0].EffectBasePoints + 1;
     }
 };
 
@@ -233,7 +233,7 @@ class WillOfTheNecropolisAura : public AbsorbAura
         // "Damage that would take you below $s1% health or taken while you are at $s1% health is reduced by $52284s1%."
         if ((health_pct > 35 && new_health_pct < 35) || health_pct == 35)
         {
-            uint32 dmg_absorbed = *dmg * (GetSpellProto()->EffectBasePoints[0] + 1) / 100;
+            uint32 dmg_absorbed = *dmg * (GetSpellProto()->eff[0].EffectBasePoints + 1) / 100;
             *dmg -= dmg_absorbed;
 
             return dmg_absorbed;
@@ -250,7 +250,7 @@ class VampiricBloodSpell : public Spell
     int32 DoCalculateEffect(uint32 i, Unit* target, int32 value)
     {
         if (i == 1 && p_caster != NULL)
-            value = p_caster->GetMaxHealth() * (GetProto()->EffectBasePoints[i] + 1) / 100;
+            value = p_caster->GetMaxHealth() * (GetProto()->eff[i].EffectBasePoints + 1) / 100;
 
         return value;
     }

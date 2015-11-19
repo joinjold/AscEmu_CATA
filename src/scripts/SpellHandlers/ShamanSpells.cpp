@@ -55,7 +55,7 @@ bool SkyShatterRegalia(uint32 i, Spell* s)
         Aura* aur = sSpellFactoryMgr.NewAura(dbcSpell.LookupEntry(38437), 5000, s->p_caster, s->p_caster, true);
 
         for(uint32 j = 0; j < 3; j++)
-            aur->AddMod(aur->GetSpellProto()->EffectApplyAuraName[j], aur->GetSpellProto()->EffectBasePoints[j] + 1, aur->GetSpellProto()->EffectMiscValue[j], j);
+            aur->AddMod(aur->GetSpellProto()->eff[j].EffectApplyAuraName, aur->GetSpellProto()->eff[j].EffectBasePoints + 1, aur->GetSpellProto()->eff[j].EffectMiscValue, j);
 
         s->p_caster->AddAura(aur);
     }

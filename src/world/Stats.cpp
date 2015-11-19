@@ -639,7 +639,7 @@ uint32 CalculateDamage(Unit* pAttacker, Unit* pVictim, uint32 weapon_damage_type
         //ranged weapon normalization.
         if (pAttacker->IsPlayer() && ability)
         {
-            if (ability->Effect[0] == SPELL_EFFECT_DUMMYMELEE || ability->Effect[1] == SPELL_EFFECT_DUMMYMELEE || ability->Effect[2] == SPELL_EFFECT_DUMMYMELEE)
+            if (ability->eff[0].Effect == SPELL_EFFECT_DUMMYMELEE || ability->eff[1].Effect == SPELL_EFFECT_DUMMYMELEE || ability->eff[2].Effect == SPELL_EFFECT_DUMMYMELEE)
             {
                 wspeed = 2800;
             }
@@ -704,7 +704,7 @@ uint32 CalculateDamage(Unit* pAttacker, Unit* pVictim, uint32 weapon_damage_type
         //Normalized weapon damage checks.
         if (pAttacker->IsPlayer() && ability)
         {
-            if (ability->Effect[0] == SPELL_EFFECT_DUMMYMELEE || ability->Effect[1] == SPELL_EFFECT_DUMMYMELEE || ability->Effect[2] == SPELL_EFFECT_DUMMYMELEE)
+            if (ability->eff[0].Effect == SPELL_EFFECT_DUMMYMELEE || ability->eff[1].Effect == SPELL_EFFECT_DUMMYMELEE || ability->eff[2].Effect == SPELL_EFFECT_DUMMYMELEE)
             {
                 it = static_cast< Player* >(pAttacker)->GetItemInterface()->GetInventoryItem(EQUIPMENT_SLOT_MAINHAND);
 

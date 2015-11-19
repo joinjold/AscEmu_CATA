@@ -106,7 +106,7 @@ bool HeroicFury(uint32 i, Spell* s)
         {
             for (uint32 y = 0; y < 3; ++y)
             {
-                switch (p_caster->m_auras[x]->GetSpellProto()->EffectApplyAuraName[y])
+                switch (p_caster->m_auras[x]->GetSpellProto()->eff[y].EffectApplyAuraName)
                 {
                     case SPELL_AURA_MOD_ROOT:
                     case SPELL_AURA_MOD_DECREASE_SPEED:
@@ -132,7 +132,7 @@ bool Charge(uint32 i, Spell* s)
         return false;
     }
 
-    uint32 rage_to_gen = s->GetProto()->EffectBasePoints[i] + 1;
+    uint32 rage_to_gen = s->GetProto()->eff[i].EffectBasePoints + 1;
     if (s->p_caster)
     {
         for (std::set<uint32>::iterator itr = s->p_caster->mSpells.begin(); itr != s->p_caster->mSpells.end(); ++itr)
@@ -202,12 +202,12 @@ bool BerserkerRage(uint32 i, Aura* a, bool apply)
     {
         if (apply)
         {
-            p_target->MechanicsDispels[a->GetSpellProto()->EffectMiscValue[i]]++;
-            p_target->RemoveAllAurasByMechanic(a->GetSpellProto()->EffectMiscValue[i], static_cast<uint32>(-1), false);
+            p_target->MechanicsDispels[a->GetSpellProto()->eff[i].EffectMiscValue]++;
+            p_target->RemoveAllAurasByMechanic(a->GetSpellProto()->eff[i].EffectMiscValue, static_cast<uint32>(-1), false);
         }
         else
         {
-            p_target->MechanicsDispels[a->GetSpellProto()->EffectMiscValue[i]]--;
+            p_target->MechanicsDispels[a->GetSpellProto()->eff[i].EffectMiscValue]--;
         }
     }
 

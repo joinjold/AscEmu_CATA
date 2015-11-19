@@ -1395,7 +1395,7 @@ bool HunterTamingQuest(uint32 i, Aura* a, bool apply)
     }
     else
     {
-        uint32 TamingSpellid = a->GetSpellProto()->EffectMiscValue[1];
+        uint32 TamingSpellid = a->GetSpellProto()->eff[1].EffectMiscValue;
 
         SpellEntry* triggerspell = dbcSpell.LookupEntryForced(TamingSpellid);
         if (triggerspell == NULL)
@@ -1404,10 +1404,10 @@ bool HunterTamingQuest(uint32 i, Aura* a, bool apply)
             return true;
         }
 
-        Quest* tamequest = QuestStorage.LookupEntry(triggerspell->EffectMiscValue[1]);
+        Quest* tamequest = QuestStorage.LookupEntry(triggerspell->eff[1].EffectMiscValue);
         if (tamequest == NULL)
         {
-            sLog.outError("An Aura with spellid %u is calling HunterTamingQuest() with an invalid tamequest id: %u", a->GetSpellId(), triggerspell->EffectMiscValue[1]);
+            sLog.outError("An Aura with spellid %u is calling HunterTamingQuest() with an invalid tamequest id: %u", a->GetSpellId(), triggerspell->eff[1].EffectMiscValue);
             return true;
         }
 

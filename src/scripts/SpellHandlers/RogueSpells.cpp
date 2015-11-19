@@ -243,7 +243,7 @@ bool KillingSpreePeriodicDummy(uint32 i, Aura* a, bool apply)
     for(std::set<Object*>::iterator itr = p_target->GetInRangeSetBegin(); itr != p_target->GetInRangeSetEnd(); ++itr)
     {
         //Get the range of 10 yards from Effect 1
-        float r = static_cast< float >( a->m_spellProto->EffectRadiusIndex[1] );
+        float r = static_cast< float >( a->m_spellProto->eff[1].EffectRadiusIndex );
 
         //Get initial position of aura target (caster)
         LocationVector source = p_target->GetPosition();

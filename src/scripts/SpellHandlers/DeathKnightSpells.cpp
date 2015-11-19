@@ -73,14 +73,14 @@ bool DeathStrike(uint32 i, Spell* pSpell)
         // A deadly attack that deals $s2% weapon damage plus ${$m1*$m2/100}
         // and heals the Death Knight for $F% of $Ghis:her; maximum health for each of $Ghis:her; diseases on the target.
         // $F is dmg_multiplier.
-        float amt = static_cast< float >(pSpell->p_caster->GetMaxHealth()) * pSpell->GetProto()->dmg_multiplier[0] / 100.0f;
+        float amt = static_cast< float >(pSpell->p_caster->GetMaxHealth()) * pSpell->GetProto()->eff[0].EffectChainMultiplier / 100.0f;
 
         // Calculate heal amount with diseases on target
         uint32 val = static_cast< uint32 >(amt * count);
 
         Aura* aur = pSpell->p_caster->FindAuraByNameHash(SPELL_HASH_IMPROVED_DEATH_STRIKE);
         if(aur != NULL)
-            val += val * (aur->GetSpellProto()->EffectBasePoints[2] + 1) / 100;
+            val += val * (aur->GetSpellProto()->eff[2].EffectBasePoints + 1) / 100;
 
         if(val > 0)
             pSpell->u_caster->Heal(pSpell->u_caster, pSpell->GetProto()->Id, val);
@@ -325,7 +325,7 @@ bool Hysteria(uint32 i, Aura* pAura, bool apply)
 
     Unit* target = pAura->GetTarget();
 
-    uint32 dmg = (uint32) target->GetMaxHealth() * (pAura->GetSpellProto()->EffectBasePoints[i] + 1) / 100;
+    uint32 dmg = (uint32) target->GetMaxHealth() * (pAura->GetSpellProto()->eff[i].EffectBasePoints + 1) / 100;
     target->DealDamage(target, dmg, 0, 0, 0);
 
     return true;

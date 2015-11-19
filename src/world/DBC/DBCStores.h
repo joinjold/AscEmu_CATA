@@ -644,205 +644,569 @@ struct skilllineentry
     uint32 canLink;
 };
 
-#define MAX_SPELL_EFFECTS 3
+struct TalentEntry
+{
+    uint32 TalentID;
+    uint32 TalentTree;
+    uint32 Row;
+    uint32 Col;
+    uint32 RankID[5];
+    //uint32 unk[4];
+    uint32 DependsOn;
+    //uint32 unk1[2];
+    uint32 DependsOnRank;
+    //uint32 unk2[4];
+};
+
+class Spell;
+class Unit;
+class Aura;
+struct ProcHandlerContextShare;
+
+enum SpellRequiredTargetTypes
+{
+    SPELL_TARGET_TYPE_REQUIRE_NO_CHECK = 0,
+    SPELL_TARGET_TYPE_REQUIRE_FACTION_CHECK = 1,
+    SPELL_TARGET_TYPE_REQUIRE_ENTRY_CHECK = 2,
+};
+
+#define MAX_SPELL_REAGENTS 8
+#define MAX_SPELL_TOTEMS 2
+#define MAX_SPELL_TOTEM_CATEGORIES 2
+
+// SpellAuraOptions.dbc
+struct SpellAuraOptionsEntry
+{
+    uint32    Id;                                           // 0        m_ID
+    uint32    StackAmount;                                  // 51       m_cumulativeAura
+    uint32    procChance;                                   // 38       m_procChance
+    uint32    procCharges;                                  // 39       m_procCharges
+    uint32    procFlags;                                    // 37       m_procTypeMask
+};
+
+// SpellAuraRestrictions.dbc
+struct SpellAuraRestrictionsEntry
+{
+    uint32    Id;                                           // 0        m_ID
+    uint32    CasterAuraState;                              // 21       m_casterAuraState
+    uint32    TargetAuraState;                              // 22       m_targetAuraState
+    uint32    CasterAuraStateNot;                           // 23       m_excludeCasterAuraState
+    uint32    TargetAuraStateNot;                           // 24       m_excludeTargetAuraState
+    uint32    casterAuraSpell;                              // 25       m_casterAuraSpell
+    uint32    targetAuraSpell;                              // 26       m_targetAuraSpell
+    uint32    casterAuraSpellNot;                       // 27       m_excludeCasterAuraSpell
+    uint32    targetAuraSpellNot;                       // 28       m_excludeTargetAuraSpell
+};
+
+// SpellCastingRequirements.dbc
+struct SpellCastingRequirementsEntry
+{
+    uint32    Id;                                           // not used?
+    uint32    FacingCasterFlags;                            // 20       m_facingCasterFlags
+    int32     RequiresAreaId;                                  // 164      m_requiredAreaGroupId
+    uint32    RequiresSpellFocus;                           // 19       m_requiresSpellFocus
+};
+
+// SpellCategories.dbc
+struct SpellCategoriesEntry
+{
+    uint32    Id;                                           // 0        m_ID
+    uint32    Category;                                     // 1        m_category
+    uint32    DmgClass;                                     // 153      m_defenseType
+    uint32    DispelType;                                       // 2        m_dispelType
+    uint32    Mechanic;                                     // 3        m_mechanic
+    uint32    PreventionType;                               // 154      m_preventionType
+    uint32    StartRecoveryCategory;                        // 145      m_startRecoveryCategory
+};
+
+// SpellClassOptions.dbc
+struct SpellClassOptionsEntry
+{
+    uint32    Id;                                         // 0        m_ID
+    uint32    SpellFamilyFlags[3][3];                          // 149-150  m_spellClassMask NOTE: size is 12 bytes!!!
+    uint32    SpellFamilyName;                              // 148      m_spellClassSet
+};
+
+// SpellCooldowns.dbc
+struct SpellCooldownsEntry
+{
+    uint32    Id;                                          // 0        m_ID // not used?
+    int32    CategoryRecoveryTime;                         // 31       m_categoryRecoveryTime
+    int32    RecoveryTime;                                 // 30       m_recoveryTime
+    int32    StartRecoveryTime;                            // 146      m_startRecoveryTime
+};
+
+// SpellEffect.dbc
+#define SPELL_EFFECT_MAGIC_UNDECIDED_SPELL_POWER_COEFF	0.0000001f
+#define ITEM_SPELL_DEFAULT_SP_BENEFIT_COEF				0.001f
+
+struct SpellEffectEntry
+{
+    //uint32    Id;                                           // 0        m_ID
+    uint32    Effect;                                       // 73-75    m_effect
+    float     EffectMultipleValue;                         // 106-108  m_effectAmplitude
+    uint32    EffectApplyAuraName;                          // 100-102  m_effectAura
+    uint32    EffectAmplitude;                              // 103-105  m_effectAuraPeriod
+    int32     EffectBasePoints;                             // 82-84    m_effectBasePoints (don't must be used in spell/auras explicitly, must be used cached Spell::m_currentBasePoints)
+    float	  EffectSpellPowerCoef;                         // 169-171  
+    float     EffectChainMultiplier;                         // 156-158  m_effectChainAmplitude -- dmg_multiplier i guess
+    int32     EffectChainTarget;                            // 109-111  m_effectChainTargets
+    int32     EffectDieSides;                               // 76-78    m_effectDieSides
+    uint32    EffectItemType;                               // 112-114  m_effectItemType
+    uint32    EffectMechanic;                               // 85-87    m_effectMechanic
+    int32     EffectMiscValue;                              // 115-117  m_effectMiscValue
+    int32     EffectMiscValueB;                             // 118-120  m_effectMiscValueB
+    float     EffectPointsPerComboPoint;                    // 124-126  m_effectPointsPerCombo
+    uint32    EffectRadiusIndex;                            // 94-96    m_effectRadiusIndex - spellradius.dbc
+    uint32    EffectRadiusMaxIndex;                        // 97-99    4.0.0
+    float     EffectRealPointsPerLevel;                     // 79-81    m_effectRealPointsPerLevel
+    uint32    EffectSpellGroupRelation[3];                  // 127-129  m_effectSpellClassMaskA, effect 0
+    uint32    EffectTriggerSpell;                           // 121-123  m_effectTriggerSpell
+    uint32    EffectImplicitTargetA;                        // 88-90    m_implicitTargetA
+    uint32    EffectImplicitTargetB;                        // 91-93    m_implicitTargetB
+    uint32    EffectSpellId;                                // new 4.0.0 - most important, we will attach effects to spells based on this :P
+    uint32    EffectIndex;                                  // new 4.0.0
+};
+
+// SpellEquippedItems.dbc
+struct SpellEquippedItemsEntry
+{
+    uint32    Id;                                           // 0        m_ID // not used?
+    int32     EquippedItemClass;                            // 70       m_equippedItemClass (value)
+    int32     RequiredItemFlags;                // 72       m_equippedItemInvTypes (mask) // this?
+    int32     EquippedItemSubClass;                     // 71       m_equippedItemSubclass (mask)
+};
+
+// SpellInterrupts.dbc
+struct SpellInterruptsEntry
+{
+    uint32    Id;                                           // 0        m_ID // not used?
+    uint32    AuraInterruptFlags;                           // 33       m_auraInterruptFlags
+    uint32    ChannelInterruptFlags;                        // 35       m_channelInterruptFlags
+    uint32    InterruptFlags;                               // 32       m_interruptFlags
+};
+
+// SpellLevels.dbc
+struct SpellLevelsEntry
+{
+    uint32    Id;                                           // 0        m_ID // not used?
+    uint32    baseLevel;                                    // 41       m_baseLevel
+    uint32    maxLevel;                                     // 40       m_maxLevel
+    uint32    spellLevel;                                   // 42       m_spellLevel
+};
+
+// SpellPower.dbc
+struct SpellPowerEntry
+{
+    uint32    Id;                                           // 0        m_ID
+    uint32    manaCost;                                     // 45       m_manaCost
+    uint32    manaCostPerlevel;                             // 46       m_manaCostPerLevel
+    uint32    ManaCostPercentage;                           // 144      m_manaCostPct
+    uint32    manaPerSecond;                                // 47       m_manaPerSecond
+    uint32    manaPerSecondPerLevel;
+    float     manaCostPercentagefloat;                      //           4.3.0
+};
+
+// SpellReagents.dbc
+struct SpellReagentsEntry
+{
+    uint32    Id;                                           // 0        m_ID
+    int32     Reagent[MAX_SPELL_REAGENTS];                  // 54-61    m_reagent
+    uint32    ReagentCount[MAX_SPELL_REAGENTS];             // 62-69    m_reagentCount
+};
+
+// SpellScaling.dbc
+struct SpellScalingEntry
+{
+    uint32    Id;                                           // 0        m_ID
+    int32     castTimeMin;                                  // 1
+    int32     castTimeMax;                                  // 2
+    int32     castScalingMaxLevel;                          // 3
+    int32     playerClass;                                  // 4        (index * 100) + charLevel => gtSpellScaling.dbc
+    float     coeff_points_gtscale[3];                      // 5-7
+    float     coeff_randompoints_gtscale[3];                // 5-7
+    float     coeff_combopoint_extra_gtscale[3];            // 5-7		//formula what this will multiply is still custom. Like weapon dmg, or base value or duration ...
+    float     effLevelDiffCoeff;                            // 14        some coefficient, mostly 1.0f
+    int32     effScalingMinLevel;                           // 15        some level
+};
+
+// SpellShapeshift.dbc
+struct SpellShapeshiftEntry
+{
+    uint32    Id;                                           // 0        m_ID
+    uint32    Stances;                                      // 13       m_shapeshiftMask
+    uint32    ShapeshiftExclude;                                   // 15       m_shapeshiftExclude
+};
+
+// SpellTargetRestrictions.dbc
+struct SpellTargetRestrictionsEntry
+{
+    uint32    Id;                                           // 0        m_ID
+    uint32    MaxTargets;                           // 152      m_maxTargets
+    uint32    MaxTargetLevel;                               // 147      m_maxTargetLevel
+    uint32    TargetCreatureType;                           // 18       m_targetCreatureType
+    uint32    Targets;                                      // 17       m_targets
+};
+
+// SpellTotems.dbc
+struct SpellTotemsEntry
+{
+    uint32    Id;                                           // 0        m_ID
+    uint32    TotemCategory[MAX_SPELL_TOTEM_CATEGORIES];    // 162-163  m_requiredTotemCategoryID
+    uint32    Totem[MAX_SPELL_TOTEMS];                      // 52-53    m_totem
+};
+
+struct SpellShapeshiftFormEntry
+{
+    uint32 id;                                              // 0
+    uint32 Flags;                                          // 3
+    int32  unit_type;                                    // 4 <=0 humanoid, other normal creature types
+    uint32 AttackSpeed;                                     // 6
+    uint32 modelId;                                       // 7 alliance modelid (0 means no model)
+    uint32 modelId2;                                       // 8 horde modelid (but only for one form)
+    uint32 spells[8];                                      // 11-18 spells which appear in the bar after shapeshifting
+};
+
+#define MAX_DIFFICULTY 4
+
+struct SpellDifficultyEntry
+{
+    uint32 ID;                                              // 0        m_ID
+    uint32 SpellId[MAX_DIFFICULTY];                         // 1-4      m_spellId[4]
+};
+
+struct SpellFocusObjectEntry
+{
+    uint32    ID;                                           // 0
+};
+
+class SpellEffectOverrideScript;
+class SpellCanCastScript;
+class SpellCanTargetedScript;
+class Object;
+
+#define TEMP_DISABLE_SPELL_COEFS		//seems like 403 client is not using this anymore according to GUI
+#define MAX_SPELL_EFFECT_COUNT		3	//don't be an idiot and put a value that is not initialized by DBC, you will have random spells poping up
+#define MAX_SPELL_EFFECTS 3 // same shit, but twice
 
 // Struct for the entry in Spell.dbc
 struct SpellEntry
 {
-    uint32 Id;                                                //1
-    uint32 Category;                                          //2
-    uint32 DispelType;                                        //3
-    uint32 MechanicsType;                                     //4
-    uint32 Attributes;                                        //5
-    uint32 AttributesEx;                                      //6
-    uint32 AttributesExB;                                     //7
-    uint32 AttributesExC;                                     //8 Flags to
-    uint32 AttributesExD;                                     //9 Flags....
-    uint32 AttributesExE;                                     //10 Flags 2.0.1 unknown one
-    uint32 AttributesExF;                                     //11
-    uint32 AttributesExG;                                     //12 
-    uint32 RequiredShapeShift;                                //13 Flags BitMask for shapeshift spells
-  //uint32 Unknown;                                           //14 UNK
-    uint32 ShapeshiftExclude;                                 //15 this is wrong // Flags BitMask for which shapeshift forms this spell can NOT be used in.
-  //uint32 Unknown;                                           //16 UNK
-    uint32 Targets;                                           //17 - N / M
-    uint32 TargetCreatureType;                                //18
-    uint32 RequiresSpellFocus;                                //19
-    uint32 FacingCasterFlags;                                 //20
-    uint32 CasterAuraState;                                   //21
-    uint32 TargetAuraState;                                   //22
-    uint32 CasterAuraStateNot;                                //23
-    uint32 TargetAuraStateNot;                                //24
-    uint32 casterAuraSpell;                                   //25
-    uint32 targetAuraSpell;                                   //26
-    uint32 casterAuraSpellNot;                                //27
-    uint32 targetAuraSpellNot;                                //28
-    uint32 CastingTimeIndex;                                  //29
-    uint32 RecoveryTime;                                      //30
-    uint32 CategoryRecoveryTime;                              //31 recoverytime
-    uint32 InterruptFlags;                                    //32
-    uint32 AuraInterruptFlags;                                //33
-    uint32 ChannelInterruptFlags;                             //34
-    uint32 procFlags;                                         //35
-    uint32 procChance;                                        //36
-    int32 procCharges;                                        //37
-    uint32 maxLevel;                                          //38
-    uint32 baseLevel;                                         //39
-    uint32 spellLevel;                                        //40
-    uint32 DurationIndex;                                     //41
-    uint32 powerType;                                         //42
-    uint32 manaCost;                                          //43
-    uint32 manaCostPerlevel;                                  //44
-    uint32 manaPerSecond;                                     //45
-    uint32 manaPerSecondPerLevel;                             //46
-    uint32 rangeIndex;                                        //47
-    float speed;                                              //48
-    uint32 modalNextSpell;                                    //49
-    uint32 maxstack;                                          //50
-    uint32 Totem[2];                                          //51 - 52
-    uint32 Reagent[8];                                        //53 - 60
-    uint32 ReagentCount[8];                                   //61 - 68
-    int32  EquippedItemClass;                                 //69
-    uint32 EquippedItemSubClass;                              //70
-    uint32 RequiredItemFlags;                                 //71
-    uint32 Effect[MAX_SPELL_EFFECTS];                         //72 - 74
-    uint32 EffectDieSides[MAX_SPELL_EFFECTS];                 //75 - 77
-    float EffectRealPointsPerLevel[MAX_SPELL_EFFECTS];        //78 - 80
-    int32 EffectBasePoints[MAX_SPELL_EFFECTS];                //81 - 83
-    int32 EffectMechanic[MAX_SPELL_EFFECTS];                  //84 - 86 Related to SpellMechanic.dbc
-    uint32 EffectImplicitTargetA[MAX_SPELL_EFFECTS];          //87 - 89
-    uint32 EffectImplicitTargetB[MAX_SPELL_EFFECTS];          //90 - 92
-    uint32 EffectRadiusIndex[MAX_SPELL_EFFECTS];              //93 - 95
-    uint32 EffectApplyAuraName[MAX_SPELL_EFFECTS];            //96 - 98
-    uint32 EffectAmplitude[MAX_SPELL_EFFECTS];                //99 - 101
-    float EffectMultipleValue[MAX_SPELL_EFFECTS];             //102 - 104 This value is the $ value from description
-    uint32 EffectChainTarget[MAX_SPELL_EFFECTS];              //105 - 107
-    uint32 EffectItemType[MAX_SPELL_EFFECTS];                 //108 - 110 Not sure maybe we should rename it. its the relation to field: SpellGroupType
-    uint32 EffectMiscValue[MAX_SPELL_EFFECTS];                //111 - 113
-    uint32 EffectMiscValueB[MAX_SPELL_EFFECTS];               //114 - 116 2.4.3
-    uint32 EffectTriggerSpell[MAX_SPELL_EFFECTS];             //117 - 119
-    float EffectPointsPerComboPoint[MAX_SPELL_EFFECTS];       //120 - 122
-    uint32 EffectSpellClassMask[3][3];                        //123 - 131
-    uint32 SpellVisual;                                       //132
-    uint32 field114;                                          //133
-    uint32 spellIconID;                                       //134
-    uint32 activeIconID;                                      //135 activeIconID;
-    uint32 spellPriority;                                     //136
-    const char* Name;                                         //137
-  //char* NameAlt[15];                                        //138 - 152 not used
-  //uint32 NameFlags;                                         //153 not used
-    const char* Rank;                                         //154
-  //char* RankAlt[15];                                        //155 - 169 not used
-  //uint32 RankFlags;                                         //170 not used
-    char* Description;                                        //171
-  //char* DescriptionAlt[15];                                 //172 - 186 not used
-  //uint32 DescriptionFlags;                                  //187 not used
-    const char* BuffDescription;                              //188
-  //char* BuffDescription[15];                                //189 - 203 not used
-  //uint32 buffdescflags;                                     //204 not used
-    uint32 ManaCostPercentage;                                //205
-    uint32 StartRecoveryCategory;                             //206
-    uint32 StartRecoveryTime;                                 //207
-    uint32 MaxTargetLevel;                                    //208
-    uint32 SpellFamilyName;                                   //209
-    uint32 SpellGroupType[MAX_SPELL_EFFECTS];                 //210-212
-    uint32 MaxTargets;                                        //213
-    uint32 Spell_Dmg_Type;                                    //214 dmg_class Integer 0=None, 1=Magic, 2=Melee, 3=Ranged
-    uint32 PreventionType;                                    //215 0,1,2 related to Spell_Dmg_Type I think
-    int32 StanceBarOrder;                                     //216 Related to paladin aura's
-    float dmg_multiplier[MAX_SPELL_EFFECTS];                  //217-219 Maybe related to EffectChainTarget?
-    uint32 MinFactionID;                                      //220 References Faction.dbc
-    uint32 MinReputation;                                     //221 Standing enumerated in Player.h
-    uint32 RequiredAuraVision;                                //222 Mostly test spells as of
-    uint32 TotemCategory[2];                                  //223-224 References TotemCategory.dbc
-    int32 RequiresAreaId;                                     //225 References AreaGroup.dbc
-    uint32 School;                                            //226 Enumerated in Unit.h
-    uint32 RuneCostID;                                        //227 References SpellRuneCost.dbc
-  //uint32 SpellMissileID;                                    //228 References SpellMissile.dbc
-  //uint32 UnKnown;                                           //229 powerdisplayid ?
-  //uint32 UnKnown;                                           //230
-  //uint32 UnKnown;                                           //231
-  //uint32 UnKnown;                                           //232
-  //uint32 SpellDescriptionVariable;                          //233 References SpellDescriptionVariables.dbc
-    uint32 SpellDifficultyID;                                 //234 References SpellDifficulty.dbc
+    uint32    Id;                                           // 0        m_ID
+    uint32    Attributes;                                   // 1        m_attribute
+    uint32    AttributesEx;                                 // 2        m_attributesEx
+    uint32    AttributesExB;                                // 3        m_attributesExB
+    uint32    AttributesExC;                                // 4        m_attributesExC
+    uint32    AttributesExD;                                // 5        m_attributesExD
+    uint32    AttributesExE;                                // 6        m_attributesExE
+    uint32    AttributesExF;                                // 7        m_attributesExF
+    uint32    AttributesExG;                                // 8        m_attributesExG
+    uint32    someFlags;                                    // 9        4.0.0
+    uint32    unk_400_1;                                    // 10       4.0.0
+    uint32    CastingTimeIndex;                             // 11       m_castingTimeIndex
+    uint32    DurationIndex;                                // 12       m_durationIndex
+    uint32    powerType;                                    // 13       m_powerType
+    uint32    rangeIndex;                                   // 14       m_rangeIndex
+    float     speed;                                        // 15       m_speed
+    uint32    SpellVisual[2];                               // 16-17    m_spellVisualID
+    uint32    spellIconID;                                  // 18       m_spellIconID
+    uint32    activeIconID;                                 // 19       m_activeIconID
+    char*	  Name;											// 20       m_name_lang
+    char*	  Rank;                                         // 21       m_nameSubtext_lang
+    char*	  Description;                                  // 22       m_description_lang not used
+    char*	  ToolTip;                                      // 23       m_auraDescription_lang not used
+    uint32    SchoolMask;                                   // 24       m_schoolMask
+    uint32    RuneCostID;                                   // 25       m_runeCostID
+    uint32    spellMissileID;                               // 26       m_spellMissileID not used
+    uint32	  spellDescriptionVariableID;                   // 27       3.2.0
+    uint32    SpellDifficultyID;                              // 28       m_spellDifficultyID - id from SpellDifficulty.dbc
+    float     AttackPowerToSpellDamageCoeff;                   // 29			//attack power to dmg contribution
+    uint32    SpellScalingId;                                  // 30       SpellScaling.dbc
+    uint32    SpellAuraOptionsId;                              // 31       SpellAuraOptions.dbc
+    uint32    SpellAuraRestrictionsId;                         // 32       SpellAuraRestrictions.dbc
+    uint32    SpellCastingRequirementsId;                      // 33       SpellCastingRequirements.dbc
+    uint32    SpellCategoriesId;                               // 34       SpellCategories.dbc
+    uint32    SpellClassOptionsId;                             // 35       SpellClassOptions.dbc
+    uint32    SpellCooldownsId;                                // 36       SpellCooldowns.dbc
+    uint32    unkIndex7;                                       // 37       all zeros...
+    uint32    SpellEquippedItemsId;                            // 38       SpellEquippedItems.dbc
+    uint32    SpellInterruptsId;                               // 39       SpellInterrupts.dbc
+    uint32    SpellLevelsId;                                   // 40       SpellLevels.dbc
+    uint32    SpellPowerId;                                    // 41       SpellPower.dbc
+    uint32    SpellReagentsId;                                 // 42       SpellReagents.dbc
+    uint32    SpellShapeshiftId;                               // 43       SpellShapeshift.dbc
+    uint32    SpellTargetRestrictionsId;                       // 44       SpellTargetRestrictions.dbc
+    uint32    SpellTotemsId;                                   // 45       SpellTotems.dbc
+    uint32    ResearchProject;                                 // 46  
 
     /// CUSTOM: these fields are used for the modifications made in the world.cpp
-    uint32 DiminishStatus;
-    uint32 proc_interval;                                   /// CUSTOM, <Fill description for variable>
-    /// Buff Groupin Rule -> caster can cast this spell only on 1 target. Value represents the group spell is part of. Can be part of only 1 group
-    /// target can have only buff of this type on self. Value represents the group spell is part of. Can be part of only 1 group
-    uint32 BGR_one_buff_on_target;                          /// CUSTOM, these are related to creating a item through a spell
-    /// caster can have only 1 Aura per spell group, ex pal auras
-    uint32 BGR_one_buff_from_caster_on_self;                /// CUSTOM, these are related to creating a item through a spell
-  //uint32 buffIndexType;                                   /// CUSTOM, <Fill description for variable>
-    uint32 c_is_flags;                                      /// CUSTOM, store spell checks in a static way : isdamageind,ishealing
-  //uint32 buffType;                                        /// CUSTOM, these are related to creating a item through a spell
-    uint32 RankNumber;                                      /// CUSTOM, this protects players from having >1 rank of a spell
-    uint32 NameHash;                                        /// CUSTOM, related to custom spells, summon spell quest related spells
-    uint32 talent_tree;                                     /// CUSTOM,
-    uint32 in_front_status;                                 /// CUSTOM,
-    uint32 EffectSpellGroupRelation_high[MAX_SPELL_EFFECTS];     /// this is not contained in client dbc but server must have it
-    uint32 ThreatForSpell;
-    float ThreatForSpellCoef;
-    uint32 ProcOnNameHash[MAX_SPELL_EFFECTS];
-    uint32 spell_coef_flags;                                /// CUSTOM, store flags for spell coefficient calculations
+    //	uint32									eff_count;		//will attach N effects here
+    //why more then 3 ? to be able to add custom effects. Some of us are not jerks about 1 MB extra memory
+    SpellEffectEntry						eff[MAX_SPELL_EFFECT_COUNT];				//max 3 effects
+    SpellScalingEntry						ss;	//this one is used all the time
+    SpellAuraRestrictionsEntry				sar;
+    int32									maxstack;		//used for hackfixes
+    uint32									procCharges;
+    //this is accessed like 20 time at every spell cast. Let's not complicate it with linked lookups
+    uint32									SpellGroupType[3];							//96 bits
+    uint32									School;
+    uint32									AuraInterruptFlags;
+    uint32									InterruptFlags;
+    uint32									ChannelInterruptFlags;
+    int32									RecoveryTime;
+    uint32									StartRecoveryCategory;
+    int32									StartRecoveryTime;
+    uint32									Category;
+    int32									CategoryRecoveryTime;
+    uint32									MechanicsType;
+    uint32									MechanicsTypeFlags;	//combined all mechanics for removal like "imparring"
+    uint32									PreventionType;
+    uint32									RequiredShapeShift;
+    bool									RemoveOnShapeShift; // vengeance / starfall
+    //	uint32									spellLevel;
+    uint32									FacingCasterFlags;
+    uint32									RequiredAreaId;
+    uint32 DiminishStatus;                  //
+    uint32 DiminishStatusMaxPVPDur;			// i wonder if this is set by blizz somewhere
+    uint32 proc_interval;                   //!!! CUSTOM, <Fill description for variable>
+    uint32 procChance;						//we will mod proc chance, keeping a backup mostly for debugging
+    uint32 procFlags;
+    uint32 procFlags2;						//since old flag list is too small
+    uint32 in_front_status;                 //!!! CUSTOM,
+    uint32 procFlagsRemove;					//charge disipates if these proc flags are met. This is implemented wrongly. We should test the spell that will proc for flags. But we already register procs based on owner spell and not the proccing spell
+    //Buff Groupin Rule -> caster can cast this spell only on 1 target. Value represents the group spell is part of. Can be part of only 1 group
+    //caster can only cast on 1 target these spells
+    uint32	BGR_one_buff_from_caster_on_1target;	 //!!! CUSTOM, <Fill description for variable>
+    //target can have only buff of this type on self. Value represents the group spell is part of. Can be part of only 1 group
+    uint32	BGR_one_buff_on_target;					 //!!! CUSTOM, these are related to creating a item through a spell
+    //all positive buffs should have this true and negative buffs as false
+    bool	BGR_one_buff_on_target_skip_caster_check;	//addition for previous. 90% of the time check who casted this spell on target. Like blessings should stack
+    //caster can have only 1 Aura per spell group, ex pal auras
+    uint32	BGR_one_buff_from_caster_on_self;        //!!! CUSTOM, these are related to creating a item through a spell
+    bool	HasStackGroupFlags;
+#define MAX_SPELL_STACK_GROUPS	3
+    union
+    {
+        uint64	StackGroupMasks[MAX_SPELL_STACK_GROUPS];		//spells from same group need to apply stacking rule. Imported from trinity. bit0 from mask 1 is set to 1 if there are any values
+        uint32	StackGroupMasks32[MAX_SPELL_STACK_GROUPS * 2];	//spells from same group need to apply stacking rule. Imported from trinity. bit0 from mask 1 is set to 1 if there are any values
+    };
+    //    uint32 buffIndexType;					//!!! CUSTOM, <Fill description for variable>
+    uint32 c_is_flags;						//!!! CUSTOM, store spell checks in a static way : isdamageind,ishealing
+    uint32 c_is_flags2;						//!!! CUSTOM, store spell checks in a static way : isdamageind,ishealing
+    uint32 c_is_flags3;						//!!! CUSTOM, store spell checks in a static way : isdamageind,ishealing
+    //    float AP_spell_bonus_base[3];			//!!! CUSTOM, mod GetAP() include it as base value so other talents can scale it 
+    float AP_spell_bonus_total[3];			//!!! CUSTOM, mod GetAP() include it as a final value without talents scaling it
+    //    uint32 buffType;                      //!!! CUSTOM, these are related to creating a item through a spell
+    uint32 RankNumber;                      //!!! CUSTOM, this protects players from having >1 rank of a spell
+    uint32 NameHash;                        //!!! CUSTOM, related to custom spells, summon spell quest related spells
+    //this is the group the spell will affect : each effect has it's own mask
+    //    uint32 EffectSpellGroupRelation[3][3];     //!!! this is not contained in client dbc but server must have it
+    uint32 ThreatForSpell;					//some basic calculation for spell threath
+    float ThreatForSpellCoef;				//theoretically setting this to 0 would make a spell not do threath
+    uint32 ProcOnNameHash[3];
 
-    float base_range_or_radius_sqr;                         /// CUSTOM, needed for aoe spells most of the time
-    /// love me or hate me, all "In a cone in front of the caster" spells don't necessarily mean "in front"
+    float base_range_or_radius_sqr;         //!!! CUSTOM, needed for aoe spells most of the time
+    // love me or hate me, all "In a cone in front of the caster" spells don't necessarily mean "in front"
     float cone_width;
+    uint32 Spell_Dmg_Type;
     //Spell Coefficient
-    float casttime_coef;                                    /// CUSTOM, faster spell bonus calculation
-    float fixed_dddhcoef;                                   /// CUSTOM, fixed DD-DH coefficient for some spells
-    float fixed_hotdotcoef;                                 /// CUSTOM, fixed HOT-DOT coefficient for some spells
-    float Dspell_coef_override;                             /// CUSTOM, overrides any spell coefficient calculation and use this value in DD&DH
-    float OTspell_coef_override;                            /// CUSTOM, overrides any spell coefficient calculation and use this value in HOT&DOT
-    int ai_target_type;
+    float SpellPowerCoefAvg;
+    bool Spell_value_is_scripted;							// for fixed spell value calculations this is required.
+    int	ai_target_type;
+    //!!!!!!!!!!! 1 spell may be present in multiple talent entries ! Ex : pet shared talents = cobra reflexes
+#define SPELL_SKILL_LINK_LIMIT 5
+    uint32	spell_skilline[SPELL_SKILL_LINK_LIMIT];			//skilline represents the icon in client spellbook
+    uint32	spell_skilline_assoc_counter;					//spell may be present in multiple skillines
+    TalentEntry *talent_entry[SPELL_SKILL_LINK_LIMIT];		//if this spell is obtained from a talent then we are able to look it up
+    uint32	talent_entry_rank[SPELL_SKILL_LINK_LIMIT];		//if this spell is obtained from a talent then we are able to look it up
+    uint32	talent_entry_assoc_counter;						//count this spell in how many talent trees is present
+    uint32  talent_tree;//[SPELL_SKILL_LINK_LIMIT];			//multiple talents have multiple trees
+    uint32	talent_remove_auras[SPELL_SKILL_LINK_LIMIT];	//if script is adding or casting auras that should get removed on talent change, add them here
+    bool	spell_learn_is_linked_to_talent;				//when changing talent spec we need to know which spells to unlearn. If spell was learned by a talent then we need to remove it.
+    uint8	belongs_to_player_class;						//this was added for talent specializations that mod all fire dmg. But should not mod fire dmg procced from items
+    uint32	spell_learn_next_level_spell;					//used for iterating through all levels of a spell : kinda like selecting spells with same namehash but this is based on SkillLineDBC
+    skilllinespell	*spell_skill;							//in case there is one spell would be part of some skillspell
+    uint32	spell_id_client;								//use this ID fro client isntead real ID
+    uint32	quick_duration_min;
+    uint32	quick_tickcount;
+    uint32	quick_maxAmplitude;								//so that spells can tick last effect
+    uint32	quick_ExtendDuration;
+    SpellEntry	*chained_cast;								// cast this spell also when casting the original spell. Used for recently bandaged, forbearance and other spells that require more then 3 effects
+    SpellEntry	*aura_remove_cast;							// if spell is dispelled, expires, canceled, this spell is casted by original caster on target(if possible). Used very rarely
+    uint32	RequiredPlayerClass;							// this was added for aura 102 and 103 to not be exploitable by other classes
+    uint32	MaxAffectedTargets;
+    uint32	ForcedAuraVisibleFlags;							//should tell client to enable the casting of this spell
+    uint32	ReplacingSpell;	//some spells temp replace others while specific aura is active. Needs manual scripting
+
+    bool always_apply; // custom
+
+    float  casttime_coef;                   //!!! CUSTOM, faster spell bonus calculation
+    float  fixed_dddhcoef;                  //!!! CUSTOM, fixed DD-DH coefficient for some spells
+    float  fixed_hotdotcoef;                //!!! CUSTOM, fixed HOT-DOT coefficient for some spells
+    float  Dspell_coef_override;            //!!! CUSTOM, overrides any spell coefficient calculation and use this value in DD&DH
+    float  OTspell_coef_override;           //!!! CUSTOM, overrides any spell coefficient calculation and use this value in HOT&DOT
+
+    //uint32 SchoolMask;                      // Custom -- redefinition?
+    uint32 CustomFlags;						// Custom
+    uint32 EffectCustomFlag[MAX_SPELL_EFFECTS];				// Custom
+
+    uint32 spell_coef_flags;
 
     bool self_cast_only;
     bool apply_on_shapeshift_change;
-    bool always_apply;
-    bool is_melee_spell;                                    /// CUSTOM,
-    bool is_ranged_spell;                                   /// CUSTOM,
+    bool is_melee_spell;					//!!! CUSTOM,
+    bool is_ranged_spell;					//!!! CUSTOM,
+    //	bool spell_can_crit;					//!!! CUSTOM,
+    bool EffectCanCrit[MAX_SPELL_EFFECT_COUNT];
     bool noproc;
-	bool CheckLocation(uint32 map_id, uint32 zone_id, uint32 area_id, Player* player = NULL);
 
-    uint32 SchoolMask;                                      /// Custom
-    uint32 CustomFlags;                                     /// Custom
-    uint32 EffectCustomFlag[MAX_SPELL_EFFECTS];             /// Custom
+    void(*ProcHandler)(ProcHandlerContextShare *context);	//i hope 1 handler / spell is enough
+    void(*ChargeHandler)(ProcHandlerContextShare *context);	//i hope 1 handler / spell is enough
+    uint32(*CanCastHandler)(Spell *sp);
+    uint32(*CanCastFilterHandler)(Spell *sp, SpellCanCastScript *ccs);			//caster can have filters to cast new spells
+    uint32(*CanTargetedFilterHandler)(Spell *sp, Object *Caster, Object *FilterOwner, SpellCanTargetedScript *cts);	//can we get targeted by some spells ? immunity handlers
+    void(*TargettingOverride[3])(Spell *sp, uint8 i);				//can script each effect how to gather their targettings
+    bool(*AuraPeriodicDummyTickHook)(uint32 i, Aura * pAura, bool apply);
+    bool(*SpellDummyEffectScript)(uint32 i, Spell* pSpell);
+    void(*CritHandler)(ProcHandlerContextShare *context);	//i hope 1 handler / spell is enough
+    void(*EffRedirectHandler)(Spell *sp);
+    bool(*AuraInterruptHandler)(Unit *owner, Aura *a, uint32 flag, uint32 skip_casted, uint32 skiphash_casted, uint32 dmg);
+    //note this does not support more then 1 effects
+    int32								required_target_type;		//player - 1, mob = 2, ... !!! db has value -1 to be mangos compatible
+#define MAX_AURA_STATES_TO_SET			3
+    uint32								SetAuraStatesCount, SetAuraStates[MAX_AURA_STATES_TO_SET], RemAuraStates[MAX_AURA_STATES_TO_SET];
+    int32								RemoveCasterAuraState;	//when casting a spell and we require to have X aurastate, it does not always mean we need to remove it
+    //methods ( ofc we all know that structures do not have methods. Class does )
+    uint32 *GetSpellGroupType();
+    //	uint32 GetChannelInterruptFlags();
+    //	uint32 GetRecoveryTime();
+    //	uint32 GetInterruptFlags();
+    //	uint32 GetCategoryRecoveryTime();
+    //	uint32 GetRequiredShapeShift();
+    uint32 GetCasterAuraState() { return sar.CasterAuraState; }
+    uint32 GetTargetAuraState() { return sar.TargetAuraState; }
+    uint32 GetTargetAuraStateNot() { return sar.TargetAuraStateNot; }
+    uint32 GetCasterAuraStateNot() { return sar.CasterAuraStateNot; }
+    uint32 GetCasterAuraSpell() { return sar.casterAuraSpell; }
+    uint32 GetCasterAuraSpellNot() { return sar.casterAuraSpellNot; }
+    uint32 GetTargetAuraSpell() { return sar.targetAuraSpell; }
+    uint32 GetTargetAuraSpellNot() { return sar.targetAuraSpellNot; }
+    uint32 GetRequiresSpellFocus();
+    //	uint32 GetRequiresAreaId();
+    uint32 GetRequiresAreaId() { return RequiredAreaId; }
+    uint32 *GetTotem();
+    int32  *GetReagent();
+    uint32 *GetReagentCount();
+    int32 GetEquippedItemClass();
+    int32 GetEquippedItemSubClass();
+    uint32 GetRequiredItemFlags();
+    uint32 GetSpellDMGType() { return Spell_Dmg_Type; }
+#define NO_MAX_TARGETS_DEFINED 65535 
+    uint32 GetMaxTargets() { return MaxAffectedTargets; }
+    uint32 GetDispelType();
+    SpellPowerEntry PowerEntry;
 
-    /// Pointer to static method of a Spell subclass to create a new instance. If this is NULL, the generic Spell class will be created
-    /// Its type is void because class Spell is not visible here, so it'll be casted accordingly when necessary
+    SpellEquippedItemsEntry SpellEquippedItems;
+    SpellCategoriesEntry SpellCategories;
+    SpellClassOptionsEntry SpellClassOptions;
+    SpellCastingRequirementsEntry scr;
+    SpellTotemsEntry SpellTotems;
+    SpellTargetRestrictionsEntry str;
+    SpellReagentsEntry sre;
+    SpellShapeshiftEntry ssh;
+
+    //	uint32 GetManaCost();
+    //	uint32 GetManaCostPCT();
+    SpellLevelsEntry	SpellLevel;
+    //	uint32 GetBaseLevel();
+    //	uint32 GetMaxLevel();
+    //	uint32 GetLevel();
+
+    // Pointer to static method of a Spell subclass to create a new instance. If this is NULL, the generic Spell class will be created
+    // Its type is void because class Spell is not visible here, so it'll be casted accordingly when necessary
     void* (*SpellFactoryFunc);
 
-    /// Same for Auras
+    // Same for Auras
     void* (*AuraFactoryFunc);
 
-    //////////////////////////////////////////////////////////////////////////////////////////
-    /// \note bool HasEffect   - Tells if the Spell has a certain effect
-    ///
-    /// \param uint32 effect  -  Effect Identifier
-    ///
-    /// \returns true if Spell has this effect, false if Spell has not this effect.
-    ///
-    //////////////////////////////////////////////////////////////////////////////////////////
+    SpellEntry()
+    {
+        CustomFlags = 0;
+
+        for (uint32 i = 0; i < MAX_SPELL_EFFECTS; i++)
+            EffectCustomFlag[i] = 0;
+
+        SpellFactoryFunc = NULL;
+        AuraFactoryFunc = NULL;
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////
+    //bool HasEffect( uint32 effect )
+    //  Tells if the Spell has a certain effect
+    //
+    //Parameters
+    //  uint32 effect  -  Effect Identifier
+    //
+    //Return Value
+    //  Returns true if Spell has this effect.
+    //  Returns false if Spell has not this effect.
+    //
+    ///////////////////////////////////////////////////////////////////////////////
     bool HasEffect(uint32 effect)
     {
-        for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-            if (Effect[i] == effect)
+        for (uint32 i = 0; i < MAX_SPELL_EFFECT_COUNT; ++i)
+            if (eff[i].Effect == effect)
                 return true;
 
         return false;
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////////
-    /// \note bool HasCustomFlagForEffect - Tells if the Spell has this flag for this effect
-    ///
-    /// \param uint32 effect  -  The effect index
-    /// \param uint32 flag    -  Flag that we are checking
-    ///
-    /// \returns true if we have the flag, false if we don't.
-    ///
-    //////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////////
+    //bool AppliesAura( uint32 aura )
+    //  Tells if the Spell applies this Aura
+    //
+    //Parameters
+    //  uint32 aura - Aura id
+    //
+    //Return Value
+    //  Returns true if the Spell applies this Aura.
+    //  Returns false otherwise.
+    //
+    //////////////////////////////////////////////////////////////////////////////
+    bool AppliesAura(uint32 aura)
+    {
+
+        for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        {
+
+            if ((eff[i].Effect == 6 ||   // SPELL_EFFECT_APPLY_GROUP_AREA_AURA
+                eff[i].Effect == 27 || // SPELL_EFFECT_PERSISTENT_AREA_AURA
+                eff[i].Effect == 35 || // SPELL_EFFECT_APPLY_GROUP_AREA_AURA
+                eff[i].Effect == 65 || // SPELL_EFFECT_APPLY_RAID_AREA_AURA
+                eff[i].Effect == 119 || // SPELL_EFFECT_APPLY_PET_AREA_AURA
+                eff[i].Effect == 128 || // SPELL_EFFECT_APPLY_FRIEND_AREA_AURA
+                eff[i].Effect == 129 || // SPELL_EFFECT_APPLY_ENEMY_AREA_AURA
+                eff[i].Effect == 143) &&  // SPELL_EFFECT_APPLY_OWNER_AREA_AURA
+                eff[i].EffectApplyAuraName == aura)
+                return true;
+        }
+
+        return false;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+    //bool HasCustomFlagForEffect( uint32 effect, uint32 flag )
+    //  Tells if the Spell has this flag for this effect
+    //
+    //Parameters
+    //  uint32 effect  -  The effect index
+    //  uint32 flag    -  Flag that we are checking
+    //
+    //Return Value
+    //  Returns true if we have the flag.
+    //  Returns false if we don't.
+    //
+    ///////////////////////////////////////////////////////////////////////////////
     bool HasCustomFlagForEffect(uint32 effect, uint32 flag)
     {
         if (effect >= MAX_SPELL_EFFECTS)
@@ -854,174 +1218,38 @@ struct SpellEntry
             return false;
     }
 
-    //////////////////////////////////////////////////////////////////////////////////////////
-    /// \note bool AppliesAura  - Tells if the Spell applies this Aura
-    ///
-    /// \param uint32 aura - Aura id
-    ///
-    /// \returns true if the Spell applies this Aura, false otherwise.
-    ///
-    //////////////////////////////////////////////////////////////////////////////////////////
-    bool AppliesAura(uint32 aura)
-    {
-        for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-        {
-
-            if ((Effect[i] == 6 ||        /// SPELL_EFFECT_APPLY_GROUP_AREA_AURA
-                    Effect[i] == 27 ||    /// SPELL_EFFECT_PERSISTENT_AREA_AURA
-                    Effect[i] == 35 ||    /// SPELL_EFFECT_APPLY_GROUP_AREA_AURA
-                    Effect[i] == 65 ||    /// SPELL_EFFECT_APPLY_RAID_AREA_AURA
-                    Effect[i] == 119 ||   /// SPELL_EFFECT_APPLY_PET_AREA_AURA
-                    Effect[i] == 128 ||   /// SPELL_EFFECT_APPLY_FRIEND_AREA_AURA
-                    Effect[i] == 129 ||   /// SPELL_EFFECT_APPLY_ENEMY_AREA_AURA
-                    Effect[i] == 143) &&  /// SPELL_EFFECT_APPLY_OWNER_AREA_AURA
-                    EffectApplyAuraName[i] == aura)
-                return true;
-        }
-
-        return false;
-    }
-
-    //////////////////////////////////////////////////////////////////////////////////////////
-    /// \note uint32 GetAAEffectId()  - Returns the Effect Id of the Area Aura effect if the spell has one.
-    ///
-    /// \param none
-    ///
-    /// \returns the Effect Id of the Area Aura effect if the spell has one, 0 otherwise.
-    ///
-    //////////////////////////////////////////////////////////////////////////////////////////
+    /////////////////////////////////////////////////////////////////////////////////
+    //uint32 GetAAEffectId()
+    //  Returns the Effect Id of the Area Aura effect if the spell has one.
+    //
+    //Parameters
+    //  None
+    //
+    //Return Value
+    //  Returns the Effect Id of the Area Aura effect if the spell has one.
+    //  Returns 0 otherwise.
+    //
+    //
+    /////////////////////////////////////////////////////////////////////////////////
     uint32 GetAAEffectId()
     {
 
         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; i++)
         {
 
-            if (Effect[i] == 35 ||        /// SPELL_EFFECT_APPLY_GROUP_AREA_AURA
-                    Effect[i] == 65 ||    /// SPELL_EFFECT_APPLY_RAID_AREA_AURA
-                    Effect[i] == 119 ||   /// SPELL_EFFECT_APPLY_PET_AREA_AURA
-                    Effect[i] == 128 ||   /// SPELL_EFFECT_APPLY_FRIEND_AREA_AURA
-                    Effect[i] == 129 ||   /// SPELL_EFFECT_APPLY_ENEMY_AREA_AURA
-                    Effect[i] == 143)     /// SPELL_EFFECT_APPLY_OWNER_AREA_AURA
-                return Effect[i];
+            if (eff[i].Effect == 35 ||  // SPELL_EFFECT_APPLY_GROUP_AREA_AURA
+                eff[i].Effect == 65 || // SPELL_EFFECT_APPLY_RAID_AREA_AURA
+                eff[i].Effect == 119 || // SPELL_EFFECT_APPLY_PET_AREA_AURA
+                eff[i].Effect == 128 || // SPELL_EFFECT_APPLY_FRIEND_AREA_AURA
+                eff[i].Effect == 129 || // SPELL_EFFECT_APPLY_ENEMY_AREA_AURA
+                eff[i].Effect == 143)  // SPELL_EFFECT_APPLY_OWNER_AREA_AURA
+                return eff[i].Effect;
         }
 
         return 0;
     }
+	bool CheckLocation(uint32 map_id, uint32 zone_id, uint32 area_id, Player* player = NULL);
 
-    SpellEntry()
-    {
-        Id = 0;
-        Category = 0;
-        DispelType = 0;
-        MechanicsType = 0;
-        Attributes = 0;
-        AttributesEx = 0;
-        AttributesExB = 0;
-        AttributesExC = 0;
-        AttributesExD = 0;
-        AttributesExE = 0;
-        AttributesExF = 0;
-        AttributesExG = 0;
-        RequiredShapeShift = 0;
-        ShapeshiftExclude = 0;
-        Targets = 0;
-        TargetCreatureType = 0;
-        RequiresSpellFocus = 0;
-        FacingCasterFlags = 0;
-        CasterAuraState = 0;
-        TargetAuraState = 0;
-        CasterAuraStateNot = 0;
-        TargetAuraStateNot = 0;
-        casterAuraSpell = 0;
-        targetAuraSpell = 0;
-        casterAuraSpellNot = 0;
-
-        CustomFlags = 0;
-
-        for (uint32 i = 0; i < MAX_SPELL_EFFECTS; i++)
-            EffectCustomFlag[i] = 0;
-
-        SpellFactoryFunc = NULL;
-        AuraFactoryFunc = NULL;
-        proc_interval = 0;
-        BGR_one_buff_on_target = 0;
-        BGR_one_buff_from_caster_on_self = 0;
-        c_is_flags = 0;
-        RankNumber = 0;
-        NameHash = 0;
-        talent_tree = 0;
-        in_front_status = 0;
-        ThreatForSpell = 0;
-        ThreatForSpellCoef = 0;
-        spell_coef_flags = 0;
-        base_range_or_radius_sqr = 0;
-        cone_width = 0;
-        casttime_coef = 0;
-        fixed_dddhcoef = 0;
-        fixed_hotdotcoef = 0;
-        Dspell_coef_override = 0;
-        OTspell_coef_override = 0;
-        ai_target_type = 0;
-        self_cast_only = 0;
-        apply_on_shapeshift_change = 0;
-        always_apply = 0;
-        is_melee_spell = 0;
-        is_ranged_spell = 0;
-        noproc = 0;
-        SchoolMask = 0;
-        SpellVisual = 0;
-        field114 = 0;
-        spellIconID = 0;
-        activeIconID = 0;
-        spellPriority = 0;
-        Name = nullptr;
-        Rank = nullptr;
-        Description = 0;
-        BuffDescription = 0;
-        ManaCostPercentage = 0;
-        StartRecoveryCategory = 0;
-        StartRecoveryTime = 0;
-        MaxTargetLevel = 0;
-        SpellFamilyName = 0;
-        MaxTargets = 0;
-        Spell_Dmg_Type = 0;
-        PreventionType = 0;
-        StanceBarOrder = 0;
-        MinFactionID = 0;
-        MinReputation = 0;
-        RequiredAuraVision = 0;
-        RequiresAreaId = 0;
-        School = 0;
-        RuneCostID = 0;
-        SpellDifficultyID = 0;
-        DiminishStatus = 0;
-        targetAuraSpellNot = 0;
-        CastingTimeIndex = 0;
-        RecoveryTime = 0;
-        CategoryRecoveryTime = 0;
-        InterruptFlags = 0;
-        AuraInterruptFlags = 0;
-        ChannelInterruptFlags = 0;
-        procFlags = 0;
-        procChance = 0;
-        procCharges = 0;
-        maxLevel = 0;
-        baseLevel = 0;
-        spellLevel = 0;
-        DurationIndex = 0;
-        powerType = 0;
-        manaCost = 0;
-        manaCostPerlevel = 0;
-        manaPerSecond = 0;
-        manaPerSecondPerLevel = 0;
-        rangeIndex = 0;
-        speed = 0;
-        modalNextSpell = 0;
-        maxstack = 0;
-        EquippedItemClass = 0;
-        EquippedItemSubClass = 0;
-        RequiredItemFlags = 0;
-    }
 };
 
 struct SpellRuneCostEntry
@@ -1031,20 +1259,6 @@ struct SpellRuneCostEntry
     uint32 frostRuneCost;
     uint32 unholyRuneCost;
     uint32 runePowerGain;
-};
-
-struct TalentEntry
-{
-    uint32 TalentID;
-    uint32 TalentTree;
-    uint32 Row;
-    uint32 Col;
-    uint32 RankID[5];
-  //uint32 unk[4];
-    uint32 DependsOn;
-  //uint32 unk1[2];
-    uint32 DependsOnRank;
-  //uint32 unk2[4];
 };
 
 struct TalentTabEntry
@@ -1083,12 +1297,6 @@ struct Trainerspell
     uint32 skilline3;
     uint32 maxlvl;
     uint32 charclass;
-};
-
-struct SpellDifficultyEntry
-{
-    uint32 ID;
-    int32 SpellId[NUM_INSTANCE_MODES];
 };
 
 struct SpellCastTime
@@ -1342,6 +1550,12 @@ struct BarberShopStyleEntry
 
 struct gtFloat
 {
+    float val;
+};
+
+struct gtClassLevelFloat
+{
+    uint32 Class100Level;
     float val;
 };
 
@@ -2029,7 +2243,6 @@ extern SERVER_DECL DBCStorage<SpellEntry> dbcSpell;
 extern SERVER_DECL DBCStorage<SpellDifficultyEntry> dbcSpellDifficultyEntry;
 extern SERVER_DECL DBCStorage<SpellDuration> dbcSpellDuration;
 extern SERVER_DECL DBCStorage<SpellRange> dbcSpellRange;
-extern SERVER_DECL DBCStorage<SpellShapeshiftForm> dbcSpellShapeshiftForm;
 extern SERVER_DECL DBCStorage<emoteentry> dbcEmoteEntry;
 extern SERVER_DECL DBCStorage<SpellRadius> dbcSpellRadius;
 extern SERVER_DECL DBCStorage<SpellCastTime> dbcSpellCastTime;
@@ -2083,6 +2296,24 @@ extern SERVER_DECL DBCStorage<NameGenEntry> dbcNameGen;
 extern SERVER_DECL DBC::DBCStorage<DBC::Structures::LFGDungeonEntry> sLFGDungeonStore;
 extern SERVER_DECL DBCStorage<VehicleEntry> dbcVehicle;
 extern SERVER_DECL DBCStorage<VehicleSeatEntry> dbcVehicleSeat;
+
+extern SERVER_DECL DBCStorage<SpellShapeshiftFormEntry>				dbcSpellShapeshiftForm;
+extern SERVER_DECL DBCStorage<SpellShapeshiftEntry>					dbcSpellShapeshift;
+extern SERVER_DECL DBCStorage<SpellAuraOptionsEntry>				dbcSpellAuraOptions;
+extern SERVER_DECL DBCStorage<SpellAuraRestrictionsEntry>			dbcSpellAuraRestrictions;
+extern SERVER_DECL DBCStorage<SpellCastingRequirementsEntry>		dbcSpellCastingRequirements;
+extern SERVER_DECL DBCStorage<SpellCategoriesEntry>					dbcSpellCategories;
+extern SERVER_DECL DBCStorage<SpellClassOptionsEntry>				dbcSpellClassOptions;
+extern SERVER_DECL DBCStorage<SpellCooldownsEntry>					dbcSpellCooldowns;
+extern SERVER_DECL DBCStorage<SpellEquippedItemsEntry>				dbcSpellEquippedItems;
+extern SERVER_DECL DBCStorage<SpellInterruptsEntry>					dbcSpellInterrupts;
+extern SERVER_DECL DBCStorage<SpellLevelsEntry>						dbcSpellLevels;
+extern SERVER_DECL DBCStorage<SpellPowerEntry>						dbcSpellPower;
+extern SERVER_DECL DBCStorage<SpellReagentsEntry>					dbcSpellReagents;
+extern SERVER_DECL DBCStorage<SpellScalingEntry>					dbcSpellScaling;
+extern SERVER_DECL DBCStorage<SpellTargetRestrictionsEntry>			dbcSpellTargetRestrictions;
+extern SERVER_DECL DBCStorage<SpellTotemsEntry>						dbcSpellTotems;
+extern SERVER_DECL DBCStorage<gtClassLevelFloat>					dbcGTSpellScale;
 
 bool LoadDBCs();
 

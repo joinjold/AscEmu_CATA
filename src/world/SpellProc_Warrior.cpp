@@ -38,7 +38,7 @@ class DamageShieldSpellProc : public SpellProc
     {
         Player* plr = static_cast<Player*>(mTarget);
 
-        dmg_overwrite[0] = plr->GetBlockDamageReduction() * (mOrigSpell->EffectBasePoints[0] + 1) / 100;
+        dmg_overwrite[0] = plr->GetBlockDamageReduction() * (mOrigSpell->eff[0].EffectBasePoints + 1) / 100;
 
         // plr->GetBlockDamageReduction() returns ZERO if player has no shield equipped
         if (dmg_overwrite[0] == 0)

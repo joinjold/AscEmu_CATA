@@ -410,7 +410,7 @@ SpellEntry* ObjectMgr::GetNextSpellRank(SpellEntry* sp, uint32 level)
     if (skill != NULL && skill->next > 0)
     {
         SpellEntry* sp1 = dbcSpell.LookupEntry(skill->next);
-        if (sp1->baseLevel <= level)   // check level
+        if (sp1->SpellLevel.baseLevel <= level)   // check level
             return GetNextSpellRank(sp1, level);   // recursive for higher ranks
     }
     return sp;
@@ -1619,11 +1619,11 @@ void ObjectMgr::LoadSpellProcs()
                     sp->proc_interval = f[6].GetUInt32();
 
                     if (f[7].GetInt32() >= 0)
-                        sp->EffectTriggerSpell[0] = f[7].GetUInt32();
+                        sp->eff[0].EffectTriggerSpell = f[7].GetUInt32();
                     if (f[8].GetInt32() >= 0)
-                        sp->EffectTriggerSpell[1] = f[8].GetUInt32();
+                        sp->eff[1].EffectTriggerSpell = f[8].GetUInt32();
                     if (f[9].GetInt32() >= 0)
-                        sp->EffectTriggerSpell[2] = f[9].GetUInt32();
+                        sp->eff[2].EffectTriggerSpell = f[9].GetUInt32();
                 }
             }
         }
@@ -1660,34 +1660,34 @@ void ObjectMgr::LoadSpellEffectsOverride()
                 if (sp != NULL)
                 {
                     if (seo_Disable)
-                        sp->Effect[seo_EffectId] = SPELL_EFFECT_NULL;
+                        sp->eff[seo_EffectId].Effect = SPELL_EFFECT_NULL;
 
                     if (seo_Effect)
-                        sp->Effect[seo_EffectId] = seo_Effect;
+                        sp->eff[seo_EffectId].Effect = seo_Effect;
 
                     if (seo_BasePoints)
-                        sp->EffectBasePoints[seo_EffectId] = seo_BasePoints;
+                        sp->eff[seo_EffectId].EffectBasePoints = seo_BasePoints;
 
                     if (seo_ApplyAuraName)
-                        sp->EffectApplyAuraName[seo_EffectId] = seo_ApplyAuraName;
+                        sp->eff[seo_EffectId].EffectApplyAuraName = seo_ApplyAuraName;
 
                     //                    if (seo_SpellGroupRelation)
                     //                        sp->EffectSpellGroupRelation[seo_EffectId] = seo_SpellGroupRelation;
 
                     if (seo_MiscValue)
-                        sp->EffectMiscValue[seo_EffectId] = seo_MiscValue;
+                        sp->eff[seo_EffectId].EffectMiscValue = seo_MiscValue;
 
                     if (seo_TriggerSpell)
-                        sp->EffectTriggerSpell[seo_EffectId] = seo_TriggerSpell;
+                        sp->eff[seo_EffectId].EffectTriggerSpell = seo_TriggerSpell;
 
                     if (seo_ImplicitTargetA)
-                        sp->EffectImplicitTargetA[seo_EffectId] = seo_ImplicitTargetA;
+                        sp->eff[seo_EffectId].EffectImplicitTargetA = seo_ImplicitTargetA;
 
                     if (seo_ImplicitTargetB)
-                        sp->EffectImplicitTargetB[seo_EffectId] = seo_ImplicitTargetB;
+                        sp->eff[seo_EffectId].EffectImplicitTargetB = seo_ImplicitTargetB;
 
                     if (seo_EffectCustomFlag != 0)
-                        sp->EffectCustomFlag[seo_Effect] = seo_EffectCustomFlag;
+                        sp->EffectCustomFlag[seo_EffectId] = seo_EffectCustomFlag;
                 }
                 else
                 {
@@ -2042,9 +2042,9 @@ void ObjectMgr::LoadTrainers()
                     {
                         for (int k = 0; k < 3; ++k)
                         {
-                            if (ts.pCastSpell->Effect[k] == SPELL_EFFECT_LEARN_SPELL)
+                            if (ts.pCastSpell->eff[k].Effect == SPELL_EFFECT_LEARN_SPELL)
                             {
-                                ts.pCastRealSpell = dbcSpell.LookupEntryForced(ts.pCastSpell->EffectTriggerSpell[k]);
+                                ts.pCastRealSpell = dbcSpell.LookupEntryForced(ts.pCastSpell->eff[k].EffectTriggerSpell);
                                 if (ts.pCastRealSpell == NULL)
                                 {
                                     Log.Error("Trainers", "Trainer %u contains cast spell %u that is non-teaching", entry, CastSpellID);
@@ -2080,9 +2080,9 @@ void ObjectMgr::LoadTrainers()
                 ts.RequiredLevel = fields2[7].GetUInt32();
                 ts.DeleteSpell = fields2[8].GetUInt32();
                 //IsProfession is true if the TrainerSpell will teach a primary profession
-                if (ts.RequiredSkillLine == 0 && ts.pCastRealSpell != NULL && ts.pCastRealSpell->Effect[1] == SPELL_EFFECT_SKILL)
+                if (ts.RequiredSkillLine == 0 && ts.pCastRealSpell != NULL && ts.pCastRealSpell->eff[1].Effect == SPELL_EFFECT_SKILL)
                 {
-                    uint32 skill = ts.pCastRealSpell->EffectMiscValue[1];
+                    uint32 skill = ts.pCastRealSpell->eff[1].EffectMiscValue;
                     skilllineentry* sk = dbcSkillLine.LookupEntryForced(skill);
                     ARCEMU_ASSERT(sk != NULL);
                     if (sk->type == SKILL_TYPE_PROFESSION)

@@ -61,7 +61,7 @@ class EyeForAnEyeSpellProc : public SpellProc
         if (CastingSpell != NULL && !(CastingSpell->c_is_flags & SPELL_FLAG_IS_DAMAGING))
             return true;
 
-        dmg_overwrite[0] = dmg * (mOrigSpell->EffectBasePoints[0] + 1) / 100;
+        dmg_overwrite[0] = dmg * (mOrigSpell->eff[0].EffectBasePoints + 1) / 100;
 
         int max_dmg = mTarget->GetMaxHealth() / 2;
 

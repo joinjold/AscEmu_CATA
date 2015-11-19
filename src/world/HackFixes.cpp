@@ -33,12 +33,12 @@ void CreateDummySpell(uint32 id)
     sp->CastingTimeIndex = 1;
     sp->procChance = 75;
     sp->rangeIndex = 13;
-    sp->EquippedItemClass = uint32(-1);
-    sp->Effect[0] = SPELL_EFFECT_DUMMY;
-    sp->EffectImplicitTargetA[0] = 25;
+    sp->SpellEquippedItems.EquippedItemClass = uint32(-1);
+    sp->eff[0].Effect = SPELL_EFFECT_DUMMY;
+    sp->eff[0].EffectImplicitTargetA = 25;
     sp->NameHash = crc32((const unsigned char*)name, (unsigned int)strlen(name));
-    sp->dmg_multiplier[0] = 1.0f;
-    sp->StanceBarOrder = -1;
+    sp->eff[0].EffectChainMultiplier = 1.0f;
+    //sp->StanceBarOrder = -1;
     dbcSpell.SetRow(id, sp);
     sWorld.dummyspells.push_back(sp);
 }
@@ -90,8 +90,8 @@ void ApplyNormalFixes()
         namehash = crc32((const unsigned char*)sp->Name, (unsigned int)strlen(sp->Name));
         sp->NameHash = namehash; //need these set before we start processing spells
 
-        float radius = std::max(::GetRadius(dbcSpellRadius.LookupEntry(sp->EffectRadiusIndex[0])), ::GetRadius(dbcSpellRadius.LookupEntry(sp->EffectRadiusIndex[1])));
-        radius = std::max(::GetRadius(dbcSpellRadius.LookupEntry(sp->EffectRadiusIndex[2])), radius);
+        float radius = std::max(::GetRadius(dbcSpellRadius.LookupEntry(sp->eff[0].EffectRadiusIndex)), ::GetRadius(dbcSpellRadius.LookupEntry(sp->eff[1].EffectRadiusIndex)));
+        radius = std::max(::GetRadius(dbcSpellRadius.LookupEntry(sp->eff[2].EffectRadiusIndex)), radius);
         radius = std::max(GetMaxRange(dbcSpellRange.LookupEntry(sp->rangeIndex)), radius);
         sp->base_range_or_radius_sqr = radius * radius;
 
@@ -121,11 +121,11 @@ void ApplyNormalFixes()
         ARCEMU_ASSERT(sp->School < SCHOOL_COUNT);
 
         // correct caster/target aura states
-        if (sp->CasterAuraState > 1)
-            sp->CasterAuraState = 1 << (sp->CasterAuraState - 1);
+        if (sp->sar.CasterAuraState > 1)
+            sp->sar.CasterAuraState = 1 << (sp->sar.CasterAuraState - 1);
 
-        if (sp->TargetAuraState > 1)
-            sp->TargetAuraState = 1 << (sp->TargetAuraState - 1);
+        if (sp->sar.TargetAuraState > 1)
+            sp->sar.TargetAuraState = 1 << (sp->sar.TargetAuraState - 1);
 
         // apply on shapeshift change
         if (sp->NameHash == SPELL_HASH_TRACK_HUMANOIDS)
@@ -140,73 +140,73 @@ void ApplyNormalFixes()
         //this is a total bullshit so remove it when spell system supports effect overwriting
         for (uint32 col1_swap = 0; col1_swap < 2; col1_swap++)
             for (uint32 col2_swap = col1_swap; col2_swap < 3; col2_swap++)
-                if (sp->Effect[col1_swap] == SPELL_EFFECT_WEAPON_PERCENT_DAMAGE && sp->Effect[col2_swap] == SPELL_EFFECT_DUMMYMELEE)
+                if (sp->eff[col1_swap].Effect == SPELL_EFFECT_WEAPON_PERCENT_DAMAGE && sp->eff[col2_swap].Effect == SPELL_EFFECT_DUMMYMELEE)
                 {
                     uint32 temp;
                     float ftemp;
-                    temp = sp->Effect[col1_swap];
-                    sp->Effect[col1_swap] = sp->Effect[col2_swap];
-                    sp->Effect[col2_swap] = temp;
-                    temp = sp->EffectDieSides[col1_swap];
-                    sp->EffectDieSides[col1_swap] = sp->EffectDieSides[col2_swap];
-                    sp->EffectDieSides[col2_swap] = temp;
-                    //temp = sp->EffectBaseDice[col1_swap];    sp->EffectBaseDice[col1_swap] = sp->EffectBaseDice[col2_swap] ;        sp->EffectBaseDice[col2_swap] = temp;
-                    //ftemp = sp->EffectDicePerLevel[col1_swap];            sp->EffectDicePerLevel[col1_swap] = sp->EffectDicePerLevel[col2_swap] ;                sp->EffectDicePerLevel[col2_swap] = ftemp;
-                    ftemp = sp->EffectRealPointsPerLevel[col1_swap];
-                    sp->EffectRealPointsPerLevel[col1_swap] = sp->EffectRealPointsPerLevel[col2_swap];
-                    sp->EffectRealPointsPerLevel[col2_swap] = ftemp;
-                    temp = sp->EffectBasePoints[col1_swap];
-                    sp->EffectBasePoints[col1_swap] = sp->EffectBasePoints[col2_swap];
-                    sp->EffectBasePoints[col2_swap] = temp;
-                    temp = sp->EffectMechanic[col1_swap];
-                    sp->EffectMechanic[col1_swap] = sp->EffectMechanic[col2_swap];
-                    sp->EffectMechanic[col2_swap] = temp;
-                    temp = sp->EffectImplicitTargetA[col1_swap];
-                    sp->EffectImplicitTargetA[col1_swap] = sp->EffectImplicitTargetA[col2_swap];
-                    sp->EffectImplicitTargetA[col2_swap] = temp;
-                    temp = sp->EffectImplicitTargetB[col1_swap];
-                    sp->EffectImplicitTargetB[col1_swap] = sp->EffectImplicitTargetB[col2_swap];
-                    sp->EffectImplicitTargetB[col2_swap] = temp;
-                    temp = sp->EffectRadiusIndex[col1_swap];
-                    sp->EffectRadiusIndex[col1_swap] = sp->EffectRadiusIndex[col2_swap];
-                    sp->EffectRadiusIndex[col2_swap] = temp;
-                    temp = sp->EffectApplyAuraName[col1_swap];
-                    sp->EffectApplyAuraName[col1_swap] = sp->EffectApplyAuraName[col2_swap];
-                    sp->EffectApplyAuraName[col2_swap] = temp;
-                    temp = sp->EffectAmplitude[col1_swap];
-                    sp->EffectAmplitude[col1_swap] = sp->EffectAmplitude[col2_swap];
-                    sp->EffectAmplitude[col2_swap] = temp;
-                    ftemp = sp->EffectMultipleValue[col1_swap];
-                    sp->EffectMultipleValue[col1_swap] = sp->EffectMultipleValue[col2_swap];
-                    sp->EffectMultipleValue[col2_swap] = ftemp;
-                    temp = sp->EffectChainTarget[col1_swap];
-                    sp->EffectChainTarget[col1_swap] = sp->EffectChainTarget[col2_swap];
-                    sp->EffectChainTarget[col2_swap] = temp;
-                    temp = sp->EffectMiscValue[col1_swap];
-                    sp->EffectMiscValue[col1_swap] = sp->EffectMiscValue[col2_swap];
-                    sp->EffectMiscValue[col2_swap] = temp;
-                    temp = sp->EffectTriggerSpell[col1_swap];
-                    sp->EffectTriggerSpell[col1_swap] = sp->EffectTriggerSpell[col2_swap];
-                    sp->EffectTriggerSpell[col2_swap] = temp;
-                    ftemp = sp->EffectPointsPerComboPoint[col1_swap];
-                    sp->EffectPointsPerComboPoint[col1_swap] = sp->EffectPointsPerComboPoint[col2_swap];
-                    sp->EffectPointsPerComboPoint[col2_swap] = ftemp;
+                    temp = sp->eff[col1_swap].Effect;
+                    sp->eff[col1_swap].Effect = sp->eff[col2_swap].Effect;
+                    sp->eff[col2_swap].Effect = temp;
+                    temp = sp->eff[col1_swap].EffectDieSides;
+                    sp->eff[col1_swap].EffectDieSides = sp->eff[col2_swap].EffectDieSides;
+                    sp->eff[col2_swap].EffectDieSides = temp;
+                    //temp = sp->EffectBaseDice[col1_swap];	sp->EffectBaseDice[col1_swap] = sp->EffectBaseDice[col2_swap] ;		sp->EffectBaseDice[col2_swap] = temp;
+                    //ftemp = sp->EffectDicePerLevel[col1_swap];			sp->EffectDicePerLevel[col1_swap] = sp->EffectDicePerLevel[col2_swap] ;				sp->EffectDicePerLevel[col2_swap] = ftemp;
+                    ftemp = sp->eff[col1_swap].EffectRealPointsPerLevel;
+                    sp->eff[col1_swap].EffectRealPointsPerLevel = sp->eff[col2_swap].EffectRealPointsPerLevel;
+                    sp->eff[col2_swap].EffectRealPointsPerLevel = ftemp;
+                    temp = sp->eff[col1_swap].EffectBasePoints;
+                    sp->eff[col1_swap].EffectBasePoints = sp->eff[col2_swap].EffectBasePoints;
+                    sp->eff[col2_swap].EffectBasePoints = temp;
+                    temp = sp->eff[col1_swap].EffectMechanic;
+                    sp->eff[col1_swap].EffectMechanic = sp->eff[col2_swap].EffectMechanic;
+                    sp->eff[col2_swap].EffectMechanic = temp;
+                    temp = sp->eff[col1_swap].EffectImplicitTargetA;
+                    sp->eff[col1_swap].EffectImplicitTargetA = sp->eff[col2_swap].EffectImplicitTargetA;
+                    sp->eff[col2_swap].EffectImplicitTargetA = temp;
+                    temp = sp->eff[col1_swap].EffectImplicitTargetB;
+                    sp->eff[col1_swap].EffectImplicitTargetB = sp->eff[col2_swap].EffectImplicitTargetB;
+                    sp->eff[col2_swap].EffectImplicitTargetB = temp;
+                    temp = sp->eff[col1_swap].EffectRadiusIndex;
+                    sp->eff[col1_swap].EffectRadiusIndex = sp->eff[col2_swap].EffectRadiusIndex;
+                    sp->eff[col2_swap].EffectRadiusIndex = temp;
+                    temp = sp->eff[col1_swap].EffectApplyAuraName;
+                    sp->eff[col1_swap].EffectApplyAuraName = sp->eff[col2_swap].EffectApplyAuraName;
+                    sp->eff[col2_swap].EffectApplyAuraName = temp;
+                    temp = sp->eff[col1_swap].EffectAmplitude;
+                    sp->eff[col1_swap].EffectAmplitude = sp->eff[col2_swap].EffectAmplitude;
+                    sp->eff[col2_swap].EffectAmplitude = temp;
+                    ftemp = sp->eff[col1_swap].EffectMultipleValue;
+                    sp->eff[col1_swap].EffectMultipleValue = sp->eff[col2_swap].EffectMultipleValue;
+                    sp->eff[col2_swap].EffectMultipleValue = ftemp;
+                    temp = sp->eff[col1_swap].EffectChainTarget;
+                    sp->eff[col1_swap].EffectChainTarget = sp->eff[col2_swap].EffectChainTarget;
+                    sp->eff[col2_swap].EffectChainTarget = temp;
+                    temp = sp->eff[col1_swap].EffectMiscValue;
+                    sp->eff[col1_swap].EffectMiscValue = sp->eff[col2_swap].EffectMiscValue;
+                    sp->eff[col2_swap].EffectMiscValue = temp;
+                    temp = sp->eff[col1_swap].EffectTriggerSpell;
+                    sp->eff[col1_swap].EffectTriggerSpell = sp->eff[col2_swap].EffectTriggerSpell;
+                    sp->eff[col2_swap].EffectTriggerSpell = temp;
+                    ftemp = sp->eff[col1_swap].EffectPointsPerComboPoint;
+                    sp->eff[col1_swap].EffectPointsPerComboPoint = sp->eff[col2_swap].EffectPointsPerComboPoint;
+                    sp->eff[col2_swap].EffectPointsPerComboPoint = ftemp;
                 }
 
         for (uint32 b = 0; b < 3; ++b)
         {
-            if (sp->EffectTriggerSpell[b] != 0 && dbcSpell.LookupEntryForced(sp->EffectTriggerSpell[b]) == NULL)
+            if (sp->eff[b].EffectTriggerSpell != 0 && dbcSpell.LookupEntryForced(sp->eff[b].EffectTriggerSpell) == NULL)
             {
                 /* proc spell referencing non-existent spell. create a dummy spell for use w/ it. */
-                CreateDummySpell(sp->EffectTriggerSpell[b]);
+                CreateDummySpell(sp->eff[b].EffectTriggerSpell);
             }
 
-            if (sp->Attributes & ATTRIBUTES_ONLY_OUTDOORS && sp->EffectApplyAuraName[b] == SPELL_AURA_MOUNTED)
+            if (sp->Attributes & ATTRIBUTES_ONLY_OUTDOORS && sp->eff[b].EffectApplyAuraName == SPELL_AURA_MOUNTED)
             {
                 sp->Attributes &= ~ATTRIBUTES_ONLY_OUTDOORS;
             }
 
-            if (sp->EffectApplyAuraName[b] == SPELL_AURA_PREVENT_RESURRECTION)
+            if (sp->eff[b].EffectApplyAuraName == SPELL_AURA_PREVENT_RESURRECTION)
 			{
 				sp->Attributes |= ATTRIBUTES_NEGATIVE;
 				sp->AttributesExC |= CAN_PERSIST_AND_CASTED_WHILE_DEAD;
@@ -250,21 +250,21 @@ void ApplyNormalFixes()
             sp->c_is_flags |= SPELL_FLAG_IS_NOT_USING_DMG_BONUS;
 
         //Rogue: Poison time fix for 2.3
-        if (strstr(sp->Name, "Crippling Poison") && sp->Effect[0] == SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY)    //I, II
-            sp->EffectBasePoints[0] = 3599;
-        if (strstr(sp->Name, "Mind-numbing Poison") && sp->Effect[0] == SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY)    //I,II,III
-            sp->EffectBasePoints[0] = 3599;
-        if (strstr(sp->Name, "Instant Poison") && sp->Effect[0] == SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY)    //I,II,III,IV,V,VI,VII
-            sp->EffectBasePoints[0] = 3599;
-        if (strstr(sp->Name, "Deadly Poison") && sp->Effect[0] == SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY)    //I,II,III,IV,V,VI,VII
-            sp->EffectBasePoints[0] = 3599;
-        if (strstr(sp->Name, "Wound Poison") && sp->Effect[0] == SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY)    //I,II,III,IV,V
-            sp->EffectBasePoints[0] = 3599;
-        if (strstr(sp->Name, "Anesthetic Poison") && sp->Effect[0] == SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY)    //I
-            sp->EffectBasePoints[0] = 3599;
+        if (strstr(sp->Name, "Crippling Poison") && sp->eff[0].Effect == SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY)    //I, II
+            sp->eff[0].EffectBasePoints = 3599;
+        if (strstr(sp->Name, "Mind-numbing Poison") && sp->eff[0].Effect == SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY)    //I,II,III
+            sp->eff[0].EffectBasePoints = 3599;
+        if (strstr(sp->Name, "Instant Poison") && sp->eff[0].Effect == SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY)    //I,II,III,IV,V,VI,VII
+            sp->eff[0].EffectBasePoints = 3599;
+        if (strstr(sp->Name, "Deadly Poison") && sp->eff[0].Effect == SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY)    //I,II,III,IV,V,VI,VII
+            sp->eff[0].EffectBasePoints = 3599;
+        if (strstr(sp->Name, "Wound Poison") && sp->eff[0].Effect == SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY)    //I,II,III,IV,V
+            sp->eff[0].EffectBasePoints = 3599;
+        if (strstr(sp->Name, "Anesthetic Poison") && sp->eff[0].Effect == SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY)    //I
+            sp->eff[0].EffectBasePoints = 3599;
 
-        if (strstr(sp->Name, "Sharpen Blade") && sp->Effect[0] == SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY)    //All BS stones
-            sp->EffectBasePoints[0] = 3599;
+        if (strstr(sp->Name, "Sharpen Blade") && sp->eff[0].Effect == SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY)    //All BS stones
+            sp->eff[0].EffectBasePoints = 3599;
 
         //these mostly do not mix so we can use else
         // look for seal, etc in name
@@ -341,7 +341,7 @@ void ApplyNormalFixes()
             sp->c_is_flags |= SPELL_FLAG_IS_MAXSTACK_FOR_DEBUFF;
 
         //stupid spell ranking problem
-        if (sp->spellLevel == 0)
+        if (sp->SpellLevel.spellLevel == 0)
         {
             uint32 new_level = 0;
 
@@ -361,19 +361,19 @@ void ApplyNormalFixes()
             if (new_level != 0)
             {
                 uint32 teachspell = 0;
-                if (sp->Effect[0] == SPELL_EFFECT_LEARN_SPELL)
-                    teachspell = sp->EffectTriggerSpell[0];
-                else if (sp->Effect[1] == SPELL_EFFECT_LEARN_SPELL)
-                    teachspell = sp->EffectTriggerSpell[1];
-                else if (sp->Effect[2] == SPELL_EFFECT_LEARN_SPELL)
-                    teachspell = sp->EffectTriggerSpell[2];
+                if (sp->eff[0].Effect == SPELL_EFFECT_LEARN_SPELL)
+                    teachspell = sp->eff[0].EffectTriggerSpell;
+                else if (sp->eff[1].Effect == SPELL_EFFECT_LEARN_SPELL)
+                    teachspell = sp->eff[1].EffectTriggerSpell;
+                else if (sp->eff[2].Effect == SPELL_EFFECT_LEARN_SPELL)
+                    teachspell = sp->eff[2].EffectTriggerSpell;
 
                 if (teachspell)
                 {
                     SpellEntry* spellInfo;
                     spellInfo = CheckAndReturnSpellEntry(teachspell);
-                    spellInfo->spellLevel = new_level;
-                    sp->spellLevel = new_level;
+                    spellInfo->SpellLevel.spellLevel = new_level;
+                    sp->SpellLevel.spellLevel = new_level;
                 }
             }
         }
@@ -425,16 +425,16 @@ void ApplyNormalFixes()
         {
             for (uint32 z = 0; z < 3; ++z)
             {
-                if (sp->EffectApplyAuraName[z] == SPELL_AURA_MOD_FEAR ||
-                    sp->EffectApplyAuraName[z] == SPELL_AURA_MOD_ROOT)
+                if (sp->eff[z].EffectApplyAuraName == SPELL_AURA_MOD_FEAR ||
+                    sp->eff[z].EffectApplyAuraName == SPELL_AURA_MOD_ROOT)
                 {
                     sp->AuraInterruptFlags |= AURA_INTERRUPT_ON_UNUSED2;
                     break;
                 }
 
-                if ((sp->Effect[z] == SPELL_EFFECT_SCHOOL_DAMAGE && sp->Spell_Dmg_Type == SPELL_DMG_TYPE_MELEE) || sp->Effect[z] == SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL || sp->Effect[z] == SPELL_EFFECT_WEAPON_DAMAGE || sp->Effect[z] == SPELL_EFFECT_WEAPON_PERCENT_DAMAGE || sp->Effect[z] == SPELL_EFFECT_DUMMYMELEE)
+                if ((sp->eff[z].Effect == SPELL_EFFECT_SCHOOL_DAMAGE && sp->Spell_Dmg_Type == SPELL_DMG_TYPE_MELEE) || sp->eff[z].Effect == SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL || sp->eff[z].Effect == SPELL_EFFECT_WEAPON_DAMAGE || sp->eff[z].Effect == SPELL_EFFECT_WEAPON_PERCENT_DAMAGE || sp->eff[z].Effect == SPELL_EFFECT_DUMMYMELEE)
                     sp->is_melee_spell = true;
-                if ((sp->Effect[z] == SPELL_EFFECT_SCHOOL_DAMAGE && sp->Spell_Dmg_Type == SPELL_DMG_TYPE_RANGED))
+                if ((sp->eff[z].Effect == SPELL_EFFECT_SCHOOL_DAMAGE && sp->Spell_Dmg_Type == SPELL_DMG_TYPE_RANGED))
                 {
                     //Log.Notice("SpellFixes" , "Ranged Spell: %u [%s]" , sp->Id , sp->Name);
                     sp->is_ranged_spell = true;
@@ -455,13 +455,13 @@ void ApplyNormalFixes()
         for (uint32 y = 0; y < 3; y++)
         {
             // get the effect number from the spell
-            effect = sp->Effect[y];
+            effect = sp->eff[y].Effect;
 
             //spell group
 
             if (effect == SPELL_EFFECT_APPLY_AURA)
             {
-                uint32 aura = sp->EffectApplyAuraName[y];
+                uint32 aura = sp->eff[y].EffectApplyAuraName;
                 if (aura == SPELL_AURA_PROC_TRIGGER_SPELL ||
                     aura == SPELL_AURA_PROC_TRIGGER_DAMAGE
                    )//search for spellid in description
@@ -731,9 +731,9 @@ void ApplyNormalFixes()
                 }//end "if procspellaura"
 
                 // Fix if it's a periodic trigger with amplitude = 0, to avoid division by zero
-                else if ((aura == SPELL_AURA_PERIODIC_TRIGGER_SPELL || aura == SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE) && sp->EffectAmplitude[y] == 0)
+                else if ((aura == SPELL_AURA_PERIODIC_TRIGGER_SPELL || aura == SPELL_AURA_PERIODIC_TRIGGER_SPELL_WITH_VALUE) && sp->eff[y].EffectAmplitude == 0)
                 {
-                    sp->EffectAmplitude[y] = 1000;
+                    sp->eff[y].EffectAmplitude = 1000;
                 }
                 else if (aura == SPELL_AURA_SCHOOL_ABSORB && sp->AuraFactoryFunc == NULL)
                     sp->AuraFactoryFunc = (void * (*)) &AbsorbAura::Create;
@@ -752,30 +752,30 @@ void ApplyNormalFixes()
         //////////////////////////////////////////////////////////////////////////////////////////////////////
         //omg lightning shield trigger spell id's are all wrong ?
         //if you are bored you could make these by hand but i guess we might find other spells with this problem..and this way it's safe
-        if (strstr(sp->Name, "Lightning Shield") && sp->EffectTriggerSpell[0])
+        if (strstr(sp->Name, "Lightning Shield") && sp->eff[0].EffectTriggerSpell)
         {
             //check if we can find in the description
             const char* startofid = strstr(sp->Description, "for $");
             if (startofid)
             {
                 startofid += strlen("for $");
-                sp->EffectTriggerSpell[0] = atoi(startofid);   //get new lightning shield trigger id
+                sp->eff[0].EffectTriggerSpell = atoi(startofid);   //get new lightning shield trigger id
             }
             sp->proc_interval = 3000; //few seconds
         }
         //mage ignite talent should proc only on some chances
-        else if (strstr(sp->Name, "Ignite") && sp->Id >= 11119 && sp->Id <= 12848 && sp->EffectApplyAuraName[0] == SPELL_AURA_DUMMY)
+        else if (strstr(sp->Name, "Ignite") && sp->Id >= 11119 && sp->Id <= 12848 && sp->eff[0].EffectApplyAuraName == SPELL_AURA_DUMMY)
         {
             //check if we can find in the description
             const char* startofid = strstr(sp->Description, "an additional ");
             if (startofid)
             {
                 startofid += strlen("an additional ");
-                sp->EffectBasePoints[0] = atoi(startofid); //get new value. This is actually level*8 ;)
+                sp->eff[0].EffectBasePoints = atoi(startofid); //get new value. This is actually level*8 ;)
             }
-            sp->Effect[0] = SPELL_EFFECT_APPLY_AURA; //aura
-            sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL; //force him to use procspell effect
-            sp->EffectTriggerSpell[0] = 12654; //evil , but this is good for us :D
+            sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA; //aura
+            sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL; //force him to use procspell effect
+            sp->eff[0].EffectTriggerSpell = 12654; //evil , but this is good for us :D
             sp->procFlags = PROC_ON_SPELL_CRIT_HIT; //add procflag here since this was not processed with the others !
         }
         // Winter's Chill handled by frost school
@@ -787,7 +787,7 @@ void ApplyNormalFixes()
         //Chain Heal all ranks %50 heal value (49 + 1)
         else if (strstr(sp->Name, "Chain Heal"))
         {
-            sp->EffectDieSides[0] = 49;
+            sp->eff[0].EffectDieSides = 49;
         }
         else if (strstr(sp->Name, "Touch of Weakness"))
         {
@@ -796,8 +796,8 @@ void ApplyNormalFixes()
             if (startofid)
             {
                 startofid += strlen("cause $");
-                sp->EffectTriggerSpell[0] = atoi(startofid);
-                sp->EffectTriggerSpell[1] = sp->EffectTriggerSpell[0]; //later versions of this spell changed to eff[1] the aura
+                sp->eff[0].EffectTriggerSpell = atoi(startofid);
+                sp->eff[1].EffectTriggerSpell = sp->eff[0].EffectTriggerSpell; //later versions of this spell changed to eff[1] the aura
                 sp->procFlags = uint32(PROC_ON_MELEE_ATTACK_VICTIM);
             }
         }
@@ -809,8 +809,8 @@ void ApplyNormalFixes()
             if (startofid)
             {
                 startofid += strlen("to deal $");
-                sp->EffectTriggerSpell[0] = atoi(startofid);
-                sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
+                sp->eff[0].EffectTriggerSpell = atoi(startofid);
+                sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
                 sp->procFlags = PROC_ON_MELEE_ATTACK;
                 sp->procChance = 50;
             }
@@ -863,27 +863,27 @@ void ApplyNormalFixes()
         if (!sp->MechanicsType)
         {
             //Set Silencing spells mechanic.
-            if (sp->EffectApplyAuraName[0] == SPELL_AURA_MOD_SILENCE ||
-                sp->EffectApplyAuraName[1] == SPELL_AURA_MOD_SILENCE ||
-                sp->EffectApplyAuraName[2] == SPELL_AURA_MOD_SILENCE)
+            if (sp->eff[0].EffectApplyAuraName == SPELL_AURA_MOD_SILENCE ||
+                sp->eff[1].EffectApplyAuraName == SPELL_AURA_MOD_SILENCE ||
+                sp->eff[2].EffectApplyAuraName == SPELL_AURA_MOD_SILENCE)
                 sp->MechanicsType = MECHANIC_SILENCED;
 
             //Set Stunning spells mechanic.
-            if (sp->EffectApplyAuraName[0] == SPELL_AURA_MOD_STUN ||
-                sp->EffectApplyAuraName[1] == SPELL_AURA_MOD_STUN ||
-                sp->EffectApplyAuraName[2] == SPELL_AURA_MOD_STUN)
+            if (sp->eff[0].EffectApplyAuraName == SPELL_AURA_MOD_STUN ||
+                sp->eff[1].EffectApplyAuraName == SPELL_AURA_MOD_STUN ||
+                sp->eff[2].EffectApplyAuraName == SPELL_AURA_MOD_STUN)
                 sp->MechanicsType = MECHANIC_STUNNED;
 
             //Set Fearing spells mechanic
-            if (sp->EffectApplyAuraName[0] == SPELL_AURA_MOD_FEAR ||
-                sp->EffectApplyAuraName[1] == SPELL_AURA_MOD_FEAR ||
-                sp->EffectApplyAuraName[2] == SPELL_AURA_MOD_FEAR)
+            if (sp->eff[0].EffectApplyAuraName == SPELL_AURA_MOD_FEAR ||
+                sp->eff[1].EffectApplyAuraName == SPELL_AURA_MOD_FEAR ||
+                sp->eff[2].EffectApplyAuraName == SPELL_AURA_MOD_FEAR)
                 sp->MechanicsType = MECHANIC_FLEEING;
 
             //Set Interrupted spells mech
-            if (sp->Effect[0] == SPELL_EFFECT_INTERRUPT_CAST ||
-                sp->Effect[1] == SPELL_EFFECT_INTERRUPT_CAST ||
-                sp->Effect[2] == SPELL_EFFECT_INTERRUPT_CAST)
+            if (sp->eff[0].Effect == SPELL_EFFECT_INTERRUPT_CAST ||
+                sp->eff[1].Effect == SPELL_EFFECT_INTERRUPT_CAST ||
+                sp->eff[2].Effect == SPELL_EFFECT_INTERRUPT_CAST)
                 sp->MechanicsType = MECHANIC_INTERRUPTED;
         }
 
@@ -953,9 +953,9 @@ void ApplyNormalFixes()
         //Flag for DoT and HoT
         for (i = 0; i < 3; i++)
         {
-            if (sp->EffectApplyAuraName[i] == SPELL_AURA_PERIODIC_DAMAGE ||
-                sp->EffectApplyAuraName[i] == SPELL_AURA_PERIODIC_HEAL ||
-                sp->EffectApplyAuraName[i] == SPELL_AURA_PERIODIC_LEECH)
+            if (sp->eff[i].EffectApplyAuraName == SPELL_AURA_PERIODIC_DAMAGE ||
+                sp->eff[i].EffectApplyAuraName == SPELL_AURA_PERIODIC_HEAL ||
+                sp->eff[i].EffectApplyAuraName == SPELL_AURA_PERIODIC_LEECH)
             {
                 sp->spell_coef_flags |= SPELL_FLAG_IS_DOT_OR_HOT_SPELL;
                 break;
@@ -965,17 +965,17 @@ void ApplyNormalFixes()
         //Flag for DD or DH
         for (i = 0; i < 3; i++)
         {
-            if (sp->EffectApplyAuraName[i] == SPELL_AURA_PERIODIC_TRIGGER_SPELL && sp->EffectTriggerSpell[i])
+            if (sp->eff[i].EffectApplyAuraName == SPELL_AURA_PERIODIC_TRIGGER_SPELL && sp->eff[i].EffectTriggerSpell)
             {
-                spz = dbcSpell.LookupEntryForced(sp->EffectTriggerSpell[i]);
+                spz = dbcSpell.LookupEntryForced(sp->eff[i].EffectTriggerSpell);
                 if (spz &&
-                    (spz->Effect[i] == SPELL_EFFECT_SCHOOL_DAMAGE ||
-                    spz->Effect[i] == SPELL_EFFECT_HEAL)
+                    (spz->eff[i].Effect == SPELL_EFFECT_SCHOOL_DAMAGE ||
+                    spz->eff[i].Effect == SPELL_EFFECT_HEAL)
                    )
                     spcheck = true;
             }
-            if (sp->Effect[i] == SPELL_EFFECT_SCHOOL_DAMAGE ||
-                sp->Effect[i] == SPELL_EFFECT_HEAL ||
+            if (sp->eff[i].Effect == SPELL_EFFECT_SCHOOL_DAMAGE ||
+                sp->eff[i].Effect == SPELL_EFFECT_HEAL ||
                 spcheck
                )
             {
@@ -986,7 +986,7 @@ void ApplyNormalFixes()
 
         for (i = 0; i < 3; i++)
         {
-            switch (sp->EffectImplicitTargetA[i])
+            switch (sp->eff[i].EffectImplicitTargetA)
             {
                 //AoE
                 case EFF_TARGET_ALL_TARGETABLE_AROUND_LOCATION_IN_RADIUS:
@@ -1012,7 +1012,7 @@ void ApplyNormalFixes()
 
         for (i = 0; i < 3; i++)
         {
-            switch (sp->EffectImplicitTargetB[i])
+            switch (sp->eff[i].EffectImplicitTargetB)
             {
                 //AoE
                 case EFF_TARGET_ALL_TARGETABLE_AROUND_LOCATION_IN_RADIUS:
@@ -1046,10 +1046,10 @@ void ApplyNormalFixes()
         //Additional Effect (not healing or damaging)
         for (i = 0; i < 3; i++)
         {
-            if (sp->Effect[i] == SPELL_EFFECT_NULL)
+            if (sp->eff[i].Effect == SPELL_EFFECT_NULL)
                 continue;
 
-            switch (sp->Effect[i])
+            switch (sp->eff[i].Effect)
             {
                 case SPELL_EFFECT_SCHOOL_DAMAGE:
                 case SPELL_EFFECT_ENVIRONMENTAL_DAMAGE:
@@ -1065,7 +1065,7 @@ void ApplyNormalFixes()
                     continue;
             }
 
-            switch (sp->EffectApplyAuraName[i])
+            switch (sp->eff[i].EffectApplyAuraName)
             {
                 case SPELL_AURA_PERIODIC_DAMAGE:
                 case SPELL_AURA_PROC_TRIGGER_DAMAGE:
@@ -1166,9 +1166,9 @@ void ApplyNormalFixes()
         if (sp->NameHash == SPELL_HASH_SHIELD_OF_RIGHTEOUSNESS)
         {
             sp->School = SCHOOL_HOLY;
-            sp->Effect[0] = SPELL_EFFECT_DUMMY;
-            sp->Effect[1] = SPELL_EFFECT_NULL; //hacks, handling it in Spell::SpellEffectSchoolDMG(uint32 i)
-            sp->Effect[2] = SPELL_EFFECT_SCHOOL_DAMAGE; //hack
+            sp->eff[0].Effect = SPELL_EFFECT_DUMMY;
+            sp->eff[1].Effect = SPELL_EFFECT_NULL; //hacks, handling it in Spell::SpellEffectSchoolDMG(uint32 i)
+            sp->eff[2].Effect = SPELL_EFFECT_SCHOOL_DAMAGE; //hack
         }
 
         // Paladin - Consecration
@@ -1180,9 +1180,9 @@ void ApplyNormalFixes()
 
         if (sp->NameHash == SPELL_HASH_SEALS_OF_THE_PURE)
         {
-            sp->EffectSpellClassMask[0][0] = 0x08000400;
-            sp->EffectSpellClassMask[0][1] = 0x20000000;
-            sp->EffectSpellClassMask[1][1] = 0x800;
+            sp->SpellClassOptions.SpellFamilyFlags[0][0] = 0x08000400;
+            sp->eff[0].EffectSpellGroupRelation[1] = 0x20000000;
+            sp->SpellClassOptions.SpellFamilyFlags[1][1] = 0x800;
         }
 
         //////////////////////////////////////////
@@ -1244,48 +1244,48 @@ void ApplyNormalFixes()
             {
                 case 1535:
                 {
-                    sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-                    sp->EffectTriggerSpell[1] = 8349;
+                    sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+                    sp->eff[1].EffectTriggerSpell = 8349;
                 } break;
                 case 8498:      //Rank 2
                 {
-                    sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-                    sp->EffectTriggerSpell[1] = 8502;
+                    sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+                    sp->eff[1].EffectTriggerSpell = 8502;
                 } break;
                 case 8499:      //Rank 3
                 {
-                    sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-                    sp->EffectTriggerSpell[1] = 8503;
+                    sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+                    sp->eff[1].EffectTriggerSpell = 8503;
                 } break;
                 case 11314:     //Rank 4
                 {
-                    sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-                    sp->EffectTriggerSpell[1] = 11306;
+                    sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+                    sp->eff[1].EffectTriggerSpell = 11306;
                 } break;
                 case 11315:     //Rank 5
                 {
-                    sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-                    sp->EffectTriggerSpell[1] = 11307;
+                    sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+                    sp->eff[1].EffectTriggerSpell = 11307;
                 } break;
                 case 25546:     //Rank 6
                 {
-                    sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-                    sp->EffectTriggerSpell[1] = 25535;
+                    sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+                    sp->eff[1].EffectTriggerSpell = 25535;
                 } break;
                 case 25547:     //Rank 7
                 {
-                    sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-                    sp->EffectTriggerSpell[1] = 25537;
+                    sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+                    sp->eff[1].EffectTriggerSpell = 25537;
                 } break;
                 case 61649:     //Rank 8
                 {
-                    sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-                    sp->EffectTriggerSpell[1] = 61650;
+                    sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+                    sp->eff[1].EffectTriggerSpell = 61650;
                 } break;
                 case 61657:     //Rank 9
                 {
-                    sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-                    sp->EffectTriggerSpell[1] = 61654;
+                    sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+                    sp->eff[1].EffectTriggerSpell = 61654;
                 } break;
                 default:
                     break;
@@ -1295,23 +1295,23 @@ void ApplyNormalFixes()
 
         if (sp->NameHash == SPELL_HASH_FLAMETONGUE_ATTACK)
         {
-            //sp->Effect[1] = SPELL_EFFECT_DUMMY;
+            //sp->eff[1].Effect = SPELL_EFFECT_DUMMY;
             sp->AttributesExC |= FLAGS4_NO_DONE_BONUS;
         }
 
         if (sp->NameHash == SPELL_HASH_FROSTBRAND_ATTACK)
         {
-            //sp->Effect[1] = SPELL_EFFECT_DUMMY;
+            //sp->eff[1].Effect = SPELL_EFFECT_DUMMY;
             sp->AttributesExC |= FLAGS4_NO_DONE_BONUS;
         }
 
         // Flametongue Totem passive target fix
         if (sp->NameHash == SPELL_HASH_FLAMETONGUE_TOTEM && sp->Attributes & ATTRIBUTES_PASSIVE)
         {
-            sp->EffectImplicitTargetA[0] = EFF_TARGET_SELF;
-            sp->EffectImplicitTargetB[0] = 0;
-            sp->EffectImplicitTargetA[1] = EFF_TARGET_SELF;
-            sp->EffectImplicitTargetB[1] = 0;
+            sp->eff[0].EffectImplicitTargetA = EFF_TARGET_SELF;
+            sp->eff[0].EffectImplicitTargetB = 0;
+            sp->eff[1].EffectImplicitTargetA = EFF_TARGET_SELF;
+            sp->eff[1].EffectImplicitTargetB = 0;
         }
 
         // Frostbrand Weapon - 10% spd coefficient
@@ -1336,7 +1336,7 @@ void ApplyNormalFixes()
             sp->procFlags = PROC_ON_SPELL_HIT_VICTIM | PROC_ON_MELEE_ATTACK_VICTIM |
                 PROC_ON_RANGED_ATTACK_VICTIM | PROC_ON_ANY_DAMAGE_VICTIM;
             sp->proc_interval = 5000;
-            sp->EffectTriggerSpell[0] = 31616;
+            sp->eff[0].EffectTriggerSpell = 31616;
         }
 
         if (sp->NameHash == SPELL_HASH_HEX)
@@ -1396,9 +1396,9 @@ void ApplyNormalFixes()
         //Case SPELL_AURA_PERIODIC_TRIGGER_SPELL
         for (i = 0; i < 3; i++)
         {
-            if (sp->EffectApplyAuraName[i] == SPELL_AURA_PERIODIC_TRIGGER_SPELL)
+            if (sp->eff[i].EffectApplyAuraName == SPELL_AURA_PERIODIC_TRIGGER_SPELL)
             {
-                spz = CheckAndReturnSpellEntry(sp->EffectTriggerSpell[i]);
+                spz = CheckAndReturnSpellEntry(sp->eff[i].EffectTriggerSpell);
                 if (spz != NULL)
                 {
                     if (sp->Dspell_coef_override >= 0)
@@ -1409,7 +1409,7 @@ void ApplyNormalFixes()
                         if (sp->ChannelInterruptFlags != 0)
                         {
                             float Duration = float(GetDuration(dbcSpellDuration.LookupEntry(sp->DurationIndex)));
-                            float amp = float(sp->EffectAmplitude[i]);
+                            float amp = float(sp->eff[i].EffectAmplitude);
                             sp->fixed_dddhcoef = sp->fixed_hotdotcoef * amp / Duration;
                         }
                         spz->fixed_dddhcoef = sp->fixed_dddhcoef;
@@ -1423,7 +1423,7 @@ void ApplyNormalFixes()
                         if (sp->ChannelInterruptFlags != 0)
                         {
                             float Duration = float(GetDuration(dbcSpellDuration.LookupEntry(sp->DurationIndex)));
-                            float amp = float(sp->EffectAmplitude[i]);
+                            float amp = float(sp->eff[i].EffectAmplitude);
                             sp->fixed_hotdotcoef *= amp / Duration;
                         }
                         spz->fixed_hotdotcoef = sp->fixed_hotdotcoef;
@@ -1480,43 +1480,43 @@ void ApplyNormalFixes()
     //Big Blizzard Bear
     /*sp = CheckAndReturnSpellEntry(58983);
     if (sp != NULL)
-        sp->Effect[0] = SPELL_EFFECT_NULL;
+        sp->eff[0].Effect = SPELL_EFFECT_NULL;
     //Winged Steed of Ebon Blade
     sp = CheckAndReturnSpellEntry(54729);
     if (sp != NULL)
-        sp->Effect[0] = SPELL_EFFECT_NULL;
+        sp->eff[0].Effect = SPELL_EFFECT_NULL;
     //Headless Horsemen Mount
     sp = CheckAndReturnSpellEntry(48025);
     if (sp != NULL)
-        sp->Effect[0] = SPELL_EFFECT_NULL;
+        sp->eff[0].Effect = SPELL_EFFECT_NULL;
     //Magic Broom
     sp = CheckAndReturnSpellEntry(47977);
     if (sp != NULL)
-        sp->Effect[0] = SPELL_EFFECT_NULL;
+        sp->eff[0].Effect = SPELL_EFFECT_NULL;
     //Magic Rooster
     sp = CheckAndReturnSpellEntry(65917);
     if (sp != NULL)
-        sp->Effect[0] = SPELL_EFFECT_NULL;
+        sp->eff[0].Effect = SPELL_EFFECT_NULL;
     //Big Love Rocket
 	sp = CheckAndReturnSpellEntry(71342);
 	if (sp != NULL)
-	    sp->Effect[0] = SPELL_EFFECT_NULL;
+	    sp->eff[0].Effect = SPELL_EFFECT_NULL;
     //Invincible
     sp = CheckAndReturnSpellEntry(72286);
     if (sp != NULL)
-        sp->Effect[0] = SPELL_EFFECT_NULL;
+        sp->eff[0].Effect = SPELL_EFFECT_NULL;
 	//Blazing Hippogryph
 	sp = CheckAndReturnSpellEntry(74856);
 	if (sp != NULL)
-	    sp->Effect[0] = SPELL_EFFECT_NULL;
+	    sp->eff[0].Effect = SPELL_EFFECT_NULL;
 	//Celestial Steed
 	sp = CheckAndReturnSpellEntry(75614);
 	if (sp != NULL)
-	    sp->Effect[0] = SPELL_EFFECT_NULL;
+	    sp->eff[0].Effect = SPELL_EFFECT_NULL;
     //Touring Rocket
 	sp = CheckAndReturnSpellEntry(75973);
 	if (sp != NULL)
-	    sp->Effect[0] = SPELL_EFFECT_NULL;*/
+	    sp->eff[0].Effect = SPELL_EFFECT_NULL;*/
     //////////////////////////////////////////////////////
     // CLASS-SPECIFIC SPELL FIXES                        //
     //////////////////////////////////////////////////////
@@ -1610,19 +1610,19 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(12834);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[0] = 12721;
+        sp->eff[0].EffectTriggerSpell = 12721;
         sp->procFlags |= PROC_ON_SPELL_CRIT_HIT;
     }
     sp = CheckAndReturnSpellEntry(12849);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[0] = 12721;
+        sp->eff[0].EffectTriggerSpell = 12721;
         sp->procFlags |= PROC_ON_SPELL_CRIT_HIT;
     }
     sp = CheckAndReturnSpellEntry(12867);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[0] = 12721;
+        sp->eff[0].EffectTriggerSpell = 12721;
         sp->procFlags |= PROC_ON_SPELL_CRIT_HIT;
     }
 
@@ -1630,7 +1630,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(12289);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[1] = 23694;
+        sp->eff[1].EffectTriggerSpell = 23694;
         sp->procFlags = PROC_ON_CAST_SPECIFIC_SPELL;
         sp->procChance = 5;
     }
@@ -1638,7 +1638,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(12668);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[1] = 23694;
+        sp->eff[1].EffectTriggerSpell = 23694;
         sp->procFlags = PROC_ON_CAST_SPECIFIC_SPELL;
         sp->procChance = 10;
     }
@@ -1646,7 +1646,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(23695);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[1] = 23694;
+        sp->eff[1].EffectTriggerSpell = 23694;
         sp->procFlags = PROC_ON_CAST_SPECIFIC_SPELL;
         sp->procChance = 15;
     }
@@ -1655,9 +1655,9 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(20230);
     if (sp != NULL)
     {
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA; //aura
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 22858; //evil , but this is good for us :D
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA; //aura
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 22858; //evil , but this is good for us :D
         sp->procFlags = PROC_ON_MELEE_ATTACK_VICTIM; //add procflag here since this was not processed with the others !
     }
 
@@ -1674,7 +1674,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(29723);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[0] = 52437;
+        sp->eff[0].EffectTriggerSpell = 52437;
         sp->procFlags = PROC_ON_MELEE_ATTACK;
         sp->procChance = 3;
     }
@@ -1683,7 +1683,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(29725);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[0] = 52437;
+        sp->eff[0].EffectTriggerSpell = 52437;
         sp->procFlags = PROC_ON_MELEE_ATTACK;
         sp->procChance = 6;
     }
@@ -1692,7 +1692,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(29724);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[0] = 52437;
+        sp->eff[0].EffectTriggerSpell = 52437;
         sp->procFlags = PROC_ON_MELEE_ATTACK;
         sp->procChance = 9;
     }
@@ -1731,7 +1731,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(57755);
     if (sp != NULL)
     {
-        sp->Effect[0] = SPELL_EFFECT_SCHOOL_DAMAGE;
+        sp->eff[0].Effect = SPELL_EFFECT_SCHOOL_DAMAGE;
     }
 
     // Warrior - Rend
@@ -1767,35 +1767,35 @@ void ApplyNormalFixes()
     // Warrior - Slam
     sp = CheckAndReturnSpellEntry(1464);
     if (sp != NULL)
-        sp->Effect[0] = SPELL_EFFECT_SCHOOL_DAMAGE;
+        sp->eff[0].Effect = SPELL_EFFECT_SCHOOL_DAMAGE;
 
     sp = CheckAndReturnSpellEntry(8820);
     if (sp != NULL)
-        sp->Effect[0] = SPELL_EFFECT_SCHOOL_DAMAGE;
+        sp->eff[0].Effect = SPELL_EFFECT_SCHOOL_DAMAGE;
 
     sp = CheckAndReturnSpellEntry(11604);
     if (sp != NULL)
-        sp->Effect[0] = SPELL_EFFECT_SCHOOL_DAMAGE;
+        sp->eff[0].Effect = SPELL_EFFECT_SCHOOL_DAMAGE;
 
     sp = CheckAndReturnSpellEntry(11605);
     if (sp != NULL)
-        sp->Effect[0] = SPELL_EFFECT_SCHOOL_DAMAGE;
+        sp->eff[0].Effect = SPELL_EFFECT_SCHOOL_DAMAGE;
 
     sp = CheckAndReturnSpellEntry(25241);
     if (sp != NULL)
-        sp->Effect[0] = SPELL_EFFECT_SCHOOL_DAMAGE;
+        sp->eff[0].Effect = SPELL_EFFECT_SCHOOL_DAMAGE;
 
     sp = CheckAndReturnSpellEntry(25242);
     if (sp != NULL)
-        sp->Effect[0] = SPELL_EFFECT_SCHOOL_DAMAGE;
+        sp->eff[0].Effect = SPELL_EFFECT_SCHOOL_DAMAGE;
 
     sp = CheckAndReturnSpellEntry(47474);
     if (sp != NULL)
-        sp->Effect[0] = SPELL_EFFECT_SCHOOL_DAMAGE;
+        sp->eff[0].Effect = SPELL_EFFECT_SCHOOL_DAMAGE;
 
     sp = CheckAndReturnSpellEntry(47475);
     if (sp != NULL)
-        sp->Effect[0] = SPELL_EFFECT_SCHOOL_DAMAGE;
+        sp->eff[0].Effect = SPELL_EFFECT_SCHOOL_DAMAGE;
 
     // Warrior - Bloodsurge
     sp = CheckAndReturnSpellEntry(46913);
@@ -1880,47 +1880,47 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(23881);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL; //cast on us, it is good
-        sp->EffectTriggerSpell[1] = 23885; //evil , but this is good for us :D
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL; //cast on us, it is good
+        sp->eff[1].EffectTriggerSpell = 23885; //evil , but this is good for us :D
     }
     sp = CheckAndReturnSpellEntry(23892);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 23886; //evil , but this is good for us :D
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 23886; //evil , but this is good for us :D
     }
     sp = CheckAndReturnSpellEntry(23893);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL; //
-        sp->EffectTriggerSpell[1] = 23887; //evil , but this is good for us :D
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL; //
+        sp->eff[1].EffectTriggerSpell = 23887; //evil , but this is good for us :D
     }
     sp = CheckAndReturnSpellEntry(23894);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL; //
-        sp->EffectTriggerSpell[1] = 23888; //evil , but this is good for us :D
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL; //
+        sp->eff[1].EffectTriggerSpell = 23888; //evil , but this is good for us :D
     }
     sp = CheckAndReturnSpellEntry(25251);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL; //aura
-        sp->EffectTriggerSpell[1] = 25252; //evil , but this is good for us :D
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL; //aura
+        sp->eff[1].EffectTriggerSpell = 25252; //evil , but this is good for us :D
     }
     sp = CheckAndReturnSpellEntry(30335);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL; //aura
-        sp->EffectTriggerSpell[1] = 30339; //evil , but this is good for us :D
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL; //aura
+        sp->eff[1].EffectTriggerSpell = 30339; //evil , but this is good for us :D
     }
 
     // Warrior - Berserker Rage
     sp = CheckAndReturnSpellEntry(18499);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_DUMMY;//Forcing a dummy aura, so we can add the missing 4th effect.
-        sp->Effect[1] = SPELL_EFFECT_NULL;
-        sp->Effect[2] = SPELL_EFFECT_NULL;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_DUMMY;//Forcing a dummy aura, so we can add the missing 4th effect.
+        sp->eff[1].Effect = SPELL_EFFECT_NULL;
+        sp->eff[2].Effect = SPELL_EFFECT_NULL;
     }
 
     // Warrior - Improved Berserker Rage
@@ -1952,7 +1952,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(60970);
     if (sp != NULL)
     {
-        sp->Effect[0] = SPELL_EFFECT_DUMMY;
+        sp->eff[0].Effect = SPELL_EFFECT_DUMMY;
     }
 
     /**********************************************************
@@ -1998,7 +1998,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(12797);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[1] = 12798;
+        sp->eff[1].EffectTriggerSpell = 12798;
         sp->procFlags = PROC_ON_CAST_SPECIFIC_SPELL;
         sp->procChance = 25;
     }
@@ -2007,7 +2007,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(12799);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[1] = 12798;
+        sp->eff[1].EffectTriggerSpell = 12798;
         sp->procFlags = PROC_ON_CAST_SPECIFIC_SPELL;
         sp->procChance = 50;
     }
@@ -2023,7 +2023,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(12311);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[1] = 18498;
+        sp->eff[1].EffectTriggerSpell = 18498;
         sp->procFlags = PROC_ON_CAST_SPELL;
         sp->procChance = 50;
     }
@@ -2032,7 +2032,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(12958);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[1] = 18498;
+        sp->eff[1].EffectTriggerSpell = 18498;
         sp->procFlags = PROC_ON_CAST_SPELL;
         sp->procChance = 100;
     }
@@ -2041,8 +2041,8 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(46968);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_SCHOOL_DAMAGE;
-        sp->Effect[2] = SPELL_EFFECT_DUMMY;
+        sp->eff[1].Effect = SPELL_EFFECT_SCHOOL_DAMAGE;
+        sp->eff[2].Effect = SPELL_EFFECT_DUMMY;
     }
 
     //////////////////////////////////////////
@@ -2129,8 +2129,8 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(20056);   //Rank 2
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[0] = 20052;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 20052;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
         sp->procFlags = PROC_ON_CRIT_ATTACK | PROC_ON_SPELL_CRIT_HIT;
     }
 
@@ -2141,8 +2141,8 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(20057);   //Rank 3
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[0] = 20053;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 20053;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
         sp->procFlags = PROC_ON_CRIT_ATTACK | PROC_ON_SPELL_CRIT_HIT;
     }
     sp = CheckAndReturnSpellEntry(20053);   // Rank 3 proc
@@ -2164,16 +2164,16 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(38008);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 31893;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 31893;
     }
 
     //Paladin - Seal of Martyr
     sp = CheckAndReturnSpellEntry(53720);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 53719;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 53719;
         sp->School = SCHOOL_HOLY;
         sp->procFlags = PROC_ON_MELEE_ATTACK;
     }
@@ -2181,8 +2181,8 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(31892);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 31893;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 31893;
         sp->School = SCHOOL_HOLY;
         sp->procFlags = PROC_ON_MELEE_ATTACK;
     }
@@ -2204,13 +2204,13 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(53385);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectRadiusIndex[0] = 43; //16 yards
-        sp->EffectApplyAuraName[1] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 54172;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[0].EffectRadiusIndex = 43; //16 yards
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 54172;
         sp->procFlags = PROC_ON_CAST_SPELL;
         sp->procChance = 100;
-        sp->MaxTargets = 4;
+        sp->str.MaxTargets = 4;
     }
 
     //Paladin - Sacred Shield - bonus to flash is not working
@@ -2219,8 +2219,8 @@ void ApplyNormalFixes()
     {
         sp->procFlags = PROC_ON_ANY_DAMAGE_VICTIM | static_cast<uint32>(PROC_TARGET_SELF);
         sp->proc_interval = 6000;
-        sp->EffectTriggerSpell[0] = 58597;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 58597;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
     }
 
     //Paladin - Vindication
@@ -2243,32 +2243,32 @@ void ApplyNormalFixes()
      sp = CheckAndReturnSpellEntry(19977);
      if (sp != NULL)
      {
-     sp->EffectApplyAuraName[0] = SPELL_AURA_DUMMY;
-     sp->EffectApplyAuraName[1] = SPELL_AURA_DUMMY;
+     sp->eff[0].EffectApplyAuraName = SPELL_AURA_DUMMY;
+     sp->eff[1].EffectApplyAuraName = SPELL_AURA_DUMMY;
      }
      sp = CheckAndReturnSpellEntry(19978);
      if (sp != NULL)
      {
-     sp->EffectApplyAuraName[0] = SPELL_AURA_DUMMY;
-     sp->EffectApplyAuraName[1] = SPELL_AURA_DUMMY;
+     sp->eff[0].EffectApplyAuraName = SPELL_AURA_DUMMY;
+     sp->eff[1].EffectApplyAuraName = SPELL_AURA_DUMMY;
      }
      sp = CheckAndReturnSpellEntry(19979);
      if (sp != NULL)
      {
-     sp->EffectApplyAuraName[0] = SPELL_AURA_DUMMY;
-     sp->EffectApplyAuraName[1] = SPELL_AURA_DUMMY;
+     sp->eff[0].EffectApplyAuraName = SPELL_AURA_DUMMY;
+     sp->eff[1].EffectApplyAuraName = SPELL_AURA_DUMMY;
      }
      sp = CheckAndReturnSpellEntry(27144);
      if (sp != NULL)
      {
-     sp->EffectApplyAuraName[0] = SPELL_AURA_DUMMY;
-     sp->EffectApplyAuraName[1] = SPELL_AURA_DUMMY;
+     sp->eff[0].EffectApplyAuraName = SPELL_AURA_DUMMY;
+     sp->eff[1].EffectApplyAuraName = SPELL_AURA_DUMMY;
      }
      sp = CheckAndReturnSpellEntry(32770);
      if (sp != NULL)
      {
-     sp->EffectApplyAuraName[0] = SPELL_AURA_DUMMY;
-     sp->EffectApplyAuraName[1] = SPELL_AURA_DUMMY;
+     sp->eff[0].EffectApplyAuraName = SPELL_AURA_DUMMY;
+     sp->eff[1].EffectApplyAuraName = SPELL_AURA_DUMMY;
      }*/
 
     //Paladin - Reckoning
@@ -2304,7 +2304,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(31930);
     if (sp != NULL)
     {
-        sp->SpellFamilyName = 0;
+        sp->SpellClassOptions.SpellFamilyName = 0;
         sp->SpellGroupType[0] = 0;
         sp->SpellGroupType[1] = 0;
         sp->SpellGroupType[2] = 0;
@@ -2314,7 +2314,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(54180);
     if (sp != NULL)
     {
-        sp->SpellFamilyName = 0;
+        sp->SpellClassOptions.SpellFamilyName = 0;
         sp->SpellGroupType[0] = 0;
         sp->SpellGroupType[1] = 0;
         sp->SpellGroupType[2] = 0;
@@ -2326,24 +2326,24 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 54180;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 54180;
         sp->procChance = 33;
     }
     sp = CheckAndReturnSpellEntry(31877);
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 54180;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 54180;
         sp->procChance = 66;
     }
     sp = CheckAndReturnSpellEntry(31878);
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 54180;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 54180;
         sp->procChance = 100;
     }
 
@@ -2378,15 +2378,15 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_SPELL_LAND_VICTIM | static_cast<uint32>(PROC_TARGET_SELF);
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 31786;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 31786;
     }
     sp = CheckAndReturnSpellEntry(33776);
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_SPELL_LAND_VICTIM | static_cast<uint32>(PROC_TARGET_SELF);
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 31786;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 31786;
     }
 
     //Paladin - Improved Lay on Hands
@@ -2422,27 +2422,27 @@ void ApplyNormalFixes()
     //Divine Protection
     sp = CheckAndReturnSpellEntry(498);
     if (sp != NULL)
-        sp->targetAuraSpellNot = 25771;
+        sp->sar.targetAuraSpellNot = 25771;
 
     //Divine Shield
     sp = CheckAndReturnSpellEntry(642);
     if (sp != NULL)
-        sp->targetAuraSpellNot = 25771;
+        sp->sar.targetAuraSpellNot = 25771;
 
     //Hand of Protection Rank 1
     sp = CheckAndReturnSpellEntry(1022);
     if (sp != NULL)
-        sp->targetAuraSpellNot = 25771;
+        sp->sar.targetAuraSpellNot = 25771;
 
     //Hand of Protection Rank 2
     sp = CheckAndReturnSpellEntry(5599);
     if (sp != NULL)
-        sp->targetAuraSpellNot = 25771;
+        sp->sar.targetAuraSpellNot = 25771;
 
     //Hand of Protection Rank 3
     sp = CheckAndReturnSpellEntry(10278);
     if (sp != NULL)
-        sp->targetAuraSpellNot = 25771;
+        sp->sar.targetAuraSpellNot = 25771;
 
     //Paladin - Infusion of Light
     sp = CheckAndReturnSpellEntry(53569);
@@ -2514,24 +2514,24 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(20335);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 21183;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 21183;
         sp->procFlags = PROC_ON_CAST_SPELL;
         sp->procChance = 100;
     }
     sp = CheckAndReturnSpellEntry(20336);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 54498;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 54498;
         sp->procFlags = PROC_ON_CAST_SPELL;
         sp->procChance = 100;
     }
     sp = CheckAndReturnSpellEntry(20337);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 54499;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 54499;
         sp->procFlags = PROC_ON_CAST_SPELL;
         sp->procChance = 100;
     }
@@ -2540,11 +2540,11 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(53486);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_MOD_DAMAGE_DONE;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_MOD_DAMAGE_DONE;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
         sp->procFlags = PROC_ON_CRIT_ATTACK;
-        sp->EffectTriggerSpell[1] = 53489;
+        sp->eff[1].EffectTriggerSpell = 53489;
     }
     sp = CheckAndReturnSpellEntry(53489);
     if (sp != NULL)
@@ -2553,11 +2553,11 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(53488);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_MOD_DAMAGE_DONE;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_MOD_DAMAGE_DONE;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
         sp->procFlags = PROC_ON_CRIT_ATTACK;
-        sp->EffectTriggerSpell[1] = 59578;
+        sp->eff[1].EffectTriggerSpell = 59578;
     }
     sp = CheckAndReturnSpellEntry(59578);
     if (sp != NULL)
@@ -2567,53 +2567,53 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(853);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 32747;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 32747;
     }
     sp = CheckAndReturnSpellEntry(5588);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 32747;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 32747;
     }
     sp = CheckAndReturnSpellEntry(5589);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 32747;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 32747;
     }
     sp = CheckAndReturnSpellEntry(10308);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 32747;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 32747;
     }
 
     // Paladin - Sheath of Light
     sp = CheckAndReturnSpellEntry(53501);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 54203;
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 54203;
         sp->procFlags = PROC_ON_SPELL_CRIT_HIT;
     }
 
     sp = CheckAndReturnSpellEntry(53502);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 54203;
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 54203;
         sp->procFlags = PROC_ON_SPELL_CRIT_HIT;
     }
 
     sp = CheckAndReturnSpellEntry(53503);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 54203;
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 54203;
         sp->procFlags = PROC_ON_SPELL_CRIT_HIT;
     }
 
@@ -2625,24 +2625,24 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_RANGED_ATTACK;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 53254;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 53254;
         sp->procChance = 4;
     }
     sp = CheckAndReturnSpellEntry(53216);
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_RANGED_ATTACK;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 53254;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 53254;
         sp->procChance = 7;
     }
     sp = CheckAndReturnSpellEntry(53217);
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_RANGED_ATTACK;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 53254;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 53254;
         sp->procChance = 10;
     }
 
@@ -2671,20 +2671,20 @@ void ApplyNormalFixes()
     //Hunter - Bestial Wrath
     sp = CheckAndReturnSpellEntry(19574);
     if (sp != NULL)
-        sp->EffectApplyAuraName[2] = SPELL_AURA_DUMMY;
+        sp->eff[2].EffectApplyAuraName = SPELL_AURA_DUMMY;
 
     //Hunter - The Beast Within
     sp = CheckAndReturnSpellEntry(34692);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
         sp->procFlags = PROC_ON_CAST_SPELL;
         sp->procChance = 100;
-        sp->EffectTriggerSpell[0] = 34471;
+        sp->eff[0].EffectTriggerSpell = 34471;
     }
     sp = CheckAndReturnSpellEntry(34471);
     if (sp != NULL)
-        sp->EffectApplyAuraName[2] = SPELL_AURA_DUMMY;
+        sp->eff[2].EffectApplyAuraName = SPELL_AURA_DUMMY;
 
     //Hunter - Go for the Throat
     sp = CheckAndReturnSpellEntry(34950);
@@ -2695,10 +2695,10 @@ void ApplyNormalFixes()
         sp->procFlags = PROC_ON_RANGED_CRIT_ATTACK;
     sp = CheckAndReturnSpellEntry(34952);
     if (sp != NULL)
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
     sp = CheckAndReturnSpellEntry(34953);
     if (sp != NULL)
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
 
     // Hunter - Master Tactician
     sp = CheckAndReturnSpellEntry(34506);
@@ -2722,44 +2722,44 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_PET_OWNER | SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[0] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 19579;
+        sp->eff[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 19579;
     }
     sp = CheckAndReturnSpellEntry(20895);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_PET_OWNER | SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[0] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 24529;
+        sp->eff[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 24529;
     }
     sp = CheckAndReturnSpellEntry(19579);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA; //we should do the same for player too as we did for pet
-        sp->EffectApplyAuraName[1] = sp->EffectApplyAuraName[0];
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_PET;
-        sp->EffectBasePoints[1] = sp->EffectBasePoints[0];
-        sp->EffectAmplitude[1] = sp->EffectAmplitude[0];
-        sp->EffectDieSides[1] = sp->EffectDieSides[0];
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA; //we should do the same for player too as we did for pet
+        sp->eff[1].EffectApplyAuraName = sp->eff[0].EffectApplyAuraName;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_PET;
+        sp->eff[1].EffectBasePoints = sp->eff[0].EffectBasePoints;
+        sp->eff[1].EffectAmplitude = sp->eff[0].EffectAmplitude;
+        sp->eff[1].EffectDieSides = sp->eff[0].EffectDieSides;
     }
     sp = CheckAndReturnSpellEntry(24529);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA; //we should do the same for player too as we did for pet
-        sp->EffectApplyAuraName[1] = sp->EffectApplyAuraName[0];
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_PET;
-        sp->EffectBasePoints[1] = sp->EffectBasePoints[0];
-        sp->EffectAmplitude[1] = sp->EffectAmplitude[0];
-        sp->EffectDieSides[1] = sp->EffectDieSides[0];
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA; //we should do the same for player too as we did for pet
+        sp->eff[1].EffectApplyAuraName = sp->eff[0].EffectApplyAuraName;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_PET;
+        sp->eff[1].EffectBasePoints = sp->eff[0].EffectBasePoints;
+        sp->eff[1].EffectAmplitude = sp->eff[0].EffectAmplitude;
+        sp->eff[1].EffectDieSides = sp->eff[0].EffectDieSides;
     }
 
     //Hunter Silencing Shot
     sp = CheckAndReturnSpellEntry(34490);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[1] = SPELL_AURA_MOD_SILENCE;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_MOD_SILENCE;
     }
 
     // Hunter - Ferocious Inspiration
@@ -2767,31 +2767,31 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
-        sp->EffectTriggerSpell[0] = 34456;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
+        sp->eff[0].EffectTriggerSpell = 34456;
         sp->procFlags = PROC_ON_CRIT_ATTACK | PROC_ON_SPELL_CRIT_HIT | static_cast<uint32>(PROC_TARGET_SELF); //maybe target master ?
-        sp->Effect[1] = SPELL_EFFECT_NULL; //remove this
+        sp->eff[1].Effect = SPELL_EFFECT_NULL; //remove this
     }
     sp = CheckAndReturnSpellEntry(34459);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
-        sp->EffectTriggerSpell[0] = 34456;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
+        sp->eff[0].EffectTriggerSpell = 34456;
         sp->procFlags = PROC_ON_CRIT_ATTACK | PROC_ON_SPELL_CRIT_HIT | static_cast<uint32>(PROC_TARGET_SELF);
-        sp->Effect[1] = SPELL_EFFECT_NULL; //remove this
+        sp->eff[1].Effect = SPELL_EFFECT_NULL; //remove this
     }
     sp = CheckAndReturnSpellEntry(34460);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
-        sp->EffectTriggerSpell[0] = 34456;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
+        sp->eff[0].EffectTriggerSpell = 34456;
         sp->procFlags = PROC_ON_CRIT_ATTACK | PROC_ON_SPELL_CRIT_HIT | static_cast<uint32>(PROC_TARGET_SELF);
-        sp->Effect[1] = SPELL_EFFECT_NULL; //remove this
+        sp->eff[1].Effect = SPELL_EFFECT_NULL; //remove this
     }
 
     // Hunter - Focused Fire
@@ -2799,15 +2799,15 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_PET_OWNER | SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[0] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 35060;
+        sp->eff[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 35060;
     }
     sp = CheckAndReturnSpellEntry(35030);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_PET_OWNER | SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[0] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 35061;
+        sp->eff[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 35061;
     }
     sp = CheckAndReturnSpellEntry(35060);
     if (sp != NULL)
@@ -2821,25 +2821,25 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_SPELL_CRIT_HIT | static_cast<uint32>(PROC_TARGET_SELF);
-        sp->procChance = sp->EffectBasePoints[0] + 1;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 34720;
+        sp->procChance = sp->eff[0].EffectBasePoints + 1;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 34720;
     }
     sp = CheckAndReturnSpellEntry(34498);
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_SPELL_CRIT_HIT | static_cast<uint32>(PROC_TARGET_SELF);
-        sp->procChance = sp->EffectBasePoints[0] + 1;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 34720;
+        sp->procChance = sp->eff[0].EffectBasePoints + 1;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 34720;
     }
     sp = CheckAndReturnSpellEntry(34499);
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_SPELL_CRIT_HIT | static_cast<uint32>(PROC_TARGET_SELF);
-        sp->procChance = sp->EffectBasePoints[0] + 1;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 34720;
+        sp->procChance = sp->eff[0].EffectBasePoints + 1;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 34720;
     }
 
     // Hunter - Expose Weakness
@@ -2857,50 +2857,50 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(19621);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 19615;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
-        sp->procChance = sp->EffectBasePoints[0];
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 19615;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
+        sp->procChance = sp->eff[0].EffectBasePoints;
         sp->procFlags = PROC_ON_CRIT_ATTACK;
         sp->c_is_flags |= SPELL_FLAG_IS_EXPIREING_WITH_PET | SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET | static_cast<uint32>(PROC_TARGET_SELF);
     }
     sp = CheckAndReturnSpellEntry(19622);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 19615;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
-        sp->procChance = sp->EffectBasePoints[0];
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 19615;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
+        sp->procChance = sp->eff[0].EffectBasePoints;
         sp->procFlags = PROC_ON_CRIT_ATTACK;
         sp->c_is_flags |= SPELL_FLAG_IS_EXPIREING_WITH_PET | SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET | static_cast<uint32>(PROC_TARGET_SELF);
     }
     sp = CheckAndReturnSpellEntry(19623);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 19615;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
-        sp->procChance = sp->EffectBasePoints[0];
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 19615;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
+        sp->procChance = sp->eff[0].EffectBasePoints;
         sp->procFlags = PROC_ON_CRIT_ATTACK;
         sp->c_is_flags |= SPELL_FLAG_IS_EXPIREING_WITH_PET | SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET | static_cast<uint32>(PROC_TARGET_SELF);
     }
     sp = CheckAndReturnSpellEntry(19624);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 19615;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
-        sp->procChance = sp->EffectBasePoints[0];
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 19615;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
+        sp->procChance = sp->eff[0].EffectBasePoints;
         sp->procFlags = PROC_ON_CRIT_ATTACK;
         sp->c_is_flags |= SPELL_FLAG_IS_EXPIREING_WITH_PET | SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET | static_cast<uint32>(PROC_TARGET_SELF);
     }
     sp = CheckAndReturnSpellEntry(19625);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 19615;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
-        sp->procChance = sp->EffectBasePoints[0];
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 19615;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
+        sp->procChance = sp->eff[0].EffectBasePoints;
         sp->procFlags = PROC_ON_CRIT_ATTACK;
         sp->c_is_flags |= SPELL_FLAG_IS_EXPIREING_WITH_PET | SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET | static_cast<uint32>(PROC_TARGET_SELF);
     }
@@ -2909,12 +2909,12 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(19559);
     if (sp != NULL)
     {
-        sp->EffectMiscValue[0] = SMT_MISC_EFFECT;
+        sp->eff[0].EffectMiscValue = SMT_MISC_EFFECT;
     }
     sp = CheckAndReturnSpellEntry(19560);
     if (sp != NULL)
     {
-        sp->EffectMiscValue[0] = SMT_MISC_EFFECT;
+        sp->eff[0].EffectMiscValue = SMT_MISC_EFFECT;
     }
 
     //Hunter : Rapid Killing - might need to add honor trigger too here. I'm guessing you receive Xp too so I'm avoiding double proc
@@ -2954,22 +2954,22 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(6991);
     if (sp != NULL)
     {
-        sp->EffectImplicitTargetA[0] = 0;
+        sp->eff[0].EffectImplicitTargetA = 0;
     }
     /*    // !!! not sure this is good !!! have to test
         // Hunter's mark r1
         sp = CheckAndReturnSpellEntry(1130);
         if (sp != NULL)
-        sp->maxstack = (sp->EffectBasePoints[1]*3) / (sp->EffectBasePoints[1]/10);
+        sp->maxstack = (sp->eff[1].EffectBasePoints*3) / (sp->eff[1].EffectBasePoints/10);
         sp = CheckAndReturnSpellEntry(14323);
         if (sp != NULL)
-        sp->maxstack = (sp->EffectBasePoints[1]*3) / (sp->EffectBasePoints[1]/10);
+        sp->maxstack = (sp->eff[1].EffectBasePoints*3) / (sp->eff[1].EffectBasePoints/10);
         sp = CheckAndReturnSpellEntry(14324);
         if (sp != NULL)
-        sp->maxstack = (sp->EffectBasePoints[1]*3) / (sp->EffectBasePoints[1]/10);
+        sp->maxstack = (sp->eff[1].EffectBasePoints*3) / (sp->eff[1].EffectBasePoints/10);
         sp = CheckAndReturnSpellEntry(14325);
         if (sp != NULL)
-        sp->maxstack = (sp->EffectBasePoints[1]*3) / (sp->EffectBasePoints[1]/10);
+        sp->maxstack = (sp->eff[1].EffectBasePoints*3) / (sp->eff[1].EffectBasePoints/10);
         */
     // MesoX: Serendipity http://www.wowhead.com/?spell=63730
     sp = CheckAndReturnSpellEntry(63730);   // Rank 1
@@ -3005,7 +3005,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(31124);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[1] = 31125;
+        sp->eff[1].EffectTriggerSpell = 31125;
         sp->procFlags = PROC_ON_MELEE_ATTACK;
         sp->procChance = 10;
     }
@@ -3014,7 +3014,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(31126);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[1] = 51585;
+        sp->eff[1].EffectTriggerSpell = 51585;
         sp->procFlags = PROC_ON_MELEE_ATTACK;
         sp->procChance = 10;
     }
@@ -3025,25 +3025,25 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(37066);
     if (sp != NULL)
     {
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_SINGLE_ENEMY;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_SINGLE_ENEMY;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_SINGLE_ENEMY;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_SINGLE_ENEMY;
     }
 
     //rogue - Camouflage.
     sp = CheckAndReturnSpellEntry(13975);
     if (sp != NULL)
     {
-        sp->EffectMiscValue[0] = SMT_MISC_EFFECT;
+        sp->eff[0].EffectMiscValue = SMT_MISC_EFFECT;
     }
     sp = CheckAndReturnSpellEntry(14062);
     if (sp != NULL)
     {
-        sp->EffectMiscValue[0] = SMT_MISC_EFFECT;
+        sp->eff[0].EffectMiscValue = SMT_MISC_EFFECT;
     }
     sp = CheckAndReturnSpellEntry(14063);
     if (sp != NULL)
     {
-        sp->EffectMiscValue[0] = SMT_MISC_EFFECT;
+        sp->eff[0].EffectMiscValue = SMT_MISC_EFFECT;
     }
 
     //rogue - Vanish : Second Trigger Spell
@@ -3063,7 +3063,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(36563);
     if (sp != NULL)
     {
-        sp->EffectMiscValue[2] = SMT_MISC_EFFECT;
+        sp->eff[2].EffectMiscValue = SMT_MISC_EFFECT;
     }
     // Still related to shadowstep - prevent the trigger spells from breaking stealth.
     sp = CheckAndReturnSpellEntry(44373);
@@ -3082,40 +3082,40 @@ void ApplyNormalFixes()
         sp = CheckAndReturnSpellEntry(14186);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 14189;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 14189;
         sp->procFlags = PROC_ON_CRIT_ATTACK;
         sp->procChance = 20;
     }
     sp = CheckAndReturnSpellEntry(14190);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 14189;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 14189;
         sp->procFlags = PROC_ON_CRIT_ATTACK;
         sp->procChance = 40;
     }
     sp = CheckAndReturnSpellEntry(14193);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 14189;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 14189;
         sp->procFlags = PROC_ON_CRIT_ATTACK;
         sp->procChance = 60;
     }
     sp = CheckAndReturnSpellEntry(14194);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 14189;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 14189;
         sp->procFlags = PROC_ON_CRIT_ATTACK;
         sp->procChance = 80;
     }
     sp = CheckAndReturnSpellEntry(14195);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 14189;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 14189;
         sp->procFlags = PROC_ON_CRIT_ATTACK;
         sp->procChance = 100;
     }
@@ -3177,7 +3177,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(14168);
     if (sp != NULL)
     {
-    sp->EffectApplyAuraName[0] = */
+    sp->eff[0].EffectApplyAuraName = */
 
     //////////////////////////////////////////
     // PRIEST                                //
@@ -3189,34 +3189,34 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(41635);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_DUMMY;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_DUMMY;
         sp->procFlags = PROC_ON_ANY_DAMAGE_VICTIM;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_SINGLE_FRIEND;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_SINGLE_FRIEND;
     }
     sp = CheckAndReturnSpellEntry(48110);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_DUMMY;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_DUMMY;
         sp->procFlags = PROC_ON_ANY_DAMAGE_VICTIM;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_SINGLE_FRIEND;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_SINGLE_FRIEND;
     }
     sp = CheckAndReturnSpellEntry(48111);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_DUMMY;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_DUMMY;
         sp->procFlags = PROC_ON_ANY_DAMAGE_VICTIM;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_SINGLE_FRIEND;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_SINGLE_FRIEND;
     }
     sp = CheckAndReturnSpellEntry(33110);
     if (sp != NULL)
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_SINGLE_FRIEND;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_SINGLE_FRIEND;
 
     // Vampiric Embrace heal spell
     sp = CheckAndReturnSpellEntry(15290);
     if (sp != NULL)
     {
-        sp->EffectBasePoints[0] = 2;
-        sp->EffectBasePoints[1] = 14;
+        sp->eff[0].EffectBasePoints = 2;
+        sp->eff[1].EffectBasePoints = 14;
     }
 
     // Improved Mind Blast
@@ -3224,36 +3224,36 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->procChance = 20;
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_DUMMY;
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_DUMMY;
     }
     sp = CheckAndReturnSpellEntry(15312);   //rank 2
     if (sp != NULL)
     {
         sp->procChance = 40;
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_DUMMY;
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_DUMMY;
     }
     sp = CheckAndReturnSpellEntry(15313);   //rank 3
     if (sp != NULL)
     {
         sp->procChance = 60;
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_DUMMY;
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_DUMMY;
     }
     sp = CheckAndReturnSpellEntry(15314);   //rank 4
     if (sp != NULL)
     {
         sp->procChance = 80;
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_DUMMY;
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_DUMMY;
     }
     sp = CheckAndReturnSpellEntry(15316);   //rank 5
     if (sp != NULL)
     {
         sp->procChance = 100;
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_DUMMY;
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_DUMMY;
     }
 
     // Body and soul - fix duration of cleanse poison
@@ -3276,75 +3276,75 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(15237);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 23455;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 23455;
     }
     sp = CheckAndReturnSpellEntry(15430);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 23458;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 23458;
     }
     sp = CheckAndReturnSpellEntry(15431);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 23459;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 23459;
     }
     sp = CheckAndReturnSpellEntry(27799);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 27803;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 27803;
     }
     sp = CheckAndReturnSpellEntry(27800);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 27804;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 27804;
     }
     sp = CheckAndReturnSpellEntry(27801);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 27805;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 27805;
     }
     sp = CheckAndReturnSpellEntry(25331);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 25329;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 25329;
     }
     sp = CheckAndReturnSpellEntry(48077);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 48075;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 48075;
     }
     sp = CheckAndReturnSpellEntry(48078);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 48076;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 48076;
     }*/
 
     //Priest: Blessed Recovery
     sp = CheckAndReturnSpellEntry(27811);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[0] = 27813;
+        sp->eff[0].EffectTriggerSpell = 27813;
         sp->procFlags = PROC_ON_CRIT_HIT_VICTIM | PROC_ON_RANGED_CRIT_ATTACK_VICTIM;
     }
     sp = CheckAndReturnSpellEntry(27815);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[0] = 27817;
+        sp->eff[0].EffectTriggerSpell = 27817;
         sp->procFlags = PROC_ON_CRIT_HIT_VICTIM | PROC_ON_RANGED_CRIT_ATTACK_VICTIM;
     }
     sp = CheckAndReturnSpellEntry(27816);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[0] = 27818;
+        sp->eff[0].EffectTriggerSpell = 27818;
         sp->procFlags = PROC_ON_CRIT_HIT_VICTIM | PROC_ON_RANGED_CRIT_ATTACK_VICTIM;
     }
     //priest- Blessed Resilience
@@ -3382,32 +3382,32 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(14524);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_ADD_PCT_MODIFIER;
-        sp->EffectMiscValue[0] = SMT_MISC_EFFECT;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+        sp->eff[0].EffectMiscValue = SMT_MISC_EFFECT;
     }
     sp = CheckAndReturnSpellEntry(14525);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_ADD_PCT_MODIFIER;
-        sp->EffectMiscValue[0] = SMT_MISC_EFFECT;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+        sp->eff[0].EffectMiscValue = SMT_MISC_EFFECT;
     }
     sp = CheckAndReturnSpellEntry(14526);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_ADD_PCT_MODIFIER;
-        sp->EffectMiscValue[0] = SMT_MISC_EFFECT;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+        sp->eff[0].EffectMiscValue = SMT_MISC_EFFECT;
     }
     sp = CheckAndReturnSpellEntry(14527);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_ADD_PCT_MODIFIER;
-        sp->EffectMiscValue[0] = SMT_MISC_EFFECT;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+        sp->eff[0].EffectMiscValue = SMT_MISC_EFFECT;
     }
     sp = CheckAndReturnSpellEntry(14528);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_ADD_PCT_MODIFIER;
-        sp->EffectMiscValue[0] = SMT_MISC_EFFECT;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+        sp->eff[0].EffectMiscValue = SMT_MISC_EFFECT;
     }
 
     //Priest - Inspiration proc spell
@@ -3438,15 +3438,15 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_ABSORB;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 33619; //!! WRONG spell, we will make direct dmg here
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 33619; //!! WRONG spell, we will make direct dmg here
     }
     sp = CheckAndReturnSpellEntry(33202);
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_ABSORB;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 33619; //!! WRONG spell, we will make direct dmg here
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 33619; //!! WRONG spell, we will make direct dmg here
     }
     // Weakened Soul - Is debuff
     sp = CheckAndReturnSpellEntry(6788);
@@ -3489,25 +3489,25 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(47750);
     if (sp != NULL)
     {
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_SINGLE_FRIEND;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_SINGLE_FRIEND;
     }
 
     sp = CheckAndReturnSpellEntry(52983);
     if (sp != NULL)
     {
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_SINGLE_FRIEND;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_SINGLE_FRIEND;
     }
 
     sp = CheckAndReturnSpellEntry(52984);
     if (sp != NULL)
     {
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_SINGLE_FRIEND;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_SINGLE_FRIEND;
     }
 
     sp = CheckAndReturnSpellEntry(52985);
     if (sp != NULL)
     {
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_SINGLE_FRIEND;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_SINGLE_FRIEND;
     }
 
     //Grace Rank 1
@@ -3534,19 +3534,19 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
     }
     sp = CheckAndReturnSpellEntry(29205);
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
     }
     sp = CheckAndReturnSpellEntry(29206);
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
     }
 
 
@@ -3556,8 +3556,8 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(16166);
     if (sp != NULL)
     {
-        sp->EffectMiscValue[0] = SMT_CRITICAL;
-        sp->EffectMiscValue[1] = SMT_COST;
+        sp->eff[0].EffectMiscValue = SMT_CRITICAL;
+        sp->eff[1].EffectMiscValue = SMT_COST;
         // sp->AuraInterruptFlags = AURA_INTERRUPT_ON_AFTER_CAST_SPELL;
     }
 
@@ -3567,17 +3567,17 @@ void ApplyNormalFixes()
     SpellEntry*  parentsp = CheckAndReturnSpellEntry(30823);
     SpellEntry* triggersp = CheckAndReturnSpellEntry(30824);
     if (parentsp != NULL && triggersp != NULL)
-        triggersp->EffectBasePoints[0] = parentsp->EffectBasePoints[0];
+        triggersp->eff[0].EffectBasePoints = parentsp->eff[0].EffectBasePoints;
 
     //summon only 1 elemental totem
     sp = CheckAndReturnSpellEntry(2894);
     if (sp != NULL && sp->Id == 2894)
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_TOTEM_FIRE; //remove this targeting. it is enough to get 1 target
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_TOTEM_FIRE; //remove this targeting. it is enough to get 1 target
 
     //summon only 1 elemental totem
     sp = CheckAndReturnSpellEntry(2062);
     if (sp != NULL && sp->Id == 2062)
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_TOTEM_EARTH; //remove this targeting. it is enough to get 1 target
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_TOTEM_EARTH; //remove this targeting. it is enough to get 1 target
 
     /**********************************************************
      *    Elemental Focus
@@ -3601,7 +3601,7 @@ void ApplyNormalFixes()
     //Bloodlust
     sp = CheckAndReturnSpellEntry(2825);
     if (sp != NULL)
-        sp->casterAuraSpellNot = 57724; //sated debuff
+        sp->sar.casterAuraSpellNot = 57724; //sated debuff
 
     // Sated - is debuff
     sp = CheckAndReturnSpellEntry(57724);
@@ -3617,7 +3617,7 @@ void ApplyNormalFixes()
     //Heroism
     sp = CheckAndReturnSpellEntry(32182);
     if (sp != NULL)
-        sp->casterAuraSpellNot = 57723; //sated debuff
+        sp->sar.casterAuraSpellNot = 57723; //sated debuff
 
     // Sated - is debuff
     sp = CheckAndReturnSpellEntry(57723);
@@ -3633,22 +3633,22 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(30675);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 39805;//proc something (we will override this)
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 39805;//proc something (we will override this)
         sp->procFlags = PROC_ON_SPELL_HIT;
     }
     sp = CheckAndReturnSpellEntry(30678);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 39805;//proc something (we will override this)
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 39805;//proc something (we will override this)
         sp->procFlags = PROC_ON_SPELL_HIT;
     }
     sp = CheckAndReturnSpellEntry(30679);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 39805;//proc something (we will override this)
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 39805;//proc something (we will override this)
         sp->procFlags = PROC_ON_SPELL_HIT;
     }
     /**********************************************************
@@ -3656,16 +3656,16 @@ void ApplyNormalFixes()
      **********************************************************/
     sp = CheckAndReturnSpellEntry(370);
     if (sp != NULL)
-        sp->DispelType = DISPEL_MAGIC;
+        sp->SpellCategories.DispelType = DISPEL_MAGIC;
     sp = CheckAndReturnSpellEntry(8012);
     if (sp != NULL)
-        sp->DispelType = DISPEL_MAGIC;
+        sp->SpellCategories.DispelType = DISPEL_MAGIC;
     sp = CheckAndReturnSpellEntry(27626);
     if (sp != NULL)
-        sp->DispelType = DISPEL_MAGIC;
+        sp->SpellCategories.DispelType = DISPEL_MAGIC;
     sp = CheckAndReturnSpellEntry(33625);
     if (sp != NULL)
-        sp->DispelType = DISPEL_MAGIC;
+        sp->SpellCategories.DispelType = DISPEL_MAGIC;
 
     /**********************************************************
      *    Eye of the Storm
@@ -3685,55 +3685,55 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(43338);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[0] = 43339;
+        sp->eff[0].EffectTriggerSpell = 43339;
     }
 
     sp = CheckAndReturnSpellEntry(43339);
     if (sp != NULL)
     {
-        sp->EffectMiscValue[0] = SMT_COST;
+        sp->eff[0].EffectMiscValue = SMT_COST;
     }
 
     //shaman - Improved Chain Heal
     sp = CheckAndReturnSpellEntry(30873);
     if (sp != NULL)
     {
-        sp->EffectDieSides[0] = 0;
+        sp->eff[0].EffectDieSides = 0;
     }
     sp = CheckAndReturnSpellEntry(30872);
     if (sp != NULL)
     {
-        sp->EffectDieSides[0] = 0;
+        sp->eff[0].EffectDieSides = 0;
     }
 
     //shaman - Improved Weapon Totems
     sp = CheckAndReturnSpellEntry(29193);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_ADD_PCT_MODIFIER;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_ADD_PCT_MODIFIER;
-        sp->EffectMiscValue[0] = SMT_MISC_EFFECT;
-        sp->EffectMiscValue[1] = SMT_MISC_EFFECT;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+        sp->eff[0].EffectMiscValue = SMT_MISC_EFFECT;
+        sp->eff[1].EffectMiscValue = SMT_MISC_EFFECT;
     }
     sp = CheckAndReturnSpellEntry(29192);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_ADD_PCT_MODIFIER;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_ADD_PCT_MODIFIER;
-        sp->EffectMiscValue[0] = SMT_MISC_EFFECT;
-        sp->EffectMiscValue[1] = SMT_MISC_EFFECT;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+        sp->eff[0].EffectMiscValue = SMT_MISC_EFFECT;
+        sp->eff[1].EffectMiscValue = SMT_MISC_EFFECT;
     }
 
     // Shaman - Improved Fire Totems
     sp = CheckAndReturnSpellEntry(16544);
     if (sp != NULL)
     {
-        sp->EffectMiscValue[0] = SMT_DURATION;
+        sp->eff[0].EffectMiscValue = SMT_DURATION;
     }
     sp = CheckAndReturnSpellEntry(16086);
     if (sp != NULL)
     {
-        sp->EffectMiscValue[0] = SMT_DURATION;
+        sp->eff[0].EffectMiscValue = SMT_DURATION;
     }
 
     // Shaman Arena totems fix
@@ -3763,20 +3763,20 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(29080);
     if (sp != NULL)
     {
-        sp->EffectMiscValue[1] = SMT_DAMAGE_DONE;
-        sp->EffectMiscValue[2] = SMT_DAMAGE_DONE;
+        sp->eff[1].EffectMiscValue = SMT_DAMAGE_DONE;
+        sp->eff[2].EffectMiscValue = SMT_DAMAGE_DONE;
     }
     sp = CheckAndReturnSpellEntry(29079);
     if (sp != NULL)
     {
-        sp->EffectMiscValue[1] = SMT_DAMAGE_DONE;
-        sp->EffectMiscValue[2] = SMT_DAMAGE_DONE;
+        sp->eff[1].EffectMiscValue = SMT_DAMAGE_DONE;
+        sp->eff[2].EffectMiscValue = SMT_DAMAGE_DONE;
     }
     sp = CheckAndReturnSpellEntry(16266);
     if (sp != NULL)
     {
-        sp->EffectMiscValue[1] = SMT_DAMAGE_DONE;
-        sp->EffectMiscValue[2] = SMT_DAMAGE_DONE;
+        sp->eff[1].EffectMiscValue = SMT_DAMAGE_DONE;
+        sp->eff[2].EffectMiscValue = SMT_DAMAGE_DONE;
     }
 
     // Magma Totem - 0% spd coefficient
@@ -3910,25 +3910,25 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
     sp->procFlags = PROC_ON_CAST_SPELL;
-    sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-    sp->EffectImplicitTargetA[0] = EFF_TARGET_SCRIPTED_OR_SINGLE_TARGET;
-    sp->procChance = sp->EffectBasePoints[0] + 1;
+    sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+    sp->eff[0].EffectImplicitTargetA = EFF_TARGET_SCRIPTED_OR_SINGLE_TARGET;
+    sp->procChance = sp->eff[0].EffectBasePoints + 1;
     }
     sp = CheckAndReturnSpellEntry(29205);
     if (sp != NULL)
     {
     sp->procFlags = PROC_ON_CAST_SPELL;
-    sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-    sp->EffectImplicitTargetA[0] = EFF_TARGET_SCRIPTED_OR_SINGLE_TARGET;
-    sp->procChance = sp->EffectBasePoints[0] + 1;
+    sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+    sp->eff[0].EffectImplicitTargetA = EFF_TARGET_SCRIPTED_OR_SINGLE_TARGET;
+    sp->procChance = sp->eff[0].EffectBasePoints + 1;
     }
     sp = CheckAndReturnSpellEntry(29206);
     if (sp != NULL)
     {
     sp->procFlags = PROC_ON_CAST_SPELL;
-    sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-    sp->EffectImplicitTargetA[0] = EFF_TARGET_SCRIPTED_OR_SINGLE_TARGET;
-    sp->procChance = sp->EffectBasePoints[0] + 1;
+    sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+    sp->eff[0].EffectImplicitTargetA = EFF_TARGET_SCRIPTED_OR_SINGLE_TARGET;
+    sp->procChance = sp->eff[0].EffectBasePoints + 1;
     }
     */
     /*********************************************************
@@ -3938,19 +3938,19 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CRIT_ATTACK;
-        sp->Effect[0] = SPELL_EFFECT_APPLY_GROUP_AREA_AURA;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_GROUP_AREA_AURA;
     }
     sp = CheckAndReturnSpellEntry(30808);
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CRIT_ATTACK;
-        sp->Effect[0] = SPELL_EFFECT_APPLY_GROUP_AREA_AURA;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_GROUP_AREA_AURA;
     }
     sp = CheckAndReturnSpellEntry(30809);
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CRIT_ATTACK;
-        sp->Effect[0] = SPELL_EFFECT_APPLY_GROUP_AREA_AURA;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_GROUP_AREA_AURA;
     }
 
     /**********************************************************
@@ -3997,10 +3997,10 @@ void ApplyNormalFixes()
     {
         for (i = 0; i < 8; i++)
         {
-            if (sp->Reagent[i])
+            if (sp->sre.Reagent[i])
             {
-                sp->Reagent[i] = 0;
-                sp->ReagentCount[i] = 0;
+                sp->sre.Reagent[i] = 0;
+                sp->sre.ReagentCount[i] = 0;
             }
         }
     }
@@ -4011,12 +4011,12 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(2895);
     if (sp != NULL)
     {
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_SELF;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_SELF;
-        sp->EffectImplicitTargetA[2] = 0;
-        sp->EffectImplicitTargetB[0] = 0;
-        sp->EffectImplicitTargetB[1] = 0;
-        sp->EffectImplicitTargetB[2] = 0;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_SELF;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_SELF;
+        sp->eff[2].EffectImplicitTargetA = 0;
+        sp->eff[0].EffectImplicitTargetB = 0;
+        sp->eff[1].EffectImplicitTargetB = 0;
+        sp->eff[2].EffectImplicitTargetB = 0;
     }
 
     // Rogue - Master of Subtlety
@@ -4065,28 +4065,28 @@ void ApplyNormalFixes()
     // Brain Freeze rank 1
     sp = CheckAndReturnSpellEntry(44546);
     if (sp != NULL)
-        sp->EffectApplyAuraName[0] = SPELL_AURA_DUMMY;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_DUMMY;
 
     // Brain Freeze rank 2
     sp = CheckAndReturnSpellEntry(44548);
     if (sp != NULL)
-        sp->EffectApplyAuraName[0] = SPELL_AURA_DUMMY;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_DUMMY;
 
     // Brain Freeze rank 3
     sp = CheckAndReturnSpellEntry(44549);
     if (sp != NULL)
-        sp->EffectApplyAuraName[0] = SPELL_AURA_DUMMY;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_DUMMY;
 
     // Fingers of Frost rank 1
     sp = CheckAndReturnSpellEntry(44543);
     if (sp != NULL)
-        sp->EffectApplyAuraName[0] = SPELL_AURA_DUMMY;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_DUMMY;
 
 
     // Fingers of Frost rank 2
     sp = CheckAndReturnSpellEntry(44545);
     if (sp != NULL)
-        sp->EffectApplyAuraName[0] = SPELL_AURA_DUMMY;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_DUMMY;
 
     /**********************************************************
     *    Improved Blink by Alice
@@ -4137,42 +4137,42 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(35578);
     if (sp != NULL)
     {
-        sp->EffectMiscValue[0] = SMT_CRITICAL_DAMAGE;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_ADD_PCT_MODIFIER;
+        sp->eff[0].EffectMiscValue = SMT_CRITICAL_DAMAGE;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
     }
     sp = CheckAndReturnSpellEntry(35581);
     if (sp != NULL)
     {
-        sp->EffectMiscValue[0] = SMT_CRITICAL_DAMAGE;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_ADD_PCT_MODIFIER;
+        sp->eff[0].EffectMiscValue = SMT_CRITICAL_DAMAGE;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
     }
 
     //Mage - Elemental Precision
     sp = CheckAndReturnSpellEntry(29438);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_ADD_PCT_MODIFIER;
-        sp->EffectMiscValue[0] = SMT_COST;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+        sp->eff[0].EffectMiscValue = SMT_COST;
     }
     sp = CheckAndReturnSpellEntry(29439);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_ADD_PCT_MODIFIER;
-        sp->EffectMiscValue[0] = SMT_COST;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+        sp->eff[0].EffectMiscValue = SMT_COST;
     }
     sp = CheckAndReturnSpellEntry(29440);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_ADD_PCT_MODIFIER;
-        sp->EffectMiscValue[0] = SMT_COST;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+        sp->eff[0].EffectMiscValue = SMT_COST;
     }
 
     //Mage - Arcane Blast
     sp = CheckAndReturnSpellEntry(30451);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[1] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 36032;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 36032;
         sp->procFlags = PROC_ON_CAST_SPECIFIC_SPELL;
         sp->ProcOnNameHash[1] = SPELL_HASH_ARCANE_BLAST;
     }
@@ -4182,8 +4182,8 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(42894);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[1] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 36032;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 36032;
         sp->procFlags = PROC_ON_CAST_SPECIFIC_SPELL;
         sp->ProcOnNameHash[1] = SPELL_HASH_ARCANE_BLAST;
     }
@@ -4191,16 +4191,16 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(42896);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[1] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 36032;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 36032;
         sp->procFlags = PROC_ON_CAST_SPECIFIC_SPELL;
     }
 
     sp = CheckAndReturnSpellEntry(42897);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[1] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 36032;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 36032;
         sp->procFlags = PROC_ON_CAST_SPECIFIC_SPELL;
     }
 
@@ -4218,39 +4218,39 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(31579);
     if (sp != NULL)
     {
-        sp->EffectBasePoints[0] = 5 * (sp->EffectBasePoints[0] + 1);
+        sp->eff[0].EffectBasePoints = 5 * (sp->eff[0].EffectBasePoints + 1);
     }
     sp = CheckAndReturnSpellEntry(31582);
     if (sp != NULL)
     {
-        sp->EffectBasePoints[0] = 5 * (sp->EffectBasePoints[0] + 1);
+        sp->eff[0].EffectBasePoints = 5 * (sp->eff[0].EffectBasePoints + 1);
     }
     sp = CheckAndReturnSpellEntry(31583);
     if (sp != NULL)
     {
-        sp->EffectBasePoints[0] = 5 * (sp->EffectBasePoints[0] + 1);
+        sp->eff[0].EffectBasePoints = 5 * (sp->eff[0].EffectBasePoints + 1);
     }
 
     //Mage - Improved Blizzard
     sp = CheckAndReturnSpellEntry(11185);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 12484;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 12484;
         sp->procFlags = PROC_ON_CAST_SPELL;
     }
     sp = CheckAndReturnSpellEntry(12487);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 12485;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 12485;
         sp->procFlags = PROC_ON_CAST_SPELL;
     }
     sp = CheckAndReturnSpellEntry(12488);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 12486;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 12486;
         sp->procFlags = PROC_ON_CAST_SPELL;
     }
 
@@ -4261,12 +4261,12 @@ void ApplyNormalFixes()
     {
         // passive rank: 11103, 12357, 12358 ,12359,12360 :D
         sp->procFlags = PROC_ON_ANY_DAMAGE_VICTIM | PROC_ON_SPELL_CRIT_HIT | PROC_ON_SPELL_HIT;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_ALL_ENEMIES_AROUND_CASTER;
-        sp->EffectImplicitTargetB[0] = EFF_TARGET_ALL_ENEMIES_AROUND_CASTER;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_ALL_ENEMIES_AROUND_CASTER;
-        sp->EffectImplicitTargetB[1] = EFF_TARGET_ALL_ENEMIES_AROUND_CASTER;
-        sp->EffectImplicitTargetA[2] = EFF_TARGET_ALL_ENEMIES_AROUND_CASTER;
-        sp->EffectImplicitTargetB[2] = EFF_TARGET_ALL_ENEMIES_AROUND_CASTER;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_ALL_ENEMIES_AROUND_CASTER;
+        sp->eff[0].EffectImplicitTargetB = EFF_TARGET_ALL_ENEMIES_AROUND_CASTER;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_ALL_ENEMIES_AROUND_CASTER;
+        sp->eff[1].EffectImplicitTargetB = EFF_TARGET_ALL_ENEMIES_AROUND_CASTER;
+        sp->eff[2].EffectImplicitTargetA = EFF_TARGET_ALL_ENEMIES_AROUND_CASTER;
+        sp->eff[2].EffectImplicitTargetB = EFF_TARGET_ALL_ENEMIES_AROUND_CASTER;
         sp->c_is_flags |= SPELL_FLAG_IS_FORCEDDEBUFF;
     }
 
@@ -4275,15 +4275,15 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->AuraInterruptFlags |= AURA_INTERRUPT_ON_CAST_SPELL;
-        sp->Effect[1] = SPELL_EFFECT_NULL;
-        sp->EffectApplyAuraName[2] = SPELL_AURA_PERIODIC_TRIGGER_SPELL;
-        sp->Effect[2] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectAmplitude[2] = 3000;
-        sp->EffectImplicitTargetA[2] = EFF_TARGET_SELF;
+        sp->eff[1].Effect = SPELL_EFFECT_NULL;
+        sp->eff[2].EffectApplyAuraName = SPELL_AURA_PERIODIC_TRIGGER_SPELL;
+        sp->eff[2].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[2].EffectAmplitude = 3000;
+        sp->eff[2].EffectImplicitTargetA = EFF_TARGET_SELF;
         //sp->EffectBaseDice[2] = 1;
-        sp->EffectDieSides[2] = 1;
-        sp->EffectTriggerSpell[2] = 32612;
-        sp->EffectBasePoints[2] = -1;
+        sp->eff[2].EffectDieSides = 1;
+        sp->eff[2].EffectTriggerSpell = 32612;
+        sp->eff[2].EffectBasePoints = -1;
     }
 
     //Invisibility triggered spell, should be removed on cast
@@ -4362,10 +4362,10 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(11129);
     if (sp != NULL)
     {
-        sp->Effect[0] = SPELL_EFFECT_NULL;
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 28682;
+        sp->eff[0].Effect = SPELL_EFFECT_NULL;
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 28682;
         sp->procFlags = PROC_ON_SPELL_HIT | PROC_ON_SPELL_CRIT_HIT | static_cast<uint32>(PROC_TARGET_SELF);
         sp->procCharges = 0;
         sp->c_is_flags |= SPELL_FLAG_IS_REQUIRECOOLDOWNUPDATE;
@@ -4375,24 +4375,24 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(29074);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 29077;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 29077;
         sp->procFlags = uint32(PROC_ON_SPELL_CRIT_HIT | PROC_TARGET_SELF);
         sp->procChance = 100;
     }
     sp = CheckAndReturnSpellEntry(29075);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 29077;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 29077;
         sp->procFlags = uint32(PROC_ON_SPELL_CRIT_HIT | PROC_TARGET_SELF);
         sp->procChance = 100;
     }
     sp = CheckAndReturnSpellEntry(29076);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 29077;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 29077;
         sp->procFlags = uint32(PROC_ON_SPELL_CRIT_HIT | PROC_TARGET_SELF);
         sp->procChance = 100;
     }
@@ -4400,30 +4400,30 @@ void ApplyNormalFixes()
     //mage: Blazing Speed
     sp = CheckAndReturnSpellEntry(31641);
     if (sp != NULL)
-        sp->EffectTriggerSpell[0] = 31643;
+        sp->eff[0].EffectTriggerSpell = 31643;
     sp = CheckAndReturnSpellEntry(31642);
     if (sp != NULL)
-        sp->EffectTriggerSpell[0] = 31643;
+        sp->eff[0].EffectTriggerSpell = 31643;
 
     //Mage - Improved Scorch
     sp = CheckAndReturnSpellEntry(11095);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
         sp->procChance = 33;
         sp->procFlags = PROC_ON_CAST_SPELL;
     }
     sp = CheckAndReturnSpellEntry(12872);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
         sp->procChance = 66;
         sp->procFlags = PROC_ON_CAST_SPELL;
     }
     sp = CheckAndReturnSpellEntry(12873);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
         sp->procChance = 100;
         sp->procFlags = PROC_ON_CAST_SPELL;
     }
@@ -4442,7 +4442,7 @@ void ApplyNormalFixes()
     // mage - Conjure Refreshment Table
     sp = CheckAndReturnSpellEntry(43985);
     if (sp != NULL)
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_DYNAMIC_OBJECT;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_DYNAMIC_OBJECT;
 
     // Hypothermia - forced debuff
     sp = CheckAndReturnSpellEntry(41425);
@@ -4456,21 +4456,21 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(11175);
     if (sp != NULL)
     {
-        sp->EffectMiscValue[1] = SMT_MISC_EFFECT;
+        sp->eff[1].EffectMiscValue = SMT_MISC_EFFECT;
     }
 
     // Mage - Permafrost Rank 2
     sp = CheckAndReturnSpellEntry(12569);
     if (sp != NULL)
     {
-        sp->EffectMiscValue[1] = SMT_MISC_EFFECT;
+        sp->eff[1].EffectMiscValue = SMT_MISC_EFFECT;
     }
 
     // Mage - Permafrost Rank 3
     sp = CheckAndReturnSpellEntry(12571);
     if (sp != NULL)
     {
-        sp->EffectMiscValue[1] = SMT_MISC_EFFECT;
+        sp->eff[1].EffectMiscValue = SMT_MISC_EFFECT;
     }
 
     //Improved Counterspell rank 1
@@ -4479,8 +4479,8 @@ void ApplyNormalFixes()
     {
         sp->procFlags = PROC_ON_CAST_SPECIFIC_SPELL;
         sp->ProcOnNameHash[0] = SPELL_HASH_COUNTERSPELL;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 18469;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 18469;
     }
 
     //Improved Counterspell rank 2
@@ -4489,8 +4489,8 @@ void ApplyNormalFixes()
     {
         sp->procFlags = PROC_ON_CAST_SPECIFIC_SPELL;
         sp->ProcOnNameHash[0] = SPELL_HASH_COUNTERSPELL;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 55021;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 55021;
     }
     //////////////////////////////////////////
     // WARLOCK                                //
@@ -4503,13 +4503,13 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
 
-        sp->EffectImplicitTargetA[1] = 1;
+        sp->eff[1].EffectImplicitTargetA = 1;
         CreateDummySpell(62388);
         sp = CheckAndReturnSpellEntry(62388);
         if (sp != NULL)
         {
-            sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
-            sp->EffectApplyAuraName[0] = SPELL_AURA_DUMMY;
+            sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
+            sp->eff[0].EffectApplyAuraName = SPELL_AURA_DUMMY;
         }
     }
 
@@ -4524,8 +4524,8 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(47205);
     if (sp != NULL)
     {
-        sp->EffectSpellClassMask[1][0] = 0x111;
-        sp->EffectSpellClassMask[1][1] = 0;
+        sp->SpellClassOptions.SpellFamilyFlags[1][0] = 0x111;
+        sp->SpellClassOptions.SpellFamilyFlags[1][1] = 0;
         sp->procFlags = PROC_ON_ANY_HOSTILE_ACTION;
         sp->procCharges = -1;
     }
@@ -4533,8 +4533,8 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(47204);
     if (sp != NULL)
     {
-        sp->EffectSpellClassMask[1][0] = 0x111;
-        sp->EffectSpellClassMask[1][1] = 0;
+        sp->SpellClassOptions.SpellFamilyFlags[1][0] = 0x111;
+        sp->SpellClassOptions.SpellFamilyFlags[1][1] = 0;
         sp->procFlags = PROC_ON_ANY_HOSTILE_ACTION;
         sp->procCharges = -1;
     }
@@ -4542,8 +4542,8 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(47203);
     if (sp != NULL)
     {
-        sp->EffectSpellClassMask[1][0] = 0x111;
-        sp->EffectSpellClassMask[1][1] = 0;
+        sp->SpellClassOptions.SpellFamilyFlags[1][0] = 0x111;
+        sp->SpellClassOptions.SpellFamilyFlags[1][1] = 0;
         sp->procFlags = PROC_ON_ANY_HOSTILE_ACTION;
         sp->procCharges = -1;
     }
@@ -4551,8 +4551,8 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(47202);
     if (sp != NULL)
     {
-        sp->EffectSpellClassMask[1][0] = 0x111;
-        sp->EffectSpellClassMask[1][1] = 0;
+        sp->SpellClassOptions.SpellFamilyFlags[1][0] = 0x111;
+        sp->SpellClassOptions.SpellFamilyFlags[1][1] = 0;
         sp->procFlags = PROC_ON_ANY_HOSTILE_ACTION;
         sp->procCharges = -1;
     }
@@ -4560,8 +4560,8 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(47201);
     if (sp != NULL)
     {
-        sp->EffectSpellClassMask[1][0] = 0x111;
-        sp->EffectSpellClassMask[1][1] = 0;
+        sp->SpellClassOptions.SpellFamilyFlags[1][0] = 0x111;
+        sp->SpellClassOptions.SpellFamilyFlags[1][1] = 0;
     }
 
     //Unstable Affliction
@@ -4667,59 +4667,59 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(35691);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_MOD_DAMAGE_DONE;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_SELF;
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_MOD_DAMAGE_DONE;
-        sp->EffectBasePoints[1] = sp->EffectBasePoints[0];
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_PET;
-        sp->Effect[2] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[2] = 35696;
-        sp->EffectImplicitTargetA[2] = EFF_TARGET_PET;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_MOD_DAMAGE_DONE;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_SELF;
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_MOD_DAMAGE_DONE;
+        sp->eff[1].EffectBasePoints = sp->eff[0].EffectBasePoints;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_PET;
+        sp->eff[2].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[2].EffectTriggerSpell = 35696;
+        sp->eff[2].EffectImplicitTargetA = EFF_TARGET_PET;
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_PET_OWNER | SPELL_FLAG_IS_EXPIREING_WITH_PET;
     }
     sp = CheckAndReturnSpellEntry(35692);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_MOD_DAMAGE_DONE;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_SELF;
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_MOD_DAMAGE_DONE;
-        sp->EffectBasePoints[1] = sp->EffectBasePoints[0];
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_PET;
-        sp->Effect[2] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[2] = 35696;
-        sp->EffectImplicitTargetA[2] = EFF_TARGET_PET;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_MOD_DAMAGE_DONE;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_SELF;
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_MOD_DAMAGE_DONE;
+        sp->eff[1].EffectBasePoints = sp->eff[0].EffectBasePoints;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_PET;
+        sp->eff[2].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[2].EffectTriggerSpell = 35696;
+        sp->eff[2].EffectImplicitTargetA = EFF_TARGET_PET;
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_PET_OWNER | SPELL_FLAG_IS_EXPIREING_WITH_PET;
     }
     sp = CheckAndReturnSpellEntry(35693);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_MOD_DAMAGE_DONE;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_SELF;
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_MOD_DAMAGE_DONE;
-        sp->EffectBasePoints[1] = sp->EffectBasePoints[0];
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_PET;
-        sp->Effect[2] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[2] = 35696;
-        sp->EffectImplicitTargetA[2] = EFF_TARGET_PET;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_MOD_DAMAGE_DONE;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_SELF;
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_MOD_DAMAGE_DONE;
+        sp->eff[1].EffectBasePoints = sp->eff[0].EffectBasePoints;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_PET;
+        sp->eff[2].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[2].EffectTriggerSpell = 35696;
+        sp->eff[2].EffectImplicitTargetA = EFF_TARGET_PET;
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_PET_OWNER | SPELL_FLAG_IS_EXPIREING_WITH_PET;
     }
     sp = CheckAndReturnSpellEntry(35696);
     if (sp != NULL)
     {
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA; //making this only for the visible effect
-        sp->EffectApplyAuraName[0] = SPELL_AURA_DUMMY; //no effect here
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA; //making this only for the visible effect
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_DUMMY; //no effect here
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
     }
 
     //warlock -  Seed of Corruption
     sp = CheckAndReturnSpellEntry(27243);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[1] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 27285;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 27285;
         sp->procFlags = PROC_ON_SPELL_HIT_VICTIM | PROC_ON_DIE;
         sp->procChance = 100;
     }
@@ -4728,16 +4728,16 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(18094);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 17941;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 17941;
         sp->procFlags = PROC_ON_ANY_HOSTILE_ACTION | static_cast<uint32>(PROC_TARGET_SELF);
         sp->procChance = 2;
     }
     sp = CheckAndReturnSpellEntry(18095);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 17941;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 17941;
         sp->procFlags = PROC_ON_ANY_HOSTILE_ACTION | static_cast<uint32>(PROC_TARGET_SELF);
         sp->procChance = 4;
     }
@@ -4752,17 +4752,17 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(32381);
     if (sp != NULL)
     {
-        sp->EffectBasePoints[0] *= 6;
+        sp->eff[0].EffectBasePoints *= 6;
     }
     sp = CheckAndReturnSpellEntry(32382);
     if (sp != NULL)
     {
-        sp->EffectBasePoints[0] *= 6;
+        sp->eff[0].EffectBasePoints *= 6;
     }
     sp = CheckAndReturnSpellEntry(32383);
     if (sp != NULL)
     {
-        sp->EffectBasePoints[0] *= 6;
+        sp->eff[0].EffectBasePoints *= 6;
     }
 
     //warlock - Demonic Sacrifice
@@ -4786,42 +4786,42 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(30242);
     if (sp != NULL)
     {
-        sp->Effect[0] = SPELL_EFFECT_NULL; //disable this. This is just blizz crap. Pure proof that they suck :P
-        sp->EffectImplicitTargetB[1] = EFF_TARGET_PET;
-        sp->EffectApplyAuraName[2] = SPELL_AURA_MOD_SPELL_CRIT_CHANCE; //lvl 1 has it fucked up :O
-        sp->EffectImplicitTargetB[2] = EFF_TARGET_PET;
+        sp->eff[0].Effect = SPELL_EFFECT_NULL; //disable this. This is just blizz crap. Pure proof that they suck :P
+        sp->eff[1].EffectImplicitTargetB = EFF_TARGET_PET;
+        sp->eff[2].EffectApplyAuraName = SPELL_AURA_MOD_SPELL_CRIT_CHANCE; //lvl 1 has it fucked up :O
+        sp->eff[2].EffectImplicitTargetB = EFF_TARGET_PET;
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_PET_OWNER;
     }
     sp = CheckAndReturnSpellEntry(30245);
     if (sp != NULL)
     {
-        sp->Effect[0] = SPELL_EFFECT_NULL; //disable this. This is just blizz crap. Pure proof that they suck :P
-        sp->EffectImplicitTargetB[1] = EFF_TARGET_PET;
-        sp->EffectImplicitTargetB[2] = EFF_TARGET_PET;
+        sp->eff[0].Effect = SPELL_EFFECT_NULL; //disable this. This is just blizz crap. Pure proof that they suck :P
+        sp->eff[1].EffectImplicitTargetB = EFF_TARGET_PET;
+        sp->eff[2].EffectImplicitTargetB = EFF_TARGET_PET;
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_PET_OWNER;
     }
     sp = CheckAndReturnSpellEntry(30246);
     if (sp != NULL)
     {
-        sp->Effect[0] = SPELL_EFFECT_NULL; //disable this. This is just blizz crap. Pure proof that they suck :P
-        sp->EffectImplicitTargetB[1] = EFF_TARGET_PET;
-        sp->EffectImplicitTargetB[2] = EFF_TARGET_PET;
+        sp->eff[0].Effect = SPELL_EFFECT_NULL; //disable this. This is just blizz crap. Pure proof that they suck :P
+        sp->eff[1].EffectImplicitTargetB = EFF_TARGET_PET;
+        sp->eff[2].EffectImplicitTargetB = EFF_TARGET_PET;
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_PET_OWNER;
     }
     sp = CheckAndReturnSpellEntry(30247);
     if (sp != NULL)
     {
-        sp->Effect[0] = SPELL_EFFECT_NULL; //disable this. This is just blizz crap. Pure proof that they suck :P
-        sp->EffectImplicitTargetB[1] = EFF_TARGET_PET;
-        sp->EffectImplicitTargetB[2] = EFF_TARGET_PET;
+        sp->eff[0].Effect = SPELL_EFFECT_NULL; //disable this. This is just blizz crap. Pure proof that they suck :P
+        sp->eff[1].EffectImplicitTargetB = EFF_TARGET_PET;
+        sp->eff[2].EffectImplicitTargetB = EFF_TARGET_PET;
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_PET_OWNER;
     }
     sp = CheckAndReturnSpellEntry(30248);
     if (sp != NULL)
     {
-        sp->Effect[0] = SPELL_EFFECT_NULL; //disable this. This is just blizz crap. Pure proof that they suck :P
-        sp->EffectImplicitTargetB[1] = EFF_TARGET_PET;
-        sp->EffectImplicitTargetB[2] = EFF_TARGET_PET;
+        sp->eff[0].Effect = SPELL_EFFECT_NULL; //disable this. This is just blizz crap. Pure proof that they suck :P
+        sp->eff[1].EffectImplicitTargetB = EFF_TARGET_PET;
+        sp->eff[2].EffectImplicitTargetB = EFF_TARGET_PET;
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_PET_OWNER;
     }
 
@@ -4829,22 +4829,22 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(30319);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[1] = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_PET;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_PET;
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_PET_OWNER;
     }
     sp = CheckAndReturnSpellEntry(30320);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[1] = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_PET;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_PET;
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_PET_OWNER;
     }
     sp = CheckAndReturnSpellEntry(30321);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[1] = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_PET;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_PET;
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_PET_OWNER;
     }
 
@@ -4853,19 +4853,19 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
     }
     sp = CheckAndReturnSpellEntry(18695);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
     }
     sp = CheckAndReturnSpellEntry(18696);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
     }
 
     //warlock - Improved Voidwalker
@@ -4873,19 +4873,19 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
     }
     sp = CheckAndReturnSpellEntry(18706);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
     }
     sp = CheckAndReturnSpellEntry(18707);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
     }
 
     //warlock - Improved Succubus
@@ -4893,22 +4893,22 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_PET;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_PET;
     }
     sp = CheckAndReturnSpellEntry(18755);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_PET;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_PET;
     }
     sp = CheckAndReturnSpellEntry(18756);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_PET;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_PET;
     }
 
     //warlock - Fel Intellect
@@ -4916,25 +4916,25 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_MOD_PERCENT_STAT;
-        sp->EffectMiscValue[0] = 3;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_MOD_PERCENT_STAT;
+        sp->eff[0].EffectMiscValue = 3;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
     }
     sp = CheckAndReturnSpellEntry(18743);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_MOD_PERCENT_STAT;
-        sp->EffectMiscValue[0] = 3;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_MOD_PERCENT_STAT;
+        sp->eff[0].EffectMiscValue = 3;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
     }
     sp = CheckAndReturnSpellEntry(18744);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_MOD_PERCENT_STAT;
-        sp->EffectMiscValue[0] = 3;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_MOD_PERCENT_STAT;
+        sp->eff[0].EffectMiscValue = 3;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
     }
 
     //warlock - Demonic Tactics
@@ -4942,14 +4942,14 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_ADD_PCT_MODIFIER;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
         //this is required since blizz uses spells for melee attacks while we use fixed functions
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_MOD_DAMAGE_PERCENT_DONE;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_PET;
-        sp->EffectMiscValue[1] = SCHOOL_NORMAL;
-        sp->EffectBasePoints[1] = sp->EffectBasePoints[0];
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_DONE;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_PET;
+        sp->eff[1].EffectMiscValue = SCHOOL_NORMAL;
+        sp->eff[1].EffectBasePoints = sp->eff[0].EffectBasePoints;
     }
 
     //warlock - Unholy Power
@@ -4957,66 +4957,66 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_ADD_PCT_MODIFIER;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
         //this is required since blizz uses spells for melee attacks while we use fixed functions
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_MOD_DAMAGE_PERCENT_DONE;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_PET;
-        sp->EffectMiscValue[1] = SCHOOL_NORMAL;
-        sp->EffectBasePoints[1] = sp->EffectBasePoints[0];
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_DONE;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_PET;
+        sp->eff[1].EffectMiscValue = SCHOOL_NORMAL;
+        sp->eff[1].EffectBasePoints = sp->eff[0].EffectBasePoints;
     }
     sp = CheckAndReturnSpellEntry(18770);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_ADD_PCT_MODIFIER;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
         //this is required since blizz uses spells for melee attacks while we use fixed functions
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_MOD_DAMAGE_PERCENT_DONE;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_PET;
-        sp->EffectMiscValue[1] = SCHOOL_NORMAL;
-        sp->EffectBasePoints[1] = sp->EffectBasePoints[0];
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_DONE;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_PET;
+        sp->eff[1].EffectMiscValue = SCHOOL_NORMAL;
+        sp->eff[1].EffectBasePoints = sp->eff[0].EffectBasePoints;
     }
     sp = CheckAndReturnSpellEntry(18771);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_ADD_PCT_MODIFIER;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
         //this is required since blizz uses spells for melee attacks while we use fixed functions
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_MOD_DAMAGE_PERCENT_DONE;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_PET;
-        sp->EffectMiscValue[1] = SCHOOL_NORMAL;
-        sp->EffectBasePoints[1] = sp->EffectBasePoints[0];
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_DONE;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_PET;
+        sp->eff[1].EffectMiscValue = SCHOOL_NORMAL;
+        sp->eff[1].EffectBasePoints = sp->eff[0].EffectBasePoints;
     }
     sp = CheckAndReturnSpellEntry(18772);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_ADD_PCT_MODIFIER;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
         //this is required since blizz uses spells for melee attacks while we use fixed functions
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_MOD_DAMAGE_PERCENT_DONE;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_PET;
-        sp->EffectMiscValue[1] = SCHOOL_NORMAL;
-        sp->EffectBasePoints[1] = sp->EffectBasePoints[0];
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_DONE;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_PET;
+        sp->eff[1].EffectMiscValue = SCHOOL_NORMAL;
+        sp->eff[1].EffectBasePoints = sp->eff[0].EffectBasePoints;
     }
     sp = CheckAndReturnSpellEntry(18773);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_ADD_PCT_MODIFIER;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
         //this is required since blizz uses spells for melee attacks while we use fixed functions
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_MOD_DAMAGE_PERCENT_DONE;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_PET;
-        sp->EffectMiscValue[1] = SCHOOL_NORMAL;
-        sp->EffectBasePoints[1] = sp->EffectBasePoints[0];
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_DONE;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_PET;
+        sp->eff[1].EffectMiscValue = SCHOOL_NORMAL;
+        sp->eff[1].EffectBasePoints = sp->eff[0].EffectBasePoints;
     }
 
     //warlock - Master Demonologist - 25 spells here
@@ -5024,100 +5024,100 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET | SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[0] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 23784;
+        sp->eff[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 23784;
     }
     sp = CheckAndReturnSpellEntry(23822);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET | SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[0] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 23830;
+        sp->eff[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 23830;
     }
     sp = CheckAndReturnSpellEntry(23823);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET | SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[0] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 23831;
+        sp->eff[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 23831;
     }
     sp = CheckAndReturnSpellEntry(23824);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET | SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[0] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 23832;
+        sp->eff[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 23832;
     }
     sp = CheckAndReturnSpellEntry(23825);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET | SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[0] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 35708;
+        sp->eff[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 35708;
     }
     //and the rest
     sp = CheckAndReturnSpellEntry(23784);
     if (sp != NULL)
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
     sp = CheckAndReturnSpellEntry(23830);
     if (sp != NULL)
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
     sp = CheckAndReturnSpellEntry(23831);
     if (sp != NULL)
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
     sp = CheckAndReturnSpellEntry(23832);
     if (sp != NULL)
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
     sp = CheckAndReturnSpellEntry(35708);
     if (sp != NULL)
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
     sp = CheckAndReturnSpellEntry(23759);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
     }
     sp = CheckAndReturnSpellEntry(23760);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
     }
     sp = CheckAndReturnSpellEntry(23761);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
     }
     sp = CheckAndReturnSpellEntry(23762);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
     }
     sp = CheckAndReturnSpellEntry(23826);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
     }
     sp = CheckAndReturnSpellEntry(23827);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
     }
     sp = CheckAndReturnSpellEntry(23828);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
     }
     sp = CheckAndReturnSpellEntry(23829);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
     }
     for (i = 23833; i <= 23844; i++)
     {
@@ -5125,43 +5125,43 @@ void ApplyNormalFixes()
         if (sp != NULL)
         {
             sp->c_is_flags |= SPELL_FLAG_IS_EXPIREING_WITH_PET;
-            sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
+            sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
         }
     }
     sp = CheckAndReturnSpellEntry(35702);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
-        sp->Effect[1] = SPELL_EFFECT_NULL; //hacks, we are handling this in another way
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].Effect = SPELL_EFFECT_NULL; //hacks, we are handling this in another way
     }
     sp = CheckAndReturnSpellEntry(35703);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
-        sp->Effect[1] = SPELL_EFFECT_NULL; //hacks, we are handling this in another way
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].Effect = SPELL_EFFECT_NULL; //hacks, we are handling this in another way
     }
     sp = CheckAndReturnSpellEntry(35704);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
-        sp->Effect[1] = SPELL_EFFECT_NULL; //hacks, we are handling this in another way
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].Effect = SPELL_EFFECT_NULL; //hacks, we are handling this in another way
     }
     sp = CheckAndReturnSpellEntry(35705);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
-        sp->Effect[1] = SPELL_EFFECT_NULL; //hacks, we are handling this in another way
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].Effect = SPELL_EFFECT_NULL; //hacks, we are handling this in another way
     }
     sp = CheckAndReturnSpellEntry(35706);
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
-        sp->Effect[1] = SPELL_EFFECT_NULL; //hacks, we are handling this in another way
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].Effect = SPELL_EFFECT_NULL; //hacks, we are handling this in another way
     }
 
     //warlock - Improved Drain Soul
@@ -5170,22 +5170,22 @@ void ApplyNormalFixes()
     {
         sp->procFlags = PROC_ON_TARGET_DIE | static_cast<uint32>(PROC_TARGET_SELF);
         sp->procChance = 100;
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 18371;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_SELF;
-        sp->Effect[2] = SPELL_EFFECT_NULL; //remove this effect
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 18371;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_SELF;
+        sp->eff[2].Effect = SPELL_EFFECT_NULL; //remove this effect
     }
     sp = CheckAndReturnSpellEntry(18372);
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_TARGET_DIE | static_cast<uint32>(PROC_TARGET_SELF);
         sp->procChance = 100;
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 18371;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_SELF;
-        sp->Effect[2] = SPELL_EFFECT_NULL; //remove this effect
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 18371;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_SELF;
+        sp->eff[2].Effect = SPELL_EFFECT_NULL; //remove this effect
     }
 
     //warlock - Shadow Embrace
@@ -5193,56 +5193,56 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->Effect[1] = SPELL_EFFECT_NULL; //remove this effect ? Maybe remove the other one :P xD
+        sp->eff[1].Effect = SPELL_EFFECT_NULL; //remove this effect ? Maybe remove the other one :P xD
     }
     sp = CheckAndReturnSpellEntry(32387);
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->Effect[1] = SPELL_EFFECT_NULL; //remove this effect ? Maybe remove the other one :P xD
+        sp->eff[1].Effect = SPELL_EFFECT_NULL; //remove this effect ? Maybe remove the other one :P xD
     }
     sp = CheckAndReturnSpellEntry(32392);
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->Effect[1] = SPELL_EFFECT_NULL; //remove this effect ? Maybe remove the other one :P xD
+        sp->eff[1].Effect = SPELL_EFFECT_NULL; //remove this effect ? Maybe remove the other one :P xD
     }
     sp = CheckAndReturnSpellEntry(32393);
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->Effect[1] = SPELL_EFFECT_NULL; //remove this effect ? Maybe remove the other one :P xD
+        sp->eff[1].Effect = SPELL_EFFECT_NULL; //remove this effect ? Maybe remove the other one :P xD
     }
     sp = CheckAndReturnSpellEntry(32394);
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->Effect[1] = SPELL_EFFECT_NULL; //remove this effect ? Maybe remove the other one :P xD
+        sp->eff[1].Effect = SPELL_EFFECT_NULL; //remove this effect ? Maybe remove the other one :P xD
     }
 
     //warlock - soul leech
     sp = CheckAndReturnSpellEntry(30293);
     if (sp != NULL)
     {
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA; //aura
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 30294;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA; //aura
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 30294;
         sp->procFlags = uint32(PROC_ON_CAST_SPELL | PROC_TARGET_SELF);
     }
     sp = CheckAndReturnSpellEntry(30295);
     if (sp != NULL)
     {
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA; //aura
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 30294;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA; //aura
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 30294;
         sp->procFlags = uint32(PROC_ON_CAST_SPELL | PROC_TARGET_SELF);
     }
     sp = CheckAndReturnSpellEntry(30296);
     if (sp != NULL)
     {
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA; //aura
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 30294;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA; //aura
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 30294;
         sp->procFlags = uint32(PROC_ON_CAST_SPELL | PROC_TARGET_SELF);
     }
 
@@ -5250,16 +5250,16 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(18073);
     if (sp != NULL)
     {
-        sp->Effect[0] = SPELL_EFFECT_NULL; //delete this override effect :P
-        sp->EffectTriggerSpell[1] = 18093; //trigger spell was wrong :P
+        sp->eff[0].Effect = SPELL_EFFECT_NULL; //delete this override effect :P
+        sp->eff[1].EffectTriggerSpell = 18093; //trigger spell was wrong :P
         sp->procFlags = PROC_ON_ANY_HOSTILE_ACTION;
         sp->procChance = 13; //god, save us from fixed values !
     }
     sp = CheckAndReturnSpellEntry(18096);
     if (sp != NULL)
     {
-        sp->Effect[0] = SPELL_EFFECT_NULL; //delete this override effect :P
-        sp->EffectTriggerSpell[1] = 18093; //trigger spell was wrong :P
+        sp->eff[0].Effect = SPELL_EFFECT_NULL; //delete this override effect :P
+        sp->eff[1].EffectTriggerSpell = 18093; //trigger spell was wrong :P
         sp->procFlags = PROC_ON_ANY_HOSTILE_ACTION;
         sp->procChance = 26; //god, save us from fixed values !
     }
@@ -5300,7 +5300,7 @@ void ApplyNormalFixes()
         sp = CheckAndReturnSpellEntry(HealthStoneID[i]);
         if (sp != NULL)
         {
-            sp->Reagent[1] = 0;
+            sp->sre.Reagent[1] = 0;
         }
     }
 
@@ -5402,8 +5402,8 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_INHERITING_LEVEL;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_SELF; //some land under target is used that gathers multiple targets ...
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_NONE;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_SELF; //some land under target is used that gathers multiple targets ...
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_NONE;
     }
 
     /**********************************************************
@@ -5455,34 +5455,34 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(5211);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 32747;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 32747;
     }
     sp = CheckAndReturnSpellEntry(6798);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 32747;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 32747;
     }
     sp = CheckAndReturnSpellEntry(8983);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 32747;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 32747;
     }
 
     //Druid - Feral Swiftness
     sp = CheckAndReturnSpellEntry(17002);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 24867;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 24867;
     }
     sp = CheckAndReturnSpellEntry(24866);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 24864;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 24864;
     }
 
     // Druid - Maim
@@ -5501,29 +5501,29 @@ void ApplyNormalFixes()
 
     sp = CheckAndReturnSpellEntry(20719); //feline grace
     if (sp != NULL)
-        sp->Effect[0] = SPELL_EFFECT_NULL;
+        sp->eff[0].Effect = SPELL_EFFECT_NULL;
 
     // Druid - Feral Swiftness
     sp = CheckAndReturnSpellEntry(17002);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 24867;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 24867;
     }
     sp = CheckAndReturnSpellEntry(24866);
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 24864;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 24864;
     }
 
     // Druid - Frenzied Regeneration
     sp = CheckAndReturnSpellEntry(22842);
     if (sp != NULL)
     {
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PERIODIC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 22845;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PERIODIC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 22845;
     }
 
     // Druid - Improved Leader of the Pack
@@ -5630,126 +5630,126 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(61177); // Northrend Inscription Research
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_NULL;
+        sp->eff[1].Effect = SPELL_EFFECT_NULL;
         //sp->EffectBaseDice[1] = 0;
-        sp->EffectBasePoints[1] = 0;
-        sp->EffectImplicitTargetA[1] = 0;
-        sp->EffectDieSides[1] = 0;
+        sp->eff[1].EffectBasePoints = 0;
+        sp->eff[1].EffectImplicitTargetA = 0;
+        sp->eff[1].EffectDieSides = 0;
     }
     sp = CheckAndReturnSpellEntry(61288); // Minor Inscription Research
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_NULL;
+        sp->eff[1].Effect = SPELL_EFFECT_NULL;
         //sp->EffectBaseDice[1] = 0;
-        sp->EffectBasePoints[1] = 0;
-        sp->EffectImplicitTargetA[1] = 0;
-        sp->EffectDieSides[1] = 0;
+        sp->eff[1].EffectBasePoints = 0;
+        sp->eff[1].EffectImplicitTargetA = 0;
+        sp->eff[1].EffectDieSides = 0;
     }
     sp = CheckAndReturnSpellEntry(60893); // Northrend Alchemy Research
     if (sp != NULL)
     {
-        sp->Effect[1] = SPELL_EFFECT_NULL;
+        sp->eff[1].Effect = SPELL_EFFECT_NULL;
         //sp->EffectBaseDice[1] = 0;
-        sp->EffectBasePoints[1] = 0;
-        sp->EffectImplicitTargetA[1] = 0;
-        sp->EffectDieSides[1] = 0;
+        sp->eff[1].EffectBasePoints = 0;
+        sp->eff[1].EffectImplicitTargetA = 0;
+        sp->eff[1].EffectDieSides = 0;
     }
     sp = CheckAndReturnSpellEntry(46097); // Brutal Totem of Survival
     if (sp != NULL)
     {
-        sp->EffectSpellClassMask[0][0] = 0x00100000 | 0x10000000 | 0x80000000;
-        sp->EffectSpellClassMask[0][1] = 0x08000000;
+        sp->SpellClassOptions.SpellFamilyFlags[0][0] = 0x00100000 | 0x10000000 | 0x80000000;
+        sp->eff[0].EffectSpellGroupRelation[1] = 0x08000000;
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_SELF;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_SELF;
     }
     sp = CheckAndReturnSpellEntry(43860); // Totem of Survival
     if (sp != NULL)
     {
-        sp->EffectSpellClassMask[0][0] = 0x00100000 | 0x10000000 | 0x80000000;
-        sp->EffectSpellClassMask[0][1] = 0x08000000;
+        sp->SpellClassOptions.SpellFamilyFlags[0][0] = 0x00100000 | 0x10000000 | 0x80000000;
+        sp->eff[0].EffectSpellGroupRelation[1] = 0x08000000;
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_SELF;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_SELF;
     }
     sp = CheckAndReturnSpellEntry(43861); // Merciless Totem of Survival
     if (sp != NULL)
     {
-        sp->EffectSpellClassMask[0][0] = 0x00100000 | 0x10000000 | 0x80000000;
-        sp->EffectSpellClassMask[0][1] = 0x08000000;
+        sp->SpellClassOptions.SpellFamilyFlags[0][0] = 0x00100000 | 0x10000000 | 0x80000000;
+        sp->eff[0].EffectSpellGroupRelation[1] = 0x08000000;
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_SELF;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_SELF;
     }
     sp = CheckAndReturnSpellEntry(43862); // Vengeful Totem of Survival
     if (sp != NULL)
     {
-        sp->EffectSpellClassMask[0][0] = 0x00100000 | 0x10000000 | 0x80000000;
-        sp->EffectSpellClassMask[0][1] = 0x08000000;
+        sp->SpellClassOptions.SpellFamilyFlags[0][0] = 0x00100000 | 0x10000000 | 0x80000000;
+        sp->eff[0].EffectSpellGroupRelation[1] = 0x08000000;
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_SELF;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_SELF;
     }
     sp = CheckAndReturnSpellEntry(60564); // Savage Gladiator's Totem of Survival
     if (sp != NULL)
     {
-        sp->EffectSpellClassMask[0][0] = 0x00100000 | 0x10000000 | 0x80000000;
-        sp->EffectSpellClassMask[0][1] = 0x08000000;
+        sp->SpellClassOptions.SpellFamilyFlags[0][0] = 0x00100000 | 0x10000000 | 0x80000000;
+        sp->eff[0].EffectSpellGroupRelation[1] = 0x08000000;
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_SELF;
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 60565; // Savage Magic
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_SELF;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 60565; // Savage Magic
     }
     sp = CheckAndReturnSpellEntry(60571); // Hateful Gladiator's Totem of Survival
     if (sp != NULL)
     {
-        sp->EffectSpellClassMask[0][0] = 0x00100000 | 0x10000000 | 0x80000000;
-        sp->EffectSpellClassMask[0][1] = 0x08000000;
+        sp->SpellClassOptions.SpellFamilyFlags[0][0] = 0x00100000 | 0x10000000 | 0x80000000;
+        sp->eff[0].EffectSpellGroupRelation[1] = 0x08000000;
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_SELF;
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 60566; // Hateful Magic
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_SELF;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 60566; // Hateful Magic
     }
     sp = CheckAndReturnSpellEntry(60572); // Deadly Gladiator's Totem of Survival
     if (sp != NULL)
     {
-        sp->EffectSpellClassMask[0][0] = 0x00100000 | 0x10000000 | 0x80000000;
-        sp->EffectSpellClassMask[0][1] = 0x08000000;
+        sp->SpellClassOptions.SpellFamilyFlags[0][0] = 0x00100000 | 0x10000000 | 0x80000000;
+        sp->eff[0].EffectSpellGroupRelation[1] = 0x08000000;
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_SELF;
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 60567; // Deadly Magic
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_SELF;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 60567; // Deadly Magic
     }
     sp = CheckAndReturnSpellEntry(60567); // Deadly Magic
     if (sp != NULL)
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_SELF;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_SELF;
     sp = CheckAndReturnSpellEntry(46098); // Brutal Totem of Third WInd
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectSpellClassMask[0][0] = 0x00000080;
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 46099; // Brutal Gladiator's Totem of the Third Wind
+        sp->SpellClassOptions.SpellFamilyFlags[0][0] = 0x00000080;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 46099; // Brutal Gladiator's Totem of the Third Wind
     }
     sp = CheckAndReturnSpellEntry(34138); // Totem of the Third Wind
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectSpellClassMask[0][0] = 0x00000080;
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 34132; // Gladiator's Totem of the Third Wind
+        sp->SpellClassOptions.SpellFamilyFlags[0][0] = 0x00000080;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 34132; // Gladiator's Totem of the Third Wind
     }
     sp = CheckAndReturnSpellEntry(42370); // Merciless Totem of the Third WInd
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectSpellClassMask[0][0] = 0x00000080;
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 42371; // Merciless Gladiator's Totem of the Third Wind
+        sp->SpellClassOptions.SpellFamilyFlags[0][0] = 0x00000080;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 42371; // Merciless Gladiator's Totem of the Third Wind
     }
     sp = CheckAndReturnSpellEntry(43728); // Vengeful Totem of Third WInd
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectSpellClassMask[0][0] = 0x00000080;
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 43729; // Vengeful Gladiator's Totem of the Third Wind
+        sp->SpellClassOptions.SpellFamilyFlags[0][0] = 0x00000080;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 43729; // Vengeful Gladiator's Totem of the Third Wind
     }
     //////////////////////////////////////////
     // ITEMS                                //
@@ -5768,14 +5768,14 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(25990);
     if (sp != NULL)
     {
-        sp->EffectAmplitude[1] = 1000;
+        sp->eff[1].EffectAmplitude = 1000;
     }
 
     //Extract Gas
     sp = CheckAndReturnSpellEntry(30427);
     if (sp != NULL)
     {
-        sp->Effect[0] = SPELL_EFFECT_DUMMY;
+        sp->eff[0].Effect = SPELL_EFFECT_DUMMY;
     }
 
     //Relic - Idol of the Unseen Moon
@@ -5783,8 +5783,8 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 43740;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 43740;
     }
 
     //Lunar Grace - Idol of the Unseen Moon proc
@@ -5800,8 +5800,8 @@ void ApplyNormalFixes()
     {
         sp->proc_interval = 10001; //block proc when is already active.. (Primal Instinct duration = 10 sec)
         sp->procFlags = PROC_ON_CAST_SPELL | static_cast<uint32>(PROC_TARGET_SELF);
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 43738;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 43738;
         sp->procChance = 85;
     }
 
@@ -5819,8 +5819,8 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 37198;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 37198;
         sp->procChance = 15;
     }
 
@@ -5828,9 +5828,9 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(21992);
     if (sp != NULL)
     {
-        sp->Effect[2] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[2] = 27648;
-        sp->EffectImplicitTargetA[2] = EFF_TARGET_ALL_ENEMIES_AROUND_CASTER; // cebernic: for enemies not self
+        sp->eff[2].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[2].EffectTriggerSpell = 27648;
+        sp->eff[2].EffectImplicitTargetA = EFF_TARGET_ALL_ENEMIES_AROUND_CASTER; // cebernic: for enemies not self
     }
 
     //Energized
@@ -5865,7 +5865,7 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         // effect 1 and 2 are the same... dunno why
-        sp->Effect[1] = SPELL_EFFECT_NULL;
+        sp->eff[1].Effect = SPELL_EFFECT_NULL;
     }
 
     // Furious Gladiator's Libram of Fortitude - triggered by LK Arena 4 Gladiator's Relic/Idol/Libram/Totem
@@ -5873,7 +5873,7 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         // effect 1 and 2 are the same... dunno why
-        sp->Effect[1] = SPELL_EFFECT_NULL;
+        sp->eff[1].Effect = SPELL_EFFECT_NULL;
     }
 
     // Relentless Aggression - triggered by LK Arena 5 Gladiator's Relic/Idol/Libram/Totem
@@ -5881,7 +5881,7 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         // effect 1 and 2 are the same... dunno why
-        sp->Effect[1] = SPELL_EFFECT_NULL;
+        sp->eff[1].Effect = SPELL_EFFECT_NULL;
     }
 
     // Savage Aggression - triggered by Savage Gladiator's Relic/Idol/Libram/Totem
@@ -5889,7 +5889,7 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         // effect 1 and 2 are the same... dunno why
-        sp->Effect[1] = SPELL_EFFECT_NULL;
+        sp->eff[1].Effect = SPELL_EFFECT_NULL;
     }
 
     // Sigil of Haunted Dreams
@@ -6045,7 +6045,7 @@ void ApplyNormalFixes()
     // Eye of Acherus, our phase shift mode messes up the control :/
     sp = CheckAndReturnSpellEntry(51852);
     if (sp != NULL)
-        sp->Effect[0] = SPELL_EFFECT_NULL;
+        sp->eff[0].Effect = SPELL_EFFECT_NULL;
 
 
     //Spell Focus Trigger (Mystical Skyfire Diamond)
@@ -6095,23 +6095,23 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(40442);
     if (sp != NULL)
     {
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
         sp->procChance = 40;
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectTriggerSpell[0] = 40452;
+        sp->eff[0].EffectTriggerSpell = 40452;
         sp->maxstack = 1;
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
         sp->procChance = 25;
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectTriggerSpell[1] = 40445;
+        sp->eff[1].EffectTriggerSpell = 40445;
         sp->maxstack = 1;
-        sp->Effect[2] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[2] = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[2].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[2].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
         sp->procChance = 25;
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectTriggerSpell[2] = 40446;
+        sp->eff[2].EffectTriggerSpell = 40446;
         sp->maxstack = 1;
     }
 
@@ -6119,76 +6119,76 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(40438);
     if (sp != NULL)
     {
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
         sp->procChance = 10;
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectTriggerSpell[0] = 40441;
+        sp->eff[0].EffectTriggerSpell = 40441;
         sp->maxstack = 1;
-        sp->Effect[1] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
         sp->procChance = 10;
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectTriggerSpell[1] = 40440;
+        sp->eff[1].EffectTriggerSpell = 40440;
         sp->maxstack = 1;
     }
     // Drums of war targets surrounding party members instead of us
     sp = CheckAndReturnSpellEntry(35475);
     if (sp != NULL)
     {
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_ALL_PARTY;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_ALL_PARTY;
-        sp->EffectImplicitTargetA[2] = 0;
-        sp->EffectImplicitTargetB[0] = 0;
-        sp->EffectImplicitTargetB[1] = 0;
-        sp->EffectImplicitTargetB[2] = 0;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_ALL_PARTY;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_ALL_PARTY;
+        sp->eff[2].EffectImplicitTargetA = 0;
+        sp->eff[0].EffectImplicitTargetB = 0;
+        sp->eff[1].EffectImplicitTargetB = 0;
+        sp->eff[2].EffectImplicitTargetB = 0;
     }
 
     // Drums of Battle targets surrounding party members instead of us
     sp = CheckAndReturnSpellEntry(35476);
     if (sp != NULL)
     {
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_ALL_PARTY;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_ALL_PARTY;
-        sp->EffectImplicitTargetA[2] = 0;
-        sp->EffectImplicitTargetB[0] = 0;
-        sp->EffectImplicitTargetB[1] = 0;
-        sp->EffectImplicitTargetB[2] = 0;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_ALL_PARTY;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_ALL_PARTY;
+        sp->eff[2].EffectImplicitTargetA = 0;
+        sp->eff[0].EffectImplicitTargetB = 0;
+        sp->eff[1].EffectImplicitTargetB = 0;
+        sp->eff[2].EffectImplicitTargetB = 0;
     }
 
     // Drums of Panic targets surrounding creatures instead of us
     sp = CheckAndReturnSpellEntry(35474);
     if (sp != NULL)
     {
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_ALL_ENEMIES_AROUND_CASTER;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_ALL_ENEMIES_AROUND_CASTER;
-        sp->EffectImplicitTargetA[2] = 0;
-        sp->EffectImplicitTargetB[0] = 0;
-        sp->EffectImplicitTargetB[1] = 0;
-        sp->EffectImplicitTargetB[2] = 0;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_ALL_ENEMIES_AROUND_CASTER;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_ALL_ENEMIES_AROUND_CASTER;
+        sp->eff[2].EffectImplicitTargetA = 0;
+        sp->eff[0].EffectImplicitTargetB = 0;
+        sp->eff[1].EffectImplicitTargetB = 0;
+        sp->eff[2].EffectImplicitTargetB = 0;
     }
 
     // Drums of Restoration targets surrounding party members instead of us
     sp = CheckAndReturnSpellEntry(35478);
     if (sp != NULL)
     {
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_ALL_PARTY;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_ALL_PARTY;
-        sp->EffectImplicitTargetA[2] = 0;
-        sp->EffectImplicitTargetB[0] = 0;
-        sp->EffectImplicitTargetB[1] = 0;
-        sp->EffectImplicitTargetB[2] = 0;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_ALL_PARTY;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_ALL_PARTY;
+        sp->eff[2].EffectImplicitTargetA = 0;
+        sp->eff[0].EffectImplicitTargetB = 0;
+        sp->eff[1].EffectImplicitTargetB = 0;
+        sp->eff[2].EffectImplicitTargetB = 0;
     }
     // Drums of Speed targets surrounding party members instead of us
     sp = CheckAndReturnSpellEntry(35477);
     if (sp != NULL)
     {
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_ALL_PARTY;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_ALL_PARTY;
-        sp->EffectImplicitTargetA[2] = 0;
-        sp->EffectImplicitTargetB[0] = 0;
-        sp->EffectImplicitTargetB[1] = 0;
-        sp->EffectImplicitTargetB[2] = 0;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_ALL_PARTY;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_ALL_PARTY;
+        sp->eff[2].EffectImplicitTargetA = 0;
+        sp->eff[0].EffectImplicitTargetB = 0;
+        sp->eff[1].EffectImplicitTargetB = 0;
+        sp->eff[2].EffectImplicitTargetB = 0;
     }
 
     // Dragonspine Trophy
@@ -6204,11 +6204,11 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(37447);
     if (sp != NULL)
     {
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
         sp->procChance = 100;
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectTriggerSpell[0] = 37445;
+        sp->eff[0].EffectTriggerSpell = 37445;
         sp->maxstack = 1;
     }
 
@@ -6297,22 +6297,22 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(37377);
     if (sp != NULL)
     {
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
         sp->procChance = 5;
         sp->procFlags = PROC_ON_CAST_SPELL;
         sp->proc_interval = 20;
-        sp->EffectTriggerSpell[0] = 37379;
+        sp->eff[0].EffectTriggerSpell = 37379;
     }
     sp = CheckAndReturnSpellEntry(39437);
     if (sp != NULL)
     {
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
         sp->procChance = 5;
         sp->procFlags = PROC_ON_CAST_SPELL;
         sp->proc_interval = 20;
-        sp->EffectTriggerSpell[0] = 37378;
+        sp->eff[0].EffectTriggerSpell = 37378;
     }
 
     //Item Set: Cataclysm Raiment
@@ -6419,7 +6419,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(60172);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[0] = 61082;
+        sp->eff[0].EffectTriggerSpell = 61082;
         sp->procFlags = PROC_ON_CAST_SPELL;
         sp->procChance = 100;
     }
@@ -6453,8 +6453,8 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(29200);
     if (sp != NULL)
     {
-        sp->Reagent[1] = 0;
-        sp->ReagentCount[1] = 0;
+        sp->sre.Reagent[1] = 0;
+        sp->sre.ReagentCount[1] = 0;
     }
 
     // - Warrior - Warbringer Armor
@@ -6464,8 +6464,8 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(37514);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 37515;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 37515;
         sp->procChance = 25;
     }
 
@@ -6508,7 +6508,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(55776);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[0] = 55775;
+        sp->eff[0].EffectTriggerSpell = 55775;
         sp->procFlags = PROC_ON_MELEE_ATTACK;
         sp->procChance = 25;
         sp->proc_interval = 60000;
@@ -6518,7 +6518,7 @@ void ApplyNormalFixes()
     /*sp = CheckAndReturnSpellEntry(55640);
     if (sp != NULL)
     {
-    sp->EffectTriggerSpell[0] = 55637;
+    sp->eff[0].EffectTriggerSpell = 55637;
     sp->procFlags = PROC_ON_CAST_SPELL;
     sp->procChance = 50;
     sp->proc_interval = 45000;
@@ -6528,7 +6528,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(55768);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[0] = 55767;
+        sp->eff[0].EffectTriggerSpell = 55767;
         sp->procFlags = PROC_ON_CAST_SPELL;
         sp->procChance = 35;
         sp->proc_interval = 60000;
@@ -6558,7 +6558,7 @@ void ApplyNormalFixes()
     // Infernal Protection
     sp = CheckAndReturnSpellEntry(36488);            //    http://www.wowhead.com/?spell=36488
     if (sp != NULL)
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_SINGLE_FRIEND;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_SINGLE_FRIEND;
 
     // Band of the Eternal Champion: reduced proc rate
     sp = CheckAndReturnSpellEntry(35080);
@@ -6591,7 +6591,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(60063);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[1] = 60064;
+        sp->eff[1].EffectTriggerSpell = 60064;
         sp->procFlags = PROC_ON_SPELL_HIT;
         sp->procChance = 10;
         sp->proc_interval = 45000;
@@ -6601,7 +6601,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(49622);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[1] = 49623;
+        sp->eff[1].EffectTriggerSpell = 49623;
         sp->procFlags = PROC_ON_CAST_SPELL;
         sp->procChance = 10;
         sp->proc_interval = 45000;
@@ -6611,7 +6611,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(58901);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[1] = 58904;
+        sp->eff[1].EffectTriggerSpell = 58904;
         sp->procFlags = PROC_ON_RANGED_CRIT_ATTACK | PROC_ON_CRIT_ATTACK;
         sp->procChance = 10;
         sp->proc_interval = 60000;
@@ -6621,7 +6621,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(60490);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[1] = 60492;
+        sp->eff[1].EffectTriggerSpell = 60492;
         sp->procFlags = PROC_ON_CAST_SPELL;
         sp->procChance = 10;
         sp->proc_interval = 30000;
@@ -6631,7 +6631,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(60493);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[1] = 60494;
+        sp->eff[1].EffectTriggerSpell = 60494;
         sp->procFlags = PROC_ON_CAST_SPELL;
         sp->procChance = 15;
         sp->proc_interval = 45000;
@@ -6641,7 +6641,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(60313);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[1] = 60314;
+        sp->eff[1].EffectTriggerSpell = 60314;
         sp->procFlags = PROC_ON_MELEE_ATTACK | PROC_ON_RANGED_ATTACK;
         sp->procChance = 100;
         sp->maxstack = 20;
@@ -6657,8 +6657,8 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CAST_SPELL | static_cast<uint32>(PROC_TARGET_SELF);
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 35095;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 35095;
         sp->procChance = 100;
     }
     sp = CheckAndReturnSpellEntry(35095);
@@ -6681,14 +6681,14 @@ void ApplyNormalFixes()
     {
         sp->procFlags = PROC_ON_BLOCK_VICTIM;
         sp->procChance = 100;
-        sp->EffectTriggerSpell[0] = 32643;
+        sp->eff[0].EffectTriggerSpell = 32643;
     }
 
     //Flow of Knowledge
     sp = CheckAndReturnSpellEntry(62114);
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[1] = 60064;
+        sp->eff[1].EffectTriggerSpell = 60064;
         sp->procFlags = PROC_ON_CAST_SPELL;
         sp->procChance = 10;
         sp->proc_interval = 45000;
@@ -6722,10 +6722,10 @@ void ApplyNormalFixes()
     {
         for (i = 0; i < 3; i++)
         {
-            if (sp->EffectImplicitTargetA[i] > 0)
-                sp->EffectImplicitTargetA[i] = EFF_TARGET_ALL_FRIENDLY_IN_AREA;
-            if (sp->EffectImplicitTargetB[i] > 0)
-                sp->EffectImplicitTargetB[i] = EFF_TARGET_ALL_FRIENDLY_IN_AREA;
+            if (sp->eff[i].EffectImplicitTargetA > 0)
+                sp->eff[i].EffectImplicitTargetA = EFF_TARGET_ALL_FRIENDLY_IN_AREA;
+            if (sp->eff[i].EffectImplicitTargetB > 0)
+                sp->eff[i].EffectImplicitTargetB = EFF_TARGET_ALL_FRIENDLY_IN_AREA;
         }
     }
 
@@ -6735,10 +6735,10 @@ void ApplyNormalFixes()
     {
         for (i = 0; i < 3; i++)
         {
-            if (sp->EffectImplicitTargetA[i] > 0)
-                sp->EffectImplicitTargetA[i] = EFF_TARGET_ALL_FRIENDLY_IN_AREA;
-            if (sp->EffectImplicitTargetB[i] > 0)
-                sp->EffectImplicitTargetB[i] = EFF_TARGET_ALL_FRIENDLY_IN_AREA;
+            if (sp->eff[i].EffectImplicitTargetA > 0)
+                sp->eff[i].EffectImplicitTargetA = EFF_TARGET_ALL_FRIENDLY_IN_AREA;
+            if (sp->eff[i].EffectImplicitTargetB > 0)
+                sp->eff[i].EffectImplicitTargetB = EFF_TARGET_ALL_FRIENDLY_IN_AREA;
         }
     }
 
@@ -6759,15 +6759,15 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(43437);
     if (sp != NULL)
     {
-        sp->EffectImplicitTargetA[0] = 0;
-        sp->EffectImplicitTargetA[1] = 0;
+        sp->eff[0].EffectImplicitTargetA = 0;
+        sp->eff[1].EffectImplicitTargetA = 0;
     }
 
     //Bloodboil
     sp = CheckAndReturnSpellEntry(42005);
     if (sp != NULL)
     {
-        sp->MaxTargets = 5;
+        sp->str.MaxTargets = 5;
     }
 
     //Acidic Wound
@@ -6803,14 +6803,14 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(31347);
     if (sp != NULL)
     {
-        sp->MaxTargets = 1;
+        sp->str.MaxTargets = 1;
     }
     //Shadow of Death
     sp = CheckAndReturnSpellEntry(40251);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PERIODIC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 0;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PERIODIC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 0;
     }
 
     // Recently Dropped Flag
@@ -6838,8 +6838,8 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->c_is_flags |= SPELL_FLAG_IS_FORCEDDEBUFF;
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 20584;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 20584;
     }
 
     sp = CheckAndReturnSpellEntry(8326);
@@ -6857,14 +6857,14 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(24379);   //bg Restoration
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[0] = 23493;
+        sp->eff[0].EffectTriggerSpell = 23493;
         sp->c_is_flags = SPELL_FLAG_IS_FORCEDBUFF;
     }
 
     sp = CheckAndReturnSpellEntry(23493);   //bg Restoration
     if (sp != NULL)
     {
-        sp->EffectTriggerSpell[0] = 24379;
+        sp->eff[0].EffectTriggerSpell = 24379;
         sp->c_is_flags = SPELL_FLAG_IS_FORCEDBUFF;
     }
 
@@ -6872,10 +6872,10 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->Effect[0] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 20511; // cebernic: this just real spell
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_NONE;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 20511; // cebernic: this just real spell
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_NONE;
     }
 
 
@@ -6902,22 +6902,22 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(50391);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_MOD_INCREASE_SPEED_ALWAYS;
-        sp->Effect[0] = SPELL_EFFECT_APPLY_GROUP_AREA_AURA;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 50392;
-        sp->Effect[1] = SPELL_EFFECT_APPLY_GROUP_AREA_AURA;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_SELF;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_MOD_INCREASE_SPEED_ALWAYS;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_GROUP_AREA_AURA;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 50392;
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_GROUP_AREA_AURA;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_SELF;
     }
     sp = CheckAndReturnSpellEntry(50392);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_MOD_INCREASE_SPEED_ALWAYS;
-        sp->Effect[0] = SPELL_EFFECT_APPLY_GROUP_AREA_AURA;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 50392;
-        sp->Effect[1] = SPELL_EFFECT_APPLY_GROUP_AREA_AURA;
-        sp->EffectImplicitTargetA[1] = EFF_TARGET_SELF;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_MOD_INCREASE_SPEED_ALWAYS;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_GROUP_AREA_AURA;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 50392;
+        sp->eff[1].Effect = SPELL_EFFECT_APPLY_GROUP_AREA_AURA;
+        sp->eff[1].EffectImplicitTargetA = EFF_TARGET_SELF;
     }
 
     /**********************************************************
@@ -6926,7 +6926,7 @@ void ApplyNormalFixes()
     sp = dbcSpell.LookupEntryForced(47528);
     if (sp != NULL)
     {
-        sp->Effect[0] = SPELL_EFFECT_INTERRUPT_CAST;
+        sp->eff[0].Effect = SPELL_EFFECT_INTERRUPT_CAST;
     }
 
     /**********************************************************
@@ -6944,9 +6944,9 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(47568);
     if (sp != NULL)
     {
-        sp->Effect[2] = SPELL_EFFECT_ACTIVATE_RUNES;
-        sp->EffectBasePoints[2] = 1;
-        sp->EffectMiscValue[2] = RUNE_UNHOLY;
+        sp->eff[2].Effect = SPELL_EFFECT_ACTIVATE_RUNES;
+        sp->eff[2].EffectBasePoints = 1;
+        sp->eff[2].EffectMiscValue = RUNE_UNHOLY;
     }
 
     /**********************************************************
@@ -6955,10 +6955,10 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(48263);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_MOD_BASE_RESISTANCE_PCT;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT;
-        sp->EffectBasePoints[1] = 9;
-        sp->EffectApplyAuraName[2] = SPELL_AURA_MOD_DAMAGE_TAKEN;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_MOD_BASE_RESISTANCE_PCT;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT;
+        sp->eff[1].EffectBasePoints = 9;
+        sp->eff[2].EffectApplyAuraName = SPELL_AURA_MOD_DAMAGE_TAKEN;
         sp->BGR_one_buff_from_caster_on_self = SPELL_TYPE3_DEATH_KNIGHT_AURA;
     }
 
@@ -6968,10 +6968,10 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(48265);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_MOD_HASTE;
-        sp->EffectBasePoints[0] = 14;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_MOD_INCREASE_SPEED;
-        sp->EffectBasePoints[1] = 14;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_MOD_HASTE;
+        sp->eff[0].EffectBasePoints = 14;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_MOD_INCREASE_SPEED;
+        sp->eff[1].EffectBasePoints = 14;
         sp->BGR_one_buff_from_caster_on_self = SPELL_TYPE3_DEATH_KNIGHT_AURA;
     }
 
@@ -6981,29 +6981,29 @@ void ApplyNormalFixes()
     sp = dbcSpell.LookupEntryForced(49937);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PERIODIC_DAMAGE;
-        sp->Effect[0] = SPELL_EFFECT_PERSISTENT_AREA_AURA;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PERIODIC_DAMAGE;
+        sp->eff[0].Effect = SPELL_EFFECT_PERSISTENT_AREA_AURA;
     }
 
     sp = dbcSpell.LookupEntryForced(49936);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PERIODIC_DAMAGE;
-        sp->Effect[0] = SPELL_EFFECT_PERSISTENT_AREA_AURA;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PERIODIC_DAMAGE;
+        sp->eff[0].Effect = SPELL_EFFECT_PERSISTENT_AREA_AURA;
     }
 
     sp = dbcSpell.LookupEntryForced(49938);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PERIODIC_DAMAGE;
-        sp->Effect[0] = SPELL_EFFECT_PERSISTENT_AREA_AURA;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PERIODIC_DAMAGE;
+        sp->eff[0].Effect = SPELL_EFFECT_PERSISTENT_AREA_AURA;
     }
 
     sp = dbcSpell.LookupEntryForced(43265);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PERIODIC_DAMAGE;
-        sp->Effect[0] = SPELL_EFFECT_PERSISTENT_AREA_AURA;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PERIODIC_DAMAGE;
+        sp->eff[0].Effect = SPELL_EFFECT_PERSISTENT_AREA_AURA;
     }
 
     /**********************************************************
@@ -7012,7 +7012,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(49576);
     if (sp != NULL)
     {
-        sp->Effect[0] = SPELL_EFFECT_DUMMY;
+        sp->eff[0].Effect = SPELL_EFFECT_DUMMY;
     }
 
     // Runic Empowerment
@@ -7020,8 +7020,8 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CAST_SPELL;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 81229;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 81229;
         sp->ProcOnNameHash[0] = SPELL_HASH_DEATH_STRIKE;
         sp->ProcOnNameHash[1] = SPELL_HASH_FROST_STRIKE;
         sp->ProcOnNameHash[2] = SPELL_HASH_DEATH_COIL;
@@ -7033,8 +7033,8 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_ANY_DAMAGE_VICTIM;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 76691;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 76691;
     }
 
     /**********************************************************
@@ -7043,9 +7043,9 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(48778);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_MOUNTED;
-        sp->EffectApplyAuraName[1] = SPELL_AURA_MOD_INCREASE_MOUNTED_SPEED;
-        sp->EffectBasePoints[1] = 99;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_MOUNTED;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_MOD_INCREASE_MOUNTED_SPEED;
+        sp->eff[1].EffectBasePoints = 99;
     }
 
     /**********************************************************
@@ -7054,8 +7054,8 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(3714);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_WATER_WALK;
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_WATER_WALK;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
     }
 
     // Rune Strike
@@ -7070,8 +7070,8 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->DurationIndex = 28;
-        sp->Effect[0] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_DUMMY;
+        sp->eff[0].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_DUMMY;
     }
 
     //Frost Strike
@@ -7115,8 +7115,8 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_MELEE_ATTACK;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 50452;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 50452;
     }
 
     // Bloodworms Rank 2
@@ -7124,8 +7124,8 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_MELEE_ATTACK;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 50452;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 50452;
     }
 
     // Bloodworms Rank 3
@@ -7133,8 +7133,8 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_MELEE_ATTACK;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 50452;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 50452;
     }
 
     // Blood Fury Healing Debuff
@@ -7148,17 +7148,17 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(16595);
     if (sp != NULL)
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_MOD_SCALE;
-        sp->EffectBasePoints[0] = -50;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_MOD_SCALE;
+        sp->eff[0].EffectBasePoints = -50;
         sp->maxstack = 1;
     }
 
     sp = CheckAndReturnSpellEntry(46584);
     if (sp != NULL)
     {
-        sp->Effect[0] = SPELL_EFFECT_DUMMY;
-        sp->Effect[1] = SPELL_EFFECT_NULL;
-        sp->Effect[2] = SPELL_EFFECT_NULL;
+        sp->eff[0].Effect = SPELL_EFFECT_DUMMY;
+        sp->eff[1].Effect = SPELL_EFFECT_NULL;
+        sp->eff[2].Effect = SPELL_EFFECT_NULL;
     }
 
     //PvP Librams of Justice
@@ -7188,8 +7188,8 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CAST_SPELL | static_cast<uint32>(PROC_TARGET_SELF);
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 34263;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 34263;
         sp->procChance = 100;
     }
     sp = CheckAndReturnSpellEntry(34263);
@@ -7205,8 +7205,8 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CAST_SPELL | static_cast<uint32>(PROC_TARGET_SELF);
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 34260;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 34260;
         sp->procChance = 100;
     }
     sp = CheckAndReturnSpellEntry(34260);
@@ -7222,8 +7222,8 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CAST_SPELL | static_cast<uint32>(PROC_TARGET_SELF);
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 43742;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 43742;
         sp->procChance = 100;
     }
     sp = CheckAndReturnSpellEntry(43742);
@@ -7239,8 +7239,8 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CAST_SPELL | static_cast<uint32>(PROC_TARGET_SELF);
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 43747;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 43747;
         sp->procChance = 40;
     }
     sp = CheckAndReturnSpellEntry(43747);
@@ -7255,8 +7255,8 @@ void ApplyNormalFixes()
     if (sp != NULL)
     {
         sp->procFlags = PROC_ON_CAST_SPELL | static_cast<uint32>(PROC_TARGET_SELF);
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 43749;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 43749;
         sp->procChance = 50;
     }
     sp = CheckAndReturnSpellEntry(43749);
@@ -7288,9 +7288,9 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(24574);        // Zandalarian Hero Badge 24590 24575
     if (sp != NULL)
     {
-        sp->Effect[0] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 24590;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 24590;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
         sp->procChance = 100;
     }
 
@@ -7319,7 +7319,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(51729);
     if (sp)
     {
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_SCRIPTED_OR_SINGLE_TARGET;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_SCRIPTED_OR_SINGLE_TARGET;
         sp->c_is_flags |= SPELL_FLAG_IS_FORCEDBUFF;
     }
 
@@ -7327,7 +7327,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(51265);
     if (sp)
     {
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_SCRIPTED_OR_SINGLE_TARGET;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_SCRIPTED_OR_SINGLE_TARGET;
         sp->c_is_flags |= SPELL_FLAG_IS_FORCEDBUFF;
     }
 
@@ -7335,7 +7335,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(52051);
     if (sp)
     {
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_SCRIPTED_OR_SINGLE_TARGET;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_SCRIPTED_OR_SINGLE_TARGET;
         sp->c_is_flags |= SPELL_FLAG_IS_FORCEDBUFF;
     }
 
@@ -7359,7 +7359,7 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(26467);
 	if (sp)
 	{
-		sp->EffectTriggerSpell[0] = 26470;
+		sp->eff[0].EffectTriggerSpell = 26470;
 		sp->Attributes |= ATTRIBUTES_NO_VISUAL_AURA | ATTRIBUTES_PASSIVE;
 		sp->DurationIndex = 0;
 		sp->procFlags = PROC_ON_CAST_SPELL;
@@ -7368,17 +7368,17 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(63024);
 	if (sp)
 	{
-		sp->EffectBasePoints[0] = 0;
-		sp->Effect[1] = SPELL_EFFECT_NULL;
-		sp->Effect[2] = SPELL_EFFECT_NULL;
-		sp->TargetAuraState = 0;
-		sp->casterAuraSpell = 0;
-		sp->CasterAuraState = 0;
-		sp->CasterAuraStateNot = 0;
-		sp->TargetAuraStateNot = 0;
-		sp->targetAuraSpell = 0;
-		sp->casterAuraSpellNot = 0;
-		sp->targetAuraSpellNot = 0;
+		sp->eff[0].EffectBasePoints = 0;
+		sp->eff[1].Effect = SPELL_EFFECT_NULL;
+		sp->eff[2].Effect = SPELL_EFFECT_NULL;
+		sp->sar.TargetAuraState = 0;
+		sp->sar.casterAuraSpell = 0;
+		sp->sar.CasterAuraState = 0;
+		sp->sar.CasterAuraStateNot = 0;
+		sp->sar.TargetAuraStateNot = 0;
+		sp->sar.targetAuraSpell = 0;
+		sp->sar.casterAuraSpellNot = 0;
+		sp->sar.targetAuraSpellNot = 0;
 		sp->c_is_flags |= SPELL_FLAG_IS_FORCEDDEBUFF;
 		sp->Attributes |= ATTRIBUTES_NEGATIVE;
 	}
@@ -7386,19 +7386,19 @@ void ApplyNormalFixes()
     sp = CheckAndReturnSpellEntry(20549);
     if (sp)
     {
-        sp->EffectMechanic[0] = MECHANIC_STUNNED;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_ALL_ENEMY_IN_AREA;
-        sp->EffectImplicitTargetB[0] = EFF_TARGET_NONE;
+        sp->eff[0].EffectMechanic = MECHANIC_STUNNED;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_ALL_ENEMY_IN_AREA;
+        sp->eff[0].EffectImplicitTargetB = EFF_TARGET_NONE;
     }
 
     // Fan of knives
     sp = CheckAndReturnSpellEntry(51723);
     if (sp != NULL)
     {
-        //sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        //sp->EffectTriggerSpell[1] = 52874;
-        sp->EffectMechanic[0] = MECHANIC_SHACKLED;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_ALL_ENEMY_IN_AREA;
-        sp->EffectImplicitTargetB[0] = EFF_TARGET_NONE;
+        //sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        //sp->eff[1].EffectTriggerSpell = 52874;
+        sp->eff[0].EffectMechanic = MECHANIC_SHACKLED;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_ALL_ENEMY_IN_AREA;
+        sp->eff[0].EffectImplicitTargetB = EFF_TARGET_NONE;
     }
 }

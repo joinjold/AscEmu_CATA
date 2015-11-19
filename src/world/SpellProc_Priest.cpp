@@ -81,7 +81,7 @@ class DivineAegisSpellProc : public SpellProc
         if (!CastingSpell->HasEffect(SPELL_EFFECT_HEAL))
             return true;
 
-        dmg_overwrite[0] = dmg * (mOrigSpell->EffectBasePoints[0] + 1) / 100;
+        dmg_overwrite[0] = dmg * (mOrigSpell->eff[0].EffectBasePoints + 1) / 100;
 
         return false;
     }
@@ -94,12 +94,12 @@ class ImprovedDevouringPlagueSpellProc : public SpellProc
     bool DoEffect(Unit* victim, SpellEntry* CastingSpell, uint32 flag, uint32 dmg, uint32 abs, int* dmg_overwrite, uint32 weapon_damage_type)
     {
         // Get dmg amt for 1 tick
-        dmg = CastingSpell->EffectBasePoints[0] + 1;
+        dmg = CastingSpell->eff[0].EffectBasePoints + 1;
 
         // Get total ticks
-        int ticks = GetDuration(dbcSpellDuration.LookupEntry(CastingSpell->DurationIndex)) / CastingSpell->EffectAmplitude[0];
+        int ticks = GetDuration(dbcSpellDuration.LookupEntry(CastingSpell->DurationIndex)) / CastingSpell->eff[0].EffectAmplitude;
 
-        dmg_overwrite[0] = dmg * ticks * (mOrigSpell->EffectBasePoints[0] + 1) / 100;
+        dmg_overwrite[0] = dmg * ticks * (mOrigSpell->eff[0].EffectBasePoints + 1) / 100;
 
         return false;
     }
@@ -157,7 +157,7 @@ class VampiricTouchDispelDamageSpellProc : public SpellProc
 
     void Init(Object* obj)
     {
-        mDispelDmg = 8 * (mOrigSpell->EffectBasePoints[1] + 1);
+        mDispelDmg = 8 * (mOrigSpell->eff[1].EffectBasePoints + 1);
     }
 
     bool DoEffect(Unit* victim, SpellEntry* CastingSpell, uint32 flag, uint32 dmg, uint32 abs, int* dmg_overwrite, uint32 weapon_damage_type)
@@ -184,13 +184,13 @@ class EmpoweredRenewSpellProc : public SpellProc
     bool DoEffect(Unit* victim, SpellEntry* CastingSpell, uint32 flag, uint32 dmg, uint32 abs, int* dmg_overwrite, uint32 weapon_damage_type)
     {
         // Get heal amt for 1 tick
-        dmg = CastingSpell->EffectBasePoints[0] + 1;
+        dmg = CastingSpell->eff[0].EffectBasePoints + 1;
 
         // Get total ticks
-        int ticks = GetDuration(dbcSpellDuration.LookupEntry(CastingSpell->DurationIndex)) / CastingSpell->EffectAmplitude[0];
+        int ticks = GetDuration(dbcSpellDuration.LookupEntry(CastingSpell->DurationIndex)) / CastingSpell->eff[0].EffectAmplitude;
 
         // Total periodic effect is a single tick amount multiplied by number of ticks
-        dmg_overwrite[0] = dmg * ticks * (mOrigSpell->EffectBasePoints[0] + 1) / 100;
+        dmg_overwrite[0] = dmg * ticks * (mOrigSpell->eff[0].EffectBasePoints + 1) / 100;
 
         return false;
     }

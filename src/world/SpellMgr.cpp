@@ -375,10 +375,10 @@ bool SpellArea::IsFitToRequirements(Player* player, uint32 newZone, uint32 newAr
 bool SpellEntry::CheckLocation(uint32 map_id, uint32 zone_id, uint32 area_id, Player* player)
 {
 	// normal case
-	if (RequiresAreaId > 0)
+    if (scr.RequiresAreaId > 0)
 	{
 		bool found = false;
-		AreaGroup* groupEntry = dbcAreaGroup.LookupEntry(RequiresAreaId);
+        AreaGroup* groupEntry = dbcAreaGroup.LookupEntry(scr.RequiresAreaId);
 		while (groupEntry)
 		{
 			for (uint8 i = 0; i < 7; ++i)

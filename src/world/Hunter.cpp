@@ -24,12 +24,12 @@ void World::InitHunterSpells()
 {
     SpellEntry * sp = NULL;
     if (sp = dbcSpell.LookupEntryForced(6991))
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_GAMEOBJECT_ITEM;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_GAMEOBJECT_ITEM;
 
     if (sp = dbcSpell.LookupEntryForced(61847))
     {
-        sp->Effect[2] = SPELL_EFFECT_APPLY_AURA;
-        sp->EffectApplyAuraName[2] = SPELL_AURA_MOD_DODGE_PERCENT;
+        sp->eff[2].Effect = SPELL_EFFECT_APPLY_AURA;
+        sp->eff[2].EffectApplyAuraName = SPELL_AURA_MOD_DODGE_PERCENT;
     }
 
     if (sp = dbcSpell.LookupEntryForced(19552))
@@ -46,9 +46,9 @@ void World::InitHunterSpells()
     if (sp = dbcSpell.LookupEntryForced(53252))
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
-        sp->EffectTriggerSpell[0] = 53398;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
+        sp->eff[0].EffectTriggerSpell = 53398;
         sp->procChance = 50;
         sp->procFlags = PROC_ON_CRIT_ATTACK | PROC_ON_SPELL_CRIT_HIT | PROC_TARGET_SELF;
     }
@@ -56,71 +56,71 @@ void World::InitHunterSpells()
     if (sp = dbcSpell.LookupEntryForced(53253))
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_ON_PET;
-        sp->EffectApplyAuraName[0] = SPELL_AURA_PROC_TRIGGER_SPELL;
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
-        sp->EffectTriggerSpell[0] = 53398;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_PROC_TRIGGER_SPELL;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
+        sp->eff[0].EffectTriggerSpell = 53398;
         sp->procChance = 100;
         sp->procFlags = PROC_ON_CRIT_ATTACK | PROC_ON_SPELL_CRIT_HIT | PROC_TARGET_SELF;
     }
 
     if (sp = dbcSpell.LookupEntryForced(53398))
     {
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET_MASTER;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET_MASTER;
     }
 
     if (sp = dbcSpell.LookupEntryForced(34456))
     {
-        sp->EffectBasePoints[0] = 3;
+        sp->eff[0].EffectBasePoints = 3;
     }
 
     if (sp = dbcSpell.LookupEntryForced(53257))
     {
-        sp->EffectImplicitTargetA[0] = EFF_TARGET_PET;
+        sp->eff[0].EffectImplicitTargetA = EFF_TARGET_PET;
     }
 
     if (sp = dbcSpell.LookupEntryForced(56314))
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_PET_OWNER | SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[0] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 57447;
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 57475;
+        sp->eff[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 57447;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 57475;
     }
 
     if (sp = dbcSpell.LookupEntryForced(56315))
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_PET_OWNER | SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[0] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 57452;
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 57482;
+        sp->eff[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 57452;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 57482;
     }
 
     if (sp = dbcSpell.LookupEntryForced(56316))
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_PET_OWNER | SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[0] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 57453;
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 57483;
+        sp->eff[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 57453;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 57483;
     }
 
     if (sp = dbcSpell.LookupEntryForced(56317))
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_PET_OWNER | SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[0] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 57457;
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 57484;
+        sp->eff[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 57457;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 57484;
     }
 
     if (sp = dbcSpell.LookupEntryForced(56318))
     {
         sp->c_is_flags |= SPELL_FLAG_IS_CASTED_ON_PET_SUMMON_PET_OWNER | SPELL_FLAG_IS_EXPIREING_WITH_PET;
-        sp->Effect[0] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[0] = 57458;
-        sp->Effect[1] = SPELL_EFFECT_TRIGGER_SPELL;
-        sp->EffectTriggerSpell[1] = 57485;
+        sp->eff[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[0].EffectTriggerSpell = 57458;
+        sp->eff[1].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+        sp->eff[1].EffectTriggerSpell = 57485;
     }
 
     if (sp = dbcSpell.LookupEntryForced(53220))
@@ -130,5 +130,5 @@ void World::InitHunterSpells()
 
     if (sp = dbcSpell.LookupEntryForced(34720))
         if (sp = dbcSpell.LookupEntryForced(781))
-            sp->Effect[0] = SPELL_EFFECT_DUMMY;
+            sp->eff[0].Effect = SPELL_EFFECT_DUMMY;
 }

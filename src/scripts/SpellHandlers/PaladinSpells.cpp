@@ -223,10 +223,10 @@ bool JudgementLightWisdomJustice(uint32 i, Spell* pSpell)
         id = 20187;
         break;
     case 31801:
-        id = aura->GetSpellProto()->EffectBasePoints[2];
+        id = aura->GetSpellProto()->eff[2].EffectBasePoints;
         break;
     case 53736:
-        id = aura->GetSpellProto()->EffectBasePoints[2];
+        id = aura->GetSpellProto()->eff[2].EffectBasePoints;
         break;
     case 20166:
         id = 54158;
@@ -341,7 +341,7 @@ bool Illumination(uint32 i, Spell* s)
                   if (s->p_caster == NULL)
                       return false;
                   SpellEntry* sp = s->p_caster->last_heal_spell ? s->p_caster->last_heal_spell : s->GetProto();
-                  s->p_caster->Energize(s->p_caster, 20272, 60 * s->u_caster->GetBaseMana() * sp->ManaCostPercentage / 10000, POWER_TYPE_MANA);
+                  s->p_caster->Energize(s->p_caster, 20272, 60 * s->u_caster->GetBaseMana() * sp->PowerEntry.ManaCostPercentage / 10000, POWER_TYPE_MANA);
     }
         break;
 

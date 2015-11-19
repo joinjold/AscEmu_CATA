@@ -1304,7 +1304,7 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type)
                         // mount spell
                         ++nm;
                     }
-                    else if (achievementCriteria->number_of_mounts.unknown == 778 && sp && (sp->Effect[0] == SPELL_EFFECT_SUMMON))
+                    else if (achievementCriteria->number_of_mounts.unknown == 778 && sp && (sp->eff[0].Effect == SPELL_EFFECT_SUMMON))
                     {
                         // Companion pet?
                         // make sure it's a companion pet, not some other summon-type spell

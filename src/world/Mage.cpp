@@ -27,7 +27,7 @@ void World::InitMageSpells()
     SpellEntry * sp = NULL;
     sp = dbcSpell.LookupEntryForced(130);
     if (sp != NULL)
-        sp->EffectApplyAuraName[0] = SPELL_AURA_SAFE_FALL;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_SAFE_FALL;
 
     if (sp = dbcSpell.LookupEntryForced(57761))
     {
@@ -118,10 +118,10 @@ void World::InitMageSpells()
 
     if (sp = dbcSpell.LookupEntryForced(31687))
     {
-        sp->Effect[0] = SPELL_EFFECT_SUMMON;
-        sp->Effect[1] = 0;
-        sp->EffectApplyAuraName[0] = sp->EffectApplyAuraName[1] = 0;
-        sp->EffectMiscValueB[0] = 0;
-        sp->EffectMiscValue[0] = 510;
+        sp->eff[0].Effect = SPELL_EFFECT_SUMMON;
+        sp->eff[1].Effect = 0;
+        sp->eff[0].EffectApplyAuraName = sp->eff[1].EffectApplyAuraName = 0;
+        sp->eff[0].EffectMiscValueB = 0;
+        sp->eff[0].EffectMiscValue = 510;
     }
 }

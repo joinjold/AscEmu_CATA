@@ -44,34 +44,34 @@ void World::InitPaladinSpells()
 
     if (sp = dbcSpell.LookupEntryForced(59295))
     {
-        sp->EffectMiscValue[0] = SMT_MISC_EFFECT;
+        sp->eff[0].EffectMiscValue = SMT_MISC_EFFECT;
         sp->BGR_one_buff_on_target = 0;
     }
     if (sp = dbcSpell.LookupEntryForced(59296))
     {
-        sp->EffectMiscValue[0] = SMT_MISC_EFFECT;
+        sp->eff[0].EffectMiscValue = SMT_MISC_EFFECT;
         sp->BGR_one_buff_on_target = 0;
     }
     if (sp = dbcSpell.LookupEntryForced(59297))
     {
-        sp->EffectMiscValue[0] = SMT_MISC_EFFECT;
+        sp->eff[0].EffectMiscValue = SMT_MISC_EFFECT;
         sp->BGR_one_buff_on_target = 0;
     }
     if (sp = dbcSpell.LookupEntryForced(59298))
     {
-        sp->EffectMiscValue[0] = SMT_MISC_EFFECT;
+        sp->eff[0].EffectMiscValue = SMT_MISC_EFFECT;
         sp->BGR_one_buff_on_target = 0;
     }
     if (sp = dbcSpell.LookupEntryForced(53486))
     {
-        sp->EffectMiscValue[0] = SMT_MISC_EFFECT;
-        sp->EffectSpellClassMask[0][0] |= 8388608 | 32768 | 131072;
+        sp->eff[0].EffectMiscValue = SMT_MISC_EFFECT;
+        sp->SpellClassOptions.SpellFamilyFlags[0][0] |= 8388608 | 32768 | 131072;
         sp->procFlags = PROC_ON_RANGED_CRIT_ATTACK | PROC_ON_SPELL_CRIT_HIT | PROC_ON_CRIT_ATTACK | PROC_ON_SPELL_CRIT_HIT;
     }
     if (sp = dbcSpell.LookupEntryForced(53488))
     {
-        sp->EffectMiscValue[0] = SMT_MISC_EFFECT;
-        sp->EffectSpellClassMask[0][0] |= 8388608 | 32768 | 131072;
+        sp->eff[0].EffectMiscValue = SMT_MISC_EFFECT;
+        sp->SpellClassOptions.SpellFamilyFlags[0][0] |= 8388608 | 32768 | 131072;
         sp->procFlags = PROC_ON_RANGED_CRIT_ATTACK | PROC_ON_SPELL_CRIT_HIT | PROC_ON_CRIT_ATTACK | PROC_ON_SPELL_CRIT_HIT;
     }
 
@@ -101,11 +101,11 @@ void World::InitPaladinSpells()
 
     if (sp = dbcSpell.LookupEntryForced(53695))
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_DUMMY;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_DUMMY;
     }
     if (sp = dbcSpell.LookupEntryForced(53696))
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_DUMMY;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_DUMMY;
     }
 
     if (sp = dbcSpell.LookupEntryForced(53569))
@@ -130,24 +130,24 @@ void World::InitPaladinSpells()
 
     if (sp = dbcSpell.LookupEntryForced(20911))             //??????
     {
-        sp->EffectApplyAuraName[0] = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
+        sp->eff[0].EffectApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
     }
 
     if (sp = dbcSpell.LookupEntryForced(31850))
     {
-        sp->EffectApplyAuraName[1] = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
-        sp->EffectBasePoints[1] = -11;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
+        sp->eff[1].EffectBasePoints = -11;
     }
 
     if (sp = dbcSpell.LookupEntryForced(31851))
     {
-        sp->EffectApplyAuraName[1] = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
-        sp->EffectBasePoints[1] = -21;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
+        sp->eff[1].EffectBasePoints = -21;
     }
 
     if (sp = dbcSpell.LookupEntryForced(31852))
     {
-        sp->EffectApplyAuraName[1] = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
-        sp->EffectBasePoints[1] = -31;
+        sp->eff[1].EffectApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
+        sp->eff[1].EffectBasePoints = -31;
     }
 }
