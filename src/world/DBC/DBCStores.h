@@ -17,8 +17,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _SPELLSTORE_H
-#define _SPELLSTORE_H
+#ifndef _DBCSTORES_H
+#define _DBCSTORES_H
 
 #include "DBCGlobals.hpp"
 #include "Definitions.h"
@@ -810,74 +810,74 @@ struct SpellPowerEntry
 // SpellReagents.dbc
 struct SpellReagentsEntry
 {
-    uint32    Id;                                           // 0        m_ID
-    int32     Reagent[MAX_SPELL_REAGENTS];                  // 54-61    m_reagent
-    uint32    ReagentCount[MAX_SPELL_REAGENTS];             // 62-69    m_reagentCount
+    uint32 Id;                                      // 0        m_ID
+    int32  Reagent[MAX_SPELL_REAGENTS];             // 54-61    m_reagent
+    uint32 ReagentCount[MAX_SPELL_REAGENTS];        // 62-69    m_reagentCount
 };
 
 // SpellScaling.dbc
 struct SpellScalingEntry
 {
-    uint32    Id;                                           // 0        m_ID
-    int32     castTimeMin;                                  // 1
-    int32     castTimeMax;                                  // 2
-    int32     castScalingMaxLevel;                          // 3
-    int32     playerClass;                                  // 4        (index * 100) + charLevel => gtSpellScaling.dbc
-    float     coeff_points_gtscale[3];                      // 5-7
-    float     coeff_randompoints_gtscale[3];                // 5-7
-    float     coeff_combopoint_extra_gtscale[3];            // 5-7		//formula what this will multiply is still custom. Like weapon dmg, or base value or duration ...
-    float     effLevelDiffCoeff;                            // 14        some coefficient, mostly 1.0f
-    int32     effScalingMinLevel;                           // 15        some level
+    uint32 Id;                                      // 0        m_ID
+    int32  castTimeMin;                             // 1
+    int32  castTimeMax;                             // 2
+    int32  castScalingMaxLevel;                     // 3
+    int32  playerClass;                             // 4        (index * 100) + charLevel => gtSpellScaling.dbc
+    float  coeff_points_gtscale[3];                 // 5-7
+    float  coeff_randompoints_gtscale[3];           // 5-7
+    float  coeff_combopoint_extra_gtscale[3];       // 5-7		//formula what this will multiply is still custom. Like weapon dmg, or base value or duration ...
+    float  effLevelDiffCoeff;                       // 14        some coefficient, mostly 1.0f
+    int32  effScalingMinLevel;                      // 15        some level
 };
 
 // SpellShapeshift.dbc
 struct SpellShapeshiftEntry
 {
-    uint32    Id;                                           // 0        m_ID
-    uint32    Stances;                                      // 13       m_shapeshiftMask
-    uint32    ShapeshiftExclude;                                   // 15       m_shapeshiftExclude
+    uint32 Id;                                          // 0        m_ID
+    uint32 Stances;                                     // 13       m_shapeshiftMask
+    uint32 ShapeshiftExclude;                           // 15       m_shapeshiftExclude
 };
 
 // SpellTargetRestrictions.dbc
 struct SpellTargetRestrictionsEntry
 {
-    uint32    Id;                                           // 0        m_ID
-    uint32    MaxTargets;                           // 152      m_maxTargets
-    uint32    MaxTargetLevel;                               // 147      m_maxTargetLevel
-    uint32    TargetCreatureType;                           // 18       m_targetCreatureType
-    uint32    Targets;                                      // 17       m_targets
+    uint32 Id;                                          // 0        m_ID
+    uint32 MaxTargets;                                  // 152      m_maxTargets
+    uint32 MaxTargetLevel;                              // 147      m_maxTargetLevel
+    uint32 TargetCreatureType;                          // 18       m_targetCreatureType
+    uint32 Targets;                                     // 17       m_targets
 };
 
 // SpellTotems.dbc
 struct SpellTotemsEntry
 {
-    uint32    Id;                                           // 0        m_ID
-    uint32    TotemCategory[MAX_SPELL_TOTEM_CATEGORIES];    // 162-163  m_requiredTotemCategoryID
-    uint32    Totem[MAX_SPELL_TOTEMS];                      // 52-53    m_totem
+    uint32 Id;                                          // 0        m_ID
+    uint32 TotemCategory[MAX_SPELL_TOTEM_CATEGORIES];   // 162-163  m_requiredTotemCategoryID
+    uint32 Totem[MAX_SPELL_TOTEMS];                     // 52-53    m_totem
 };
 
 struct SpellShapeshiftFormEntry
 {
-    uint32 id;                                              // 0
-    uint32 Flags;                                          // 3
-    int32  unit_type;                                    // 4 <=0 humanoid, other normal creature types
-    uint32 AttackSpeed;                                     // 6
-    uint32 modelId;                                       // 7 alliance modelid (0 means no model)
-    uint32 modelId2;                                       // 8 horde modelid (but only for one form)
-    uint32 spells[8];                                      // 11-18 spells which appear in the bar after shapeshifting
+    uint32 id;                                          // 0
+    uint32 Flags;                                       // 3
+    int32  unit_type;                                   // 4 <=0 humanoid, other normal creature types
+    uint32 AttackSpeed;                                 // 6
+    uint32 modelId;                                     // 7 alliance modelid (0 means no model)
+    uint32 modelId2;                                    // 8 horde modelid (but only for one form)
+    uint32 spells[8];                                   // 11-18 spells which appear in the bar after shapeshifting
 };
 
 #define MAX_DIFFICULTY 4
 
 struct SpellDifficultyEntry
 {
-    uint32 ID;                                              // 0        m_ID
-    uint32 SpellId[MAX_DIFFICULTY];                         // 1-4      m_spellId[4]
+    uint32 ID;                                          // 0        m_ID
+    uint32 SpellId[MAX_DIFFICULTY];                     // 1-4      m_spellId[4]
 };
 
 struct SpellFocusObjectEntry
 {
-    uint32    ID;                                           // 0
+    uint32 ID;                                          // 0
 };
 
 class SpellEffectOverrideScript;
@@ -885,204 +885,212 @@ class SpellCanCastScript;
 class SpellCanTargetedScript;
 class Object;
 
-#define TEMP_DISABLE_SPELL_COEFS		//seems like 403 client is not using this anymore according to GUI
-#define MAX_SPELL_EFFECT_COUNT		3	//don't be an idiot and put a value that is not initialized by DBC, you will have random spells poping up
-#define MAX_SPELL_EFFECTS 3 // same shit, but twice
+#define TEMP_DISABLE_SPELL_COEFS
+#define MAX_SPELL_EFFECT_COUNT 3
+#define MAX_SPELL_EFFECTS 3
 
 // Struct for the entry in Spell.dbc
 struct SpellEntry
 {
-    uint32    Id;                                           // 0        m_ID
-    uint32    Attributes;                                   // 1        m_attribute
-    uint32    AttributesEx;                                 // 2        m_attributesEx
-    uint32    AttributesExB;                                // 3        m_attributesExB
-    uint32    AttributesExC;                                // 4        m_attributesExC
-    uint32    AttributesExD;                                // 5        m_attributesExD
-    uint32    AttributesExE;                                // 6        m_attributesExE
-    uint32    AttributesExF;                                // 7        m_attributesExF
-    uint32    AttributesExG;                                // 8        m_attributesExG
-    uint32    someFlags;                                    // 9        4.0.0
-    uint32    unk_400_1;                                    // 10       4.0.0
-    uint32    CastingTimeIndex;                             // 11       m_castingTimeIndex
-    uint32    DurationIndex;                                // 12       m_durationIndex
-    uint32    powerType;                                    // 13       m_powerType
-    uint32    rangeIndex;                                   // 14       m_rangeIndex
-    float     speed;                                        // 15       m_speed
-    uint32    SpellVisual[2];                               // 16-17    m_spellVisualID
-    uint32    spellIconID;                                  // 18       m_spellIconID
-    uint32    activeIconID;                                 // 19       m_activeIconID
-    char*	  Name;											// 20       m_name_lang
-    char*	  Rank;                                         // 21       m_nameSubtext_lang
-    char*	  Description;                                  // 22       m_description_lang not used
-    char*	  ToolTip;                                      // 23       m_auraDescription_lang not used
-    uint32    SchoolMask;                                   // 24       m_schoolMask
-    uint32    RuneCostID;                                   // 25       m_runeCostID
-    uint32    spellMissileID;                               // 26       m_spellMissileID not used
-    uint32	  spellDescriptionVariableID;                   // 27       3.2.0
-    uint32    SpellDifficultyID;                              // 28       m_spellDifficultyID - id from SpellDifficulty.dbc
-    float     AttackPowerToSpellDamageCoeff;                   // 29			//attack power to dmg contribution
-    uint32    SpellScalingId;                                  // 30       SpellScaling.dbc
-    uint32    SpellAuraOptionsId;                              // 31       SpellAuraOptions.dbc
-    uint32    SpellAuraRestrictionsId;                         // 32       SpellAuraRestrictions.dbc
-    uint32    SpellCastingRequirementsId;                      // 33       SpellCastingRequirements.dbc
-    uint32    SpellCategoriesId;                               // 34       SpellCategories.dbc
-    uint32    SpellClassOptionsId;                             // 35       SpellClassOptions.dbc
-    uint32    SpellCooldownsId;                                // 36       SpellCooldowns.dbc
-    uint32    unkIndex7;                                       // 37       all zeros...
-    uint32    SpellEquippedItemsId;                            // 38       SpellEquippedItems.dbc
-    uint32    SpellInterruptsId;                               // 39       SpellInterrupts.dbc
-    uint32    SpellLevelsId;                                   // 40       SpellLevels.dbc
-    uint32    SpellPowerId;                                    // 41       SpellPower.dbc
-    uint32    SpellReagentsId;                                 // 42       SpellReagents.dbc
-    uint32    SpellShapeshiftId;                               // 43       SpellShapeshift.dbc
-    uint32    SpellTargetRestrictionsId;                       // 44       SpellTargetRestrictions.dbc
-    uint32    SpellTotemsId;                                   // 45       SpellTotems.dbc
-    uint32    ResearchProject;                                 // 46  
+    uint32 Id;                                          // 0        m_ID
+    uint32 Attributes;                                  // 1        m_attribute
+    uint32 AttributesEx;                                // 2        m_attributesEx
+    uint32 AttributesExB;                               // 3        m_attributesExB
+    uint32 AttributesExC;                               // 4        m_attributesExC
+    uint32 AttributesExD;                               // 5        m_attributesExD
+    uint32 AttributesExE;                               // 6        m_attributesExE
+    uint32 AttributesExF;                               // 7        m_attributesExF
+    uint32 AttributesExG;                               // 8        m_attributesExG
+    uint32 someFlags;                                   // 9        4.0.0
+    uint32 unk_400_1;                                   // 10       4.0.0
+    uint32 CastingTimeIndex;                            // 11       m_castingTimeIndex
+    uint32 DurationIndex;                               // 12       m_durationIndex
+    uint32 powerType;                                   // 13       m_powerType
+    uint32 rangeIndex;                                  // 14       m_rangeIndex
+    float  speed;                                       // 15       m_speed
+    uint32 SpellVisual[2];                              // 16-17    m_spellVisualID
+    uint32 spellIconID;                                 // 18       m_spellIconID
+    uint32 activeIconID;                                // 19       m_activeIconID
+    char*	Name;                                       // 20       m_name_lang
+    char*	Rank;                                       // 21       m_nameSubtext_lang
+    char*	Description;                                // 22       m_description_lang not used
+    char*	ToolTip;                                    // 23       m_auraDescription_lang not used
+    uint32  SchoolMask;                                 // 24       m_schoolMask
+    uint32  RuneCostID;                                 // 25       m_runeCostID
+    uint32  spellMissileID;                             // 26       m_spellMissileID not used
+    uint32	spellDescriptionVariableID;                 // 27       3.2.0
+    uint32  SpellDifficultyID;                          // 28       m_spellDifficultyID - id from SpellDifficulty.dbc
+    float   AttackPowerToSpellDamageCoeff;              // 29       //attack power to dmg contribution
+    uint32  SpellScalingId;                             // 30       SpellScaling.dbc
+    uint32  SpellAuraOptionsId;                         // 31       SpellAuraOptions.dbc
+    uint32  SpellAuraRestrictionsId;                    // 32       SpellAuraRestrictions.dbc
+    uint32  SpellCastingRequirementsId;                 // 33       SpellCastingRequirements.dbc
+    uint32  SpellCategoriesId;                          // 34       SpellCategories.dbc
+    uint32  SpellClassOptionsId;                        // 35       SpellClassOptions.dbc
+    uint32  SpellCooldownsId;                           // 36       SpellCooldowns.dbc
+    uint32  unkIndex7;                                  // 37       all zeros...
+    uint32  SpellEquippedItemsId;                       // 38       SpellEquippedItems.dbc
+    uint32  SpellInterruptsId;                          // 39       SpellInterrupts.dbc
+    uint32  SpellLevelsId;                              // 40       SpellLevels.dbc
+    uint32  SpellPowerId;                               // 41       SpellPower.dbc
+    uint32  SpellReagentsId;                            // 42       SpellReagents.dbc
+    uint32  SpellShapeshiftId;                          // 43       SpellShapeshift.dbc
+    uint32  SpellTargetRestrictionsId;                  // 44       SpellTargetRestrictions.dbc
+    uint32  SpellTotemsId;                              // 45       SpellTotems.dbc
+    uint32  ResearchProject;                            // 46  
 
     /// CUSTOM: these fields are used for the modifications made in the world.cpp
-    //	uint32									eff_count;		//will attach N effects here
-    //why more then 3 ? to be able to add custom effects. Some of us are not jerks about 1 MB extra memory
-    SpellEffectEntry						eff[MAX_SPELL_EFFECT_COUNT];				//max 3 effects
-    SpellScalingEntry						ss;	//this one is used all the time
-    SpellAuraRestrictionsEntry				sar;
-    int32									maxstack;		//used for hackfixes
-    uint32									procCharges;
+    // uint32 eff_count;                                //will attach N effects here
+    // why more then 3 ? to be able to add custom effects. Some of us are not jerks about 1 MB extra memory
+    SpellEffectEntry eff[MAX_SPELL_EFFECT_COUNT];       //max 3 effects
+    SpellScalingEntry ss;                               //this one is used all the time
+    SpellAuraRestrictionsEntry sar;
+    int32 maxstack;                                     //used for hackfixes
+    uint32 procCharges;
+
     //this is accessed like 20 time at every spell cast. Let's not complicate it with linked lookups
-    uint32									SpellGroupType[3];							//96 bits
-    uint32									School;
-    uint32									AuraInterruptFlags;
-    uint32									InterruptFlags;
-    uint32									ChannelInterruptFlags;
-    int32									RecoveryTime;
-    uint32									StartRecoveryCategory;
-    int32									StartRecoveryTime;
-    uint32									Category;
-    int32									CategoryRecoveryTime;
-    uint32									MechanicsType;
-    uint32									MechanicsTypeFlags;	//combined all mechanics for removal like "imparring"
-    uint32									PreventionType;
-    uint32									RequiredShapeShift;
-    bool									RemoveOnShapeShift; // vengeance / starfall
-    //	uint32									spellLevel;
-    uint32									FacingCasterFlags;
-    uint32									RequiredAreaId;
-    uint32 DiminishStatus;                  //
-    uint32 DiminishStatusMaxPVPDur;			// i wonder if this is set by blizz somewhere
-    uint32 proc_interval;                   //!!! CUSTOM, <Fill description for variable>
-    uint32 procChance;						//we will mod proc chance, keeping a backup mostly for debugging
+    uint32 SpellGroupType[3];                           //96 bits
+    uint32 School;
+    uint32 AuraInterruptFlags;
+    uint32 InterruptFlags;
+    uint32 ChannelInterruptFlags;
+    int32  RecoveryTime;
+    uint32 StartRecoveryCategory;
+    int32  StartRecoveryTime;
+    uint32 Category;
+    int32  CategoryRecoveryTime;
+    uint32 MechanicsType;
+    uint32 MechanicsTypeFlags;                          //combined all mechanics for removal like "imparring"
+    uint32 PreventionType;
+    uint32 RequiredShapeShift;
+    bool   RemoveOnShapeShift;                          // vengeance / starfall
+
+    uint32 FacingCasterFlags;
+    uint32 RequiredAreaId;
+    uint32 DiminishStatus;                              //
+    uint32 DiminishStatusMaxPVPDur;                     // i wonder if this is set by blizz somewhere
+    uint32 proc_interval;                               //!!! CUSTOM, <Fill description for variable>
+    uint32 procChance;                                  //we will mod proc chance, keeping a backup mostly for debugging
     uint32 procFlags;
-    uint32 procFlags2;						//since old flag list is too small
-    uint32 in_front_status;                 //!!! CUSTOM,
-    uint32 procFlagsRemove;					//charge disipates if these proc flags are met. This is implemented wrongly. We should test the spell that will proc for flags. But we already register procs based on owner spell and not the proccing spell
-    //Buff Groupin Rule -> caster can cast this spell only on 1 target. Value represents the group spell is part of. Can be part of only 1 group
-    //caster can only cast on 1 target these spells
-    uint32	BGR_one_buff_from_caster_on_1target;	 //!!! CUSTOM, <Fill description for variable>
-    //target can have only buff of this type on self. Value represents the group spell is part of. Can be part of only 1 group
-    uint32	BGR_one_buff_on_target;					 //!!! CUSTOM, these are related to creating a item through a spell
-    //all positive buffs should have this true and negative buffs as false
-    bool	BGR_one_buff_on_target_skip_caster_check;	//addition for previous. 90% of the time check who casted this spell on target. Like blessings should stack
-    //caster can have only 1 Aura per spell group, ex pal auras
-    uint32	BGR_one_buff_from_caster_on_self;        //!!! CUSTOM, these are related to creating a item through a spell
-    bool	HasStackGroupFlags;
-#define MAX_SPELL_STACK_GROUPS	3
+    uint32 procFlags2;                                  //since old flag list is too small
+    uint32 in_front_status;                             //!!! CUSTOM,
+    uint32 procFlagsRemove;                             //charge disipates if these proc flags are met. This is implemented wrongly.
+                                                        //We should test the spell that will proc for flags. But we already register procs based
+                                                        //on owner spell and not the proccing spell Buff Groupin Rule -> caster can cast this
+                                                        //spell only on 1 target. Value represents the group spell is part of. Can be part of only
+                                                        //1 group caster can only cast on 1 target these spells
+
+    uint32 BGR_one_buff_from_caster_on_1target;         //!!! CUSTOM, <Fill description for variable> target can have only buff of this type on self.
+                                                        //Value represents the group spell is part of. Can be part of only 1 group
+    uint32 BGR_one_buff_on_target;                      //!!! CUSTOM, these are related to creating a item through a spell
+                                                        //all positive buffs should have this true and negative buffs as false
+    bool   BGR_one_buff_on_target_skip_caster_check;	//addition for previous. 90% of the time check who casted this spell on target. Like blessings
+                                                        //should stack caster can have only 1 Aura per spell group, ex pal auras
+    uint32 BGR_one_buff_from_caster_on_self;            //!!! CUSTOM, these are related to creating a item through a spell
+    bool   HasStackGroupFlags;
+
+#define MAX_SPELL_STACK_GROUPS 3
     union
     {
-        uint64	StackGroupMasks[MAX_SPELL_STACK_GROUPS];		//spells from same group need to apply stacking rule. Imported from trinity. bit0 from mask 1 is set to 1 if there are any values
-        uint32	StackGroupMasks32[MAX_SPELL_STACK_GROUPS * 2];	//spells from same group need to apply stacking rule. Imported from trinity. bit0 from mask 1 is set to 1 if there are any values
+        uint64 StackGroupMasks[MAX_SPELL_STACK_GROUPS];         //spells from same group need to apply stacking rule. Imported from trinity. bit0 from mask 1 is set to 1 if there are any values
+        uint32 StackGroupMasks32[MAX_SPELL_STACK_GROUPS * 2];   //spells from same group need to apply stacking rule. Imported from trinity. bit0 from mask 1 is set to 1 if there are any values
     };
-    //    uint32 buffIndexType;					//!!! CUSTOM, <Fill description for variable>
-    uint32 c_is_flags;						//!!! CUSTOM, store spell checks in a static way : isdamageind,ishealing
-    uint32 c_is_flags2;						//!!! CUSTOM, store spell checks in a static way : isdamageind,ishealing
-    uint32 c_is_flags3;						//!!! CUSTOM, store spell checks in a static way : isdamageind,ishealing
-    //    float AP_spell_bonus_base[3];			//!!! CUSTOM, mod GetAP() include it as base value so other talents can scale it 
-    float AP_spell_bonus_total[3];			//!!! CUSTOM, mod GetAP() include it as a final value without talents scaling it
-    //    uint32 buffType;                      //!!! CUSTOM, these are related to creating a item through a spell
-    uint32 RankNumber;                      //!!! CUSTOM, this protects players from having >1 rank of a spell
-    uint32 NameHash;                        //!!! CUSTOM, related to custom spells, summon spell quest related spells
-    //this is the group the spell will affect : each effect has it's own mask
-    //    uint32 EffectSpellGroupRelation[3][3];     //!!! this is not contained in client dbc but server must have it
-    uint32 ThreatForSpell;					//some basic calculation for spell threath
-    float ThreatForSpellCoef;				//theoretically setting this to 0 would make a spell not do threath
+
+    uint32 c_is_flags;                                  //!!! CUSTOM, store spell checks in a static way : isdamageind,ishealing
+    uint32 c_is_flags2;                                 //!!! CUSTOM, store spell checks in a static way : isdamageind,ishealing
+    uint32 c_is_flags3;                                 //!!! CUSTOM, store spell checks in a static way : isdamageind,ishealing
+    //float AP_spell_bonus_base[3];                     //!!! CUSTOM, mod GetAP() include it as base value so other talents can scale it 
+    float AP_spell_bonus_total[3];                      //!!! CUSTOM, mod GetAP() include it as a final value without talents scaling it
+    //uint32 buffType;                                  //!!! CUSTOM, these are related to creating a item through a spell
+    uint32 RankNumber;                                  //!!! CUSTOM, this protects players from having >1 rank of a spell
+    uint32 NameHash;                                    //!!! CUSTOM, related to custom spells, summon spell quest related spells
+                                                        //this is the group the spell will affect : each effect has it's own mask
+    //uint32 EffectSpellGroupRelation[3][3];            //!!! this is not contained in client dbc but server must have it
+    uint32 ThreatForSpell;                              //some basic calculation for spell threath
+    float ThreatForSpellCoef;                           //theoretically setting this to 0 would make a spell not do threath
     uint32 ProcOnNameHash[3];
 
-    float base_range_or_radius_sqr;         //!!! CUSTOM, needed for aoe spells most of the time
-    // love me or hate me, all "In a cone in front of the caster" spells don't necessarily mean "in front"
+    float base_range_or_radius_sqr;                     //!!! CUSTOM, needed for aoe spells most of the time
+                                                        // love me or hate me, all "In a cone in front of the caster" spells don't necessarily mean "in front"
     float cone_width;
     uint32 Spell_Dmg_Type;
     //Spell Coefficient
     float SpellPowerCoefAvg;
-    bool Spell_value_is_scripted;							// for fixed spell value calculations this is required.
+    bool Spell_value_is_scripted;                       // for fixed spell value calculations this is required.
     int	ai_target_type;
+
     //!!!!!!!!!!! 1 spell may be present in multiple talent entries ! Ex : pet shared talents = cobra reflexes
 #define SPELL_SKILL_LINK_LIMIT 5
-    uint32	spell_skilline[SPELL_SKILL_LINK_LIMIT];			//skilline represents the icon in client spellbook
-    uint32	spell_skilline_assoc_counter;					//spell may be present in multiple skillines
-    TalentEntry *talent_entry[SPELL_SKILL_LINK_LIMIT];		//if this spell is obtained from a talent then we are able to look it up
-    uint32	talent_entry_rank[SPELL_SKILL_LINK_LIMIT];		//if this spell is obtained from a talent then we are able to look it up
-    uint32	talent_entry_assoc_counter;						//count this spell in how many talent trees is present
-    uint32  talent_tree;//[SPELL_SKILL_LINK_LIMIT];			//multiple talents have multiple trees
-    uint32	talent_remove_auras[SPELL_SKILL_LINK_LIMIT];	//if script is adding or casting auras that should get removed on talent change, add them here
-    bool	spell_learn_is_linked_to_talent;				//when changing talent spec we need to know which spells to unlearn. If spell was learned by a talent then we need to remove it.
-    uint8	belongs_to_player_class;						//this was added for talent specializations that mod all fire dmg. But should not mod fire dmg procced from items
-    uint32	spell_learn_next_level_spell;					//used for iterating through all levels of a spell : kinda like selecting spells with same namehash but this is based on SkillLineDBC
-    skilllinespell	*spell_skill;							//in case there is one spell would be part of some skillspell
-    uint32	spell_id_client;								//use this ID fro client isntead real ID
-    uint32	quick_duration_min;
-    uint32	quick_tickcount;
-    uint32	quick_maxAmplitude;								//so that spells can tick last effect
-    uint32	quick_ExtendDuration;
-    SpellEntry	*chained_cast;								// cast this spell also when casting the original spell. Used for recently bandaged, forbearance and other spells that require more then 3 effects
-    SpellEntry	*aura_remove_cast;							// if spell is dispelled, expires, canceled, this spell is casted by original caster on target(if possible). Used very rarely
-    uint32	RequiredPlayerClass;							// this was added for aura 102 and 103 to not be exploitable by other classes
-    uint32	MaxAffectedTargets;
-    uint32	ForcedAuraVisibleFlags;							//should tell client to enable the casting of this spell
-    uint32	ReplacingSpell;	//some spells temp replace others while specific aura is active. Needs manual scripting
+    uint32 spell_skilline[SPELL_SKILL_LINK_LIMIT];      //skilline represents the icon in client spellbook
+    uint32 spell_skilline_assoc_counter;                //spell may be present in multiple skillines
+    TalentEntry* talent_entry[SPELL_SKILL_LINK_LIMIT];  //if this spell is obtained from a talent then we are able to look it up
+    uint32 talent_entry_rank[SPELL_SKILL_LINK_LIMIT];   //if this spell is obtained from a talent then we are able to look it up
+    uint32 talent_entry_assoc_counter;                  //count this spell in how many talent trees is present
+    uint32 talent_tree;                                 //[SPELL_SKILL_LINK_LIMIT]; //multiple talents have multiple trees
+    uint32 talent_remove_auras[SPELL_SKILL_LINK_LIMIT]; //if script is adding or casting auras that should get removed on talent change, add them here
+    bool   spell_learn_is_linked_to_talent;             //when changing talent spec we need to know which spells to unlearn. If spell was learned by a talent then we need to remove it.
+    uint8  belongs_to_player_class;                     //this was added for talent specializations that mod all fire dmg. But should not mod fire dmg procced from items
+    uint32 spell_learn_next_level_spell;                //used for iterating through all levels of a spell : kinda like selecting spells with same namehash but this is based on SkillLineDBC
+    skilllinespell* spell_skill;                        //in case there is one spell would be part of some skillspell
+    uint32 spell_id_client;                             //use this ID fro client isntead real ID
+    uint32 quick_duration_min;
+    uint32 quick_tickcount;
+    uint32 quick_maxAmplitude;                          //so that spells can tick last effect
+    uint32 quick_ExtendDuration;
+    SpellEntry* chained_cast;                           // cast this spell also when casting the original spell. Used for recently bandaged, forbearance and other spells that require more then 3 effects
+    SpellEntry* aura_remove_cast;                       // if spell is dispelled, expires, canceled, this spell is casted by original caster on target(if possible). Used very rarely
+    uint32 RequiredPlayerClass;                         // this was added for aura 102 and 103 to not be exploitable by other classes
+    uint32 MaxAffectedTargets;
+    uint32 ForcedAuraVisibleFlags;                      //should tell client to enable the casting of this spell
+    uint32 ReplacingSpell;                              //some spells temp replace others while specific aura is active. Needs manual scripting
 
-    bool always_apply; // custom
+    bool always_apply;                                  // custom
 
-    float  casttime_coef;                   //!!! CUSTOM, faster spell bonus calculation
-    float  fixed_dddhcoef;                  //!!! CUSTOM, fixed DD-DH coefficient for some spells
-    float  fixed_hotdotcoef;                //!!! CUSTOM, fixed HOT-DOT coefficient for some spells
-    float  Dspell_coef_override;            //!!! CUSTOM, overrides any spell coefficient calculation and use this value in DD&DH
-    float  OTspell_coef_override;           //!!! CUSTOM, overrides any spell coefficient calculation and use this value in HOT&DOT
+    float casttime_coef;                                //!!! CUSTOM, faster spell bonus calculation
+    float fixed_dddhcoef;                               //!!! CUSTOM, fixed DD-DH coefficient for some spells
+    float fixed_hotdotcoef;                             //!!! CUSTOM, fixed HOT-DOT coefficient for some spells
+    float Dspell_coef_override;                         //!!! CUSTOM, overrides any spell coefficient calculation and use this value in DD&DH
+    float OTspell_coef_override;                        //!!! CUSTOM, overrides any spell coefficient calculation and use this value in HOT&DOT
 
-    //uint32 SchoolMask;                      // Custom -- redefinition?
-    uint32 CustomFlags;						// Custom
-    uint32 EffectCustomFlag[MAX_SPELL_EFFECTS];				// Custom
+    //uint32 SchoolMask;                                // Custom -- redefinition?
+    uint32 CustomFlags;                                 // Custom
+    uint32 EffectCustomFlag[MAX_SPELL_EFFECTS];         // Custom
 
     uint32 spell_coef_flags;
 
     bool self_cast_only;
     bool apply_on_shapeshift_change;
-    bool is_melee_spell;					//!!! CUSTOM,
-    bool is_ranged_spell;					//!!! CUSTOM,
-    //	bool spell_can_crit;					//!!! CUSTOM,
+    bool is_melee_spell;                                //!!! CUSTOM,
+    bool is_ranged_spell;                               //!!! CUSTOM,
+    //bool spell_can_crit;                              //!!! CUSTOM,
     bool EffectCanCrit[MAX_SPELL_EFFECT_COUNT];
     bool noproc;
 
-    void(*ProcHandler)(ProcHandlerContextShare *context);	//i hope 1 handler / spell is enough
-    void(*ChargeHandler)(ProcHandlerContextShare *context);	//i hope 1 handler / spell is enough
-    uint32(*CanCastHandler)(Spell *sp);
-    uint32(*CanCastFilterHandler)(Spell *sp, SpellCanCastScript *ccs);			//caster can have filters to cast new spells
-    uint32(*CanTargetedFilterHandler)(Spell *sp, Object *Caster, Object *FilterOwner, SpellCanTargetedScript *cts);	//can we get targeted by some spells ? immunity handlers
-    void(*TargettingOverride[3])(Spell *sp, uint8 i);				//can script each effect how to gather their targettings
-    bool(*AuraPeriodicDummyTickHook)(uint32 i, Aura * pAura, bool apply);
+    void(*ProcHandler)(ProcHandlerContextShare* context);                   //i hope 1 handler / spell is enough
+    void(*ChargeHandler)(ProcHandlerContextShare* context);                 //i hope 1 handler / spell is enough
+    uint32(*CanCastHandler)(Spell* sp);
+    uint32(*CanCastFilterHandler)(Spell* sp, SpellCanCastScript* ccs);      //caster can have filters to cast new spells
+    uint32(*CanTargetedFilterHandler)(Spell* sp, Object* Caster, Object* FilterOwner, SpellCanTargetedScript* cts); //can we get targeted by some spells ? immunity handlers
+    void(*TargettingOverride[3])(Spell* sp, uint8 i);                       //can script each effect how to gather their targettings
+    bool(*AuraPeriodicDummyTickHook)(uint32 i, Aura* pAura, bool apply);
     bool(*SpellDummyEffectScript)(uint32 i, Spell* pSpell);
-    void(*CritHandler)(ProcHandlerContextShare *context);	//i hope 1 handler / spell is enough
-    void(*EffRedirectHandler)(Spell *sp);
-    bool(*AuraInterruptHandler)(Unit *owner, Aura *a, uint32 flag, uint32 skip_casted, uint32 skiphash_casted, uint32 dmg);
+    void(*CritHandler)(ProcHandlerContextShare* context);                   //i hope 1 handler / spell is enough
+    void(*EffRedirectHandler)(Spell* sp);
+    bool(*AuraInterruptHandler)(Unit* owner, Aura* a, uint32 flag, uint32 skip_casted, uint32 skiphash_casted, uint32 dmg);
+    
     //note this does not support more then 1 effects
-    int32								required_target_type;		//player - 1, mob = 2, ... !!! db has value -1 to be mangos compatible
-#define MAX_AURA_STATES_TO_SET			3
-    uint32								SetAuraStatesCount, SetAuraStates[MAX_AURA_STATES_TO_SET], RemAuraStates[MAX_AURA_STATES_TO_SET];
-    int32								RemoveCasterAuraState;	//when casting a spell and we require to have X aurastate, it does not always mean we need to remove it
+    int32 required_target_type;                                             //player - 1, mob = 2, ... !!! db has value -1 to be mangos compatible
+
+#define MAX_AURA_STATES_TO_SET 3
+    uint32 SetAuraStatesCount, SetAuraStates[MAX_AURA_STATES_TO_SET], RemAuraStates[MAX_AURA_STATES_TO_SET];
+    int32 RemoveCasterAuraState;                        //when casting a spell and we require to have X aurastate, it does not always mean we need to remove it
     //methods ( ofc we all know that structures do not have methods. Class does )
     uint32 *GetSpellGroupType();
-    //	uint32 GetChannelInterruptFlags();
-    //	uint32 GetRecoveryTime();
-    //	uint32 GetInterruptFlags();
-    //	uint32 GetCategoryRecoveryTime();
-    //	uint32 GetRequiredShapeShift();
+    //uint32 GetChannelInterruptFlags();
+    //uint32 GetRecoveryTime();
+    //uint32 GetInterruptFlags();
+    //uint32 GetCategoryRecoveryTime();
+    //uint32 GetRequiredShapeShift();
     uint32 GetCasterAuraState() { return sar.CasterAuraState; }
     uint32 GetTargetAuraState() { return sar.TargetAuraState; }
     uint32 GetTargetAuraStateNot() { return sar.TargetAuraStateNot; }
@@ -1092,13 +1100,13 @@ struct SpellEntry
     uint32 GetTargetAuraSpell() { return sar.targetAuraSpell; }
     uint32 GetTargetAuraSpellNot() { return sar.targetAuraSpellNot; }
     uint32 GetRequiresSpellFocus();
-    //	uint32 GetRequiresAreaId();
+    //uint32 GetRequiresAreaId();
     uint32 GetRequiresAreaId() { return RequiredAreaId; }
-    uint32 *GetTotem();
-    int32  *GetReagent();
-    uint32 *GetReagentCount();
-    int32 GetEquippedItemClass();
-    int32 GetEquippedItemSubClass();
+    uint32* GetTotem();
+    int32*  GetReagent();
+    uint32* GetReagentCount();
+    int32  GetEquippedItemClass();
+    int32  GetEquippedItemSubClass();
     uint32 GetRequiredItemFlags();
     uint32 GetSpellDMGType() { return Spell_Dmg_Type; }
 #define NO_MAX_TARGETS_DEFINED 65535 
@@ -1115,12 +1123,12 @@ struct SpellEntry
     SpellReagentsEntry sre;
     SpellShapeshiftEntry ssh;
 
-    //	uint32 GetManaCost();
-    //	uint32 GetManaCostPCT();
-    SpellLevelsEntry	SpellLevel;
-    //	uint32 GetBaseLevel();
-    //	uint32 GetMaxLevel();
-    //	uint32 GetLevel();
+    //uint32 GetManaCost();
+    //uint32 GetManaCostPCT();
+    SpellLevelsEntry SpellLevel;
+    //uint32 GetBaseLevel();
+    //uint32 GetMaxLevel();
+    //uint32 GetLevel();
 
     // Pointer to static method of a Spell subclass to create a new instance. If this is NULL, the generic Spell class will be created
     // Its type is void because class Spell is not visible here, so it'll be casted accordingly when necessary
@@ -1140,18 +1148,6 @@ struct SpellEntry
         AuraFactoryFunc = NULL;
     }
 
-    ////////////////////////////////////////////////////////////////////////////////
-    //bool HasEffect( uint32 effect )
-    //  Tells if the Spell has a certain effect
-    //
-    //Parameters
-    //  uint32 effect  -  Effect Identifier
-    //
-    //Return Value
-    //  Returns true if Spell has this effect.
-    //  Returns false if Spell has not this effect.
-    //
-    ///////////////////////////////////////////////////////////////////////////////
     bool HasEffect(uint32 effect)
     {
         for (uint32 i = 0; i < MAX_SPELL_EFFECT_COUNT; ++i)
@@ -1161,25 +1157,11 @@ struct SpellEntry
         return false;
     }
 
-    //////////////////////////////////////////////////////////////////////////////
-    //bool AppliesAura( uint32 aura )
-    //  Tells if the Spell applies this Aura
-    //
-    //Parameters
-    //  uint32 aura - Aura id
-    //
-    //Return Value
-    //  Returns true if the Spell applies this Aura.
-    //  Returns false otherwise.
-    //
-    //////////////////////////////////////////////////////////////////////////////
     bool AppliesAura(uint32 aura)
     {
-
         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
-
-            if ((eff[i].Effect == 6 ||   // SPELL_EFFECT_APPLY_GROUP_AREA_AURA
+            if ((eff[i].Effect == 6 || // SPELL_EFFECT_APPLY_GROUP_AREA_AURA
                 eff[i].Effect == 27 || // SPELL_EFFECT_PERSISTENT_AREA_AURA
                 eff[i].Effect == 35 || // SPELL_EFFECT_APPLY_GROUP_AREA_AURA
                 eff[i].Effect == 65 || // SPELL_EFFECT_APPLY_RAID_AREA_AURA
@@ -1194,19 +1176,6 @@ struct SpellEntry
         return false;
     }
 
-    ///////////////////////////////////////////////////////////////////////////////
-    //bool HasCustomFlagForEffect( uint32 effect, uint32 flag )
-    //  Tells if the Spell has this flag for this effect
-    //
-    //Parameters
-    //  uint32 effect  -  The effect index
-    //  uint32 flag    -  Flag that we are checking
-    //
-    //Return Value
-    //  Returns true if we have the flag.
-    //  Returns false if we don't.
-    //
-    ///////////////////////////////////////////////////////////////////////////////
     bool HasCustomFlagForEffect(uint32 effect, uint32 flag)
     {
         if (effect >= MAX_SPELL_EFFECTS)
@@ -1218,26 +1187,11 @@ struct SpellEntry
             return false;
     }
 
-    /////////////////////////////////////////////////////////////////////////////////
-    //uint32 GetAAEffectId()
-    //  Returns the Effect Id of the Area Aura effect if the spell has one.
-    //
-    //Parameters
-    //  None
-    //
-    //Return Value
-    //  Returns the Effect Id of the Area Aura effect if the spell has one.
-    //  Returns 0 otherwise.
-    //
-    //
-    /////////////////////////////////////////////////////////////////////////////////
     uint32 GetAAEffectId()
     {
-
         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; i++)
         {
-
-            if (eff[i].Effect == 35 ||  // SPELL_EFFECT_APPLY_GROUP_AREA_AURA
+            if (eff[i].Effect == 35 || // SPELL_EFFECT_APPLY_GROUP_AREA_AURA
                 eff[i].Effect == 65 || // SPELL_EFFECT_APPLY_RAID_AREA_AURA
                 eff[i].Effect == 119 || // SPELL_EFFECT_APPLY_PET_AREA_AURA
                 eff[i].Effect == 128 || // SPELL_EFFECT_APPLY_FRIEND_AREA_AURA
@@ -1248,8 +1202,8 @@ struct SpellEntry
 
         return 0;
     }
-	bool CheckLocation(uint32 map_id, uint32 zone_id, uint32 area_id, Player* player = NULL);
 
+    bool CheckLocation(uint32 map_id, uint32 zone_id, uint32 area_id, Player* player = NULL);
 };
 
 struct SpellRuneCostEntry
@@ -2227,16 +2181,13 @@ extern SERVER_DECL DBCStorage<WorldMapOverlay> dbcWorldMapOverlayStore;
 #ifdef ENABLE_ACHIEVEMENTS
 extern SERVER_DECL DBCStorage<AchievementEntry> dbcAchievementStore;
 extern SERVER_DECL DBCStorage<AchievementCriteriaEntry> dbcAchievementCriteriaStore;
-//extern SERVER_DECL DBCStorage<AchievementCategoryEntry> dbcAchievementCategoryStore;
 #endif
-//extern SERVER_DECL DBCStorage<BattlemasterListEntry> dbcBattlemasterListStore;
 extern SERVER_DECL DBCStorage<CharTitlesEntry> dbcCharTitlesEntry;
 extern SERVER_DECL DBCStorage<CurrencyTypesEntry> dbcCurrencyTypesStore;
 extern SERVER_DECL DBCStorage<BarberShopStyleEntry> dbcBarberShopStyleStore;
 extern SERVER_DECL DBCStorage<GemPropertyEntry> dbcGemProperty;
 extern SERVER_DECL DBCStorage<GlyphPropertyEntry> dbcGlyphProperty;
 extern SERVER_DECL DBCStorage<GlyphSlotEntry> dbcGlyphSlot;
-//extern SERVER_DECL DBCStorage<ItemEntry> dbcItemEntry;
 extern SERVER_DECL DBCStorage<ItemSetEntry> dbcItemSet;
 extern SERVER_DECL DBCStorage<Lock> dbcLock;
 extern SERVER_DECL DBCStorage<SpellEntry> dbcSpell;
@@ -2267,14 +2218,13 @@ extern SERVER_DECL DBCStorage<CharRaceEntry> dbcCharRace;
 extern SERVER_DECL DBCStorage<MapEntry> dbcMap;
 extern SERVER_DECL DBCStorage <HolidaysEntry> dbcHolidaysStore;
 extern SERVER_DECL DBCStorage<SpellRuneCostEntry> dbcSpellRuneCost;
-//extern SERVER_DECL DBCStorage<ItemExtendedCostEntry> dbcItemExtendedCost;
 extern SERVER_DECL DBCStorage<ItemRandomSuffixEntry> dbcItemRandomSuffix;
 extern SERVER_DECL DBCStorage<CombatRatingDBC> dbcCombatRating;
 extern SERVER_DECL DBCStorage<ChatChannelDBC> dbcChatChannels;
 extern SERVER_DECL DBCStorage<DurabilityCostsEntry> dbcDurabilityCosts;
 extern SERVER_DECL DBCStorage<DurabilityQualityEntry> dbcDurabilityQuality;
 extern SERVER_DECL DBCStorage<BankSlotPrice> dbcBankSlotPrices;
-extern SERVER_DECL DBCStorage<BankSlotPrice> dbcStableSlotPrices; //uses same structure as Bank
+extern SERVER_DECL DBCStorage<BankSlotPrice> dbcStableSlotPrices;
 extern SERVER_DECL DBCStorage<gtFloat> dbcBarberShopPrices;
 extern SERVER_DECL DBCStorage<gtFloat> dbcMeleeCrit;
 extern SERVER_DECL DBCStorage<gtFloat> dbcMeleeCritBase;
@@ -2319,4 +2269,4 @@ bool LoadDBCs();
 
 const WMOAreaTableEntry* GetWMOAreaTableEntryByTriple(int32 root_id, int32 adt_id, int32 group_id);
 
-#endif // _SPELLSTORE_H
+#endif // _DBCSTORES_H

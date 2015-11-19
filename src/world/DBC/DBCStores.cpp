@@ -1,5 +1,6 @@
-/*
+/**
  * AscEmu Framework based on ArcEmu MMORPG Server
+ * Copyright (C) 2014-2015 AscEmu Team <http://www.ascemu.org>
  * Copyright (C) 2008-2011 <http://www.ArcEmu.org/>
  *
  * This program is free software: you can redistribute it and/or modify
@@ -14,7 +15,6 @@
  *
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- *
  */
 
 #include "StdAfx.h"
@@ -35,7 +35,6 @@ SERVER_DECL DBCStorage<AuctionHouseDBC> dbcAuctionHouse;
 SERVER_DECL DBCStorage<BankSlotPrice> dbcBankSlotPrices;
 SERVER_DECL DBCStorage<BankSlotPrice> dbcStableSlotPrices;
 SERVER_DECL DBCStorage<BarberShopStyleEntry> dbcBarberShopStyleStore;
-//SERVER_DECL DBCStorage<BattlemasterListEntry> dbcBattlemasterListStore;
 SERVER_DECL DBCStorage<CharClassEntry> dbcCharClass;
 SERVER_DECL DBCStorage<CharRaceEntry> dbcCharRace;
 SERVER_DECL DBCStorage<CharTitlesEntry> dbcCharTitlesEntry;
@@ -56,10 +55,8 @@ SERVER_DECL DBCStorage<EnchantEntry> dbcEnchant;
 SERVER_DECL DBCStorage<GemPropertyEntry> dbcGemProperty;
 SERVER_DECL DBCStorage<GlyphPropertyEntry> dbcGlyphProperty;
 SERVER_DECL DBCStorage<GlyphSlotEntry> dbcGlyphSlot;
-//SERVER_DECL DBCStorage<ItemExtendedCostEntry> dbcItemExtendedCost;
 SERVER_DECL DBCStorage<ItemLimitCategoryEntry> dbcItemLimitCategory;
 SERVER_DECL DBCStorage<ItemRandomSuffixEntry> dbcItemRandomSuffix;
-//SERVER_DECL DBCStorage<ItemEntry> dbcItemEntry;
 SERVER_DECL DBCStorage<ItemSetEntry> dbcItemSet;
 SERVER_DECL DBCStorage<Lock> dbcLock;
 SERVER_DECL DBCStorage<MapEntry> dbcMap;
@@ -119,7 +116,6 @@ SERVER_DECL DBCStorage<gtClassLevelFloat>			dbcGTSpellScale;
 
 const char* WorldMapOverlayStoreFormat = "nxiiiixxxxxxxxx";
 const char* BarberShopStyleEntryFormat = "nxxxxxxi";
-//const char* ItemEntryFormat="uiiiiiii";
 const char* ItemSetFormat = "usuuuuuuuuxxxxxxxxxuuuuuuuuuuuuuuuuuu";
 const char* LockFormat = "uuuuuuxxxuuuuuxxxuuuuuxxxxxxxxxxx";
 const char* EmoteEntryFormat = "uxuuuuxuxuxxxxxxxxx";
@@ -142,11 +138,9 @@ const char* AchievementStoreFormat = "niiussiiuiusuu";
 const char* AchievementCriteriaStoreFormat = "niiiiliiisixiiixxxxxxxx";
 #endif
 
-//const char* spelldifficultyentryformat = "niiii";
 
 const char* spellentryFormat = "uuuuuuuuuuuxuuuufuuuussssuuuuufuuuuuuuuuuuuuuuuu";
 
-//const char* itemextendedcostFormat = "uuuxuuuuuuuuuuux";
 const char* talententryFormat = "uuuuuuuuuxuxxxxuxxx";
 const char* talenttabentryFormat = "uxxuuuxxxuu";
 const char* spellcasttimeFormat = "uuxx";
@@ -212,7 +206,7 @@ const char* SpellTargetRestrictionsEntryfmt = "uixiii";
 const char* SpellTotemsEntryfmt = "uiiii";
 
 template<class T>
-bool loader_stub(const char* filename, const char* format, bool ind, T & l, bool loadstrs)
+bool loader_stub(const char* filename, const char* format, bool ind, T& l, bool loadstrs)
 {
     Log.Notice("DBC", "Loading %s.", filename);
     return l.Load(filename, format, ind, loadstrs);
@@ -228,15 +222,12 @@ bool LoadDBCs()
 
     LOAD_DBC("DBC/WorldMapOverlay.dbc", WorldMapOverlayStoreFormat, true, dbcWorldMapOverlayStore, true);
 #ifdef ENABLE_ACHIEVEMENTS
-    //LOAD_DBC("DBC/Achievement_Category.dbc", AchievementCategoryStoreFormat, true, dbcAchievementCategoryStore, true);
     LOAD_DBC("DBC/Achievement_Criteria.dbc", AchievementCriteriaStoreFormat, true, dbcAchievementCriteriaStore, true);
     LOAD_DBC("DBC/Achievement.dbc", AchievementStoreFormat, true, dbcAchievementStore, true);
 #endif
-    //LOAD_DBC("DBC/BattlemasterList.dbc", BattlemasterListEntryFormat, true, dbcBattlemasterListStore, true);
     LOAD_DBC("DBC/CharTitles.dbc", CharTitlesEntryfmt, true, dbcCharTitlesEntry, true);
     LOAD_DBC("DBC/CurrencyTypes.dbc", CurrencyTypesEntryFormat, true, dbcCurrencyTypesStore, true);
     LOAD_DBC("DBC/BarberShopStyle.dbc", BarberShopStyleEntryFormat, true, dbcBarberShopStyleStore, true);
-    //LOAD_DBC("DBC/Item.dbc", ItemEntryFormat, true, dbcItemEntry, true);
     LOAD_DBC("DBC/ItemSet.dbc", ItemSetFormat, true, dbcItemSet, true);
     LOAD_DBC("DBC/Lock.dbc", LockFormat, true, dbcLock, false);
     LOAD_DBC("DBC/EmotesText.dbc", EmoteEntryFormat, true, dbcEmoteEntry, false);
@@ -247,11 +238,9 @@ bool LoadDBCs()
     LOAD_DBC("DBC/GlyphSlot.dbc", GlyphSlotEntryFormat, true, dbcGlyphSlot, true);
     LOAD_DBC("DBC/SkillLine.dbc", skilllineentrYFormat, true, dbcSkillLine, true);
     LOAD_DBC("DBC/Spell.dbc", spellentryFormat, true, dbcSpell, true);
-    //LOAD_DBC("DBC/ItemExtendedCost.dbc", itemextendedcostFormat, true, dbcItemExtendedCost, false);
     LOAD_DBC("DBC/Talent.dbc", talententryFormat, true, dbcTalent, false);
     LOAD_DBC("DBC/TalentTab.dbc", talenttabentryFormat, true, dbcTalentTab, false);
     LOAD_DBC("DBC/SpellCastTimes.dbc", spellcasttimeFormat, true, dbcSpellCastTime, false);
-    //LOAD_DBC("DBC/SpellDifficulty.dbc", spelldifficultyentryformat, true, dbcSpellDifficultyEntry, false);
     LOAD_DBC("DBC/SpellRadius.dbc", spellradiusFormat, true, dbcSpellRadius, false);
     LOAD_DBC("DBC/SpellRange.dbc", spellrangeFormat, true, dbcSpellRange, false);
     LOAD_DBC("DBC/SpellRuneCost.dbc", SpellRuneCostFormat, true, dbcSpellRuneCost, false);
@@ -272,7 +261,6 @@ bool LoadDBCs()
     LOAD_DBC("DBC/ChrRaces.dbc", charraceFormat, true, dbcCharRace, true);
     LOAD_DBC("DBC/ChrClasses.dbc", charclassFormat, true, dbcCharClass, true);
     LOAD_DBC("DBC/Map.dbc", mapentryFormat, true, dbcMap, true);
-    //LOAD_DBC("DBC/Holidays.dbc", HolidayEntryFormat, true, dbcHolidayEntry, true);
     LOAD_DBC("DBC/AuctionHouse.dbc", auctionhousedbcFormat, true, dbcAuctionHouse, false);
     LOAD_DBC("DBC/ItemRandomSuffix.dbc", itemrandomsuffixformat, true, dbcItemRandomSuffix, false);
     LOAD_DBC("DBC/gtCombatRatings.dbc", gtClassfloatformat, false, dbcCombatRating, false);
@@ -280,16 +268,12 @@ bool LoadDBCs()
     LOAD_DBC("DBC/DurabilityQuality.dbc", durabilityqualityFormat, true, dbcDurabilityQuality, false);
     LOAD_DBC("DBC/DurabilityCosts.dbc", durabilitycostsFormat, true, dbcDurabilityCosts, false);
     LOAD_DBC("DBC/BankBagSlotPrices.dbc", bankslotpriceformat, true, dbcBankSlotPrices, false);
-    //LOAD_DBC("DBC/StableSlotPrices.dbc", bankslotpriceformat, true, dbcStableSlotPrices, false);
     LOAD_DBC("DBC/gtBarberShopCostBase.dbc", gtClassfloatformat, false, dbcBarberShopPrices, false);
     LOAD_DBC("DBC/gtChanceToMeleeCrit.dbc", gtClassfloatformat, false, dbcMeleeCrit, false);
     LOAD_DBC("DBC/gtChanceToMeleeCritBase.dbc", gtClassfloatformat, false, dbcMeleeCritBase, false);
     LOAD_DBC("DBC/gtChanceToSpellCrit.dbc", gtClassfloatformat, false, dbcSpellCrit, false);
     LOAD_DBC("DBC/gtChanceToSpellCritBase.dbc", gtClassfloatformat, false, dbcSpellCritBase, false);
     LOAD_DBC("DBC/gtRegenMPPerSpt.dbc", gtClassfloatformat, false, dbcManaRegenBase, false); //it's not a mistake.
-    //LOAD_DBC("DBC/gtOCTRegenMP.dbc", gtfloatformat, false, dbcManaRegen, false); //it's not a mistake.
-    //LOAD_DBC("DBC/gtRegenHPPerSpt.dbc", gtfloatformat, false, dbcHPRegenBase, false); //it's not a mistake.
-    //LOAD_DBC("DBC/gtOCTRegenHP.dbc", gtfloatformat, false, dbcHPRegen, false); //it's not a mistake.
     LOAD_DBC("DBC/AreaTrigger.dbc", areatriggerformat, true, dbcAreaTrigger, true);
     LOAD_DBC("DBC/ScalingStatDistribution.dbc", scalingstatdistributionformat, true, dbcScalingStatDistribution, false);
     LOAD_DBC("DBC/ScalingStatValues.dbc", scalingstatvaluesformat, true, dbcScalingStatValues, false);

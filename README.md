@@ -14,7 +14,7 @@ You can help us by contributing. It is completely open source and can be used by
 Currently note the following facts:
  1. The most important opcodes are handled
  2. use the 3.3.5 world db from our forum
- 3. use dbc/maps vmaps extracted from an 3.3.5 client
+ 3. use dbc/maps vmaps extracted from an 4.3.4 client (our extractors are not ready for that)
  4. Stay tuned, check the issues and open an pull-request if you have a solution.
 
 
