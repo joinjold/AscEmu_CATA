@@ -10171,11 +10171,11 @@ void Player::_AddSkillLine(uint32 SkillLine, uint32 Curr_sk, uint32 Max_sk)
 
     // force to be within limits
 #if PLAYER_LEVEL_CAP==85
+    Curr_sk = (Curr_sk > 525 ? 525 : (Curr_sk < 1 ? 1 : Curr_sk));
+    Max_sk = (Max_sk > 525 ? 525 : Max_sk);
+#else
     Curr_sk = (Curr_sk > 450 ? 450 : (Curr_sk < 1 ? 1 : Curr_sk));
     Max_sk = (Max_sk > 450 ? 450 : Max_sk);
-#else
-    Curr_sk = (Curr_sk > 375 ? 375 : (Curr_sk < 1 ? 1 : Curr_sk));
-    Max_sk = (Max_sk > 375 ? 375 : Max_sk);
 #endif
     ItemProf* prof;
     SkillMap::iterator itr = m_skills.find(SkillLine);
@@ -10420,8 +10420,8 @@ void Player::_UpdateMaxSkillCounts()
         else if (itr->second.Skill->type == SKILL_TYPE_PROFESSION || itr->second.Skill->type == SKILL_TYPE_SECONDARY)
         {
             new_max = itr->second.MaximumValue;
-            if (new_max >= 450)
-                new_max = 450;
+            if (new_max >= 525)
+                new_max = 525;
         }
         else
         {
@@ -10430,11 +10430,11 @@ void Player::_UpdateMaxSkillCounts()
 
         // force to be within limits
 #if PLAYER_LEVEL_CAP==85
+        if (new_max > 525)
+            new_max = 525;
+#else
         if (new_max > 450)
             new_max = 450;
-#else
-        if (new_max > 375)
-            new_max = 375;
 #endif
         if (new_max < 1)
             new_max = 1;
@@ -10597,10 +10597,10 @@ void Player::_AdvanceAllSkills(uint32 count)
 void Player::_ModifySkillMaximum(uint32 SkillLine, uint32 NewMax)
 {
     // force to be within limits
-#if PLAYER_LEVEL_CAP==80
-    NewMax = (NewMax > 450 ? 450 : NewMax);
+#if PLAYER_LEVEL_CAP==85
+    NewMax = (NewMax > 525 ? 525 : NewMax);
 #else
-    NewMax = (NewMax > 375 ? 375 : NewMax);
+    NewMax = (NewMax > 450 ? 450 : NewMax);
 #endif
 
     SkillMap::iterator itr = m_skills.find(SkillLine);

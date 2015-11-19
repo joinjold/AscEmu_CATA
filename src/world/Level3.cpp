@@ -1108,7 +1108,7 @@ bool ChatHandler::HandleIncreaseWeaponSkill(const char* args, WorldSession* m_se
     if (!pr->_HasSkillLine(skill))
     {
         SystemMessage(m_session, "Does not have skill line, adding.");
-        pr->_AddSkillLine(skill, 1, 450);
+        pr->_AddSkillLine(skill, 1, 525);
     }
     else
     {
