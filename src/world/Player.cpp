@@ -7943,10 +7943,10 @@ void Player::ZoneUpdate(uint32 ZoneId)
             Channel* chn;
             chn = (*itr);
             // Check if this is a custom channel (i.e. global)
-            if (!((*itr)->m_flags & 0x10))
+            if (!((*itr)->m_flags & CHANNEL_FLAG_CUSTOM))
                 continue;
 
-            if (chn->m_flags & 0x40)   // LookingForGroup - constant among all zones
+            if (chn->m_flags & CHANNEL_FLAG_LFG)   // LookingForGroup - constant among all zones
                 continue;
 
             char updatedName[95];
@@ -7959,7 +7959,7 @@ void Player::ZoneUpdate(uint32 ZoneId)
             }
             //for (int i = 0 ; i <= 15 ; i ++)
             //    Log.Notice("asfssdf" , "%u %s" , i , pDBC->name_pattern[i]);
-            snprintf(updatedName, 95, pDBC->name_pattern[0], at->area_name[0]);
+            snprintf(updatedName, 95, pDBC->name_pattern, at->area_name);
             Channel* newChannel = channelmgr.GetCreateChannel(updatedName, NULL, chn->m_id);
             if (newChannel == NULL)
             {
