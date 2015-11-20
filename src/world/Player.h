@@ -54,7 +54,7 @@ struct GuildMember;
 struct skilllineentry;
 class QueryBuffer;
 struct Quest;
-struct SpellShapeshiftForm;
+struct SpellShapeshiftFormEntry;
 class CBattleground;
 class Instance;
 struct CharRaceEntry;

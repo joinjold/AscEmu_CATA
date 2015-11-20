@@ -21,6 +21,8 @@
 #define _ACHIEVEMENTMGR_H
 
 #include "Threading/RWLock.h"
+#include "Database/Database.h"
+#include "WorldSession.h"
 
 class QueryBuffer;
 struct AchievementEntry;
@@ -285,6 +287,10 @@ Achievement Working List:
 \todo Time limits on achievements
 \todo Special conditions for achievements (group size, nobody in raid die during fight, etc.)
 */
+
+class QueryResult;
+class WorldSession;
+
 class SERVER_DECL AchievementMgr
 {
     public:
