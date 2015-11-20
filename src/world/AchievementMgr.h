@@ -21,6 +21,8 @@
 #define _ACHIEVEMENTMGR_H
 
 #include "Threading/RWLock.h"
+#include "Database/Database.h"
+#include "WorldSession.h"
 
 class QueryBuffer;
 struct AchievementEntry;

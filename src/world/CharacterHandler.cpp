@@ -868,7 +868,7 @@ void WorldSession::HandlePlayerLoginOpcode(WorldPacket& recv_data)
 
     uint64 pGuid = *(uint64*)playerGuid;
 
-    if (objmgr.GetPlayer((uint32)playerGuid) != NULL || m_loggingInPlayer || _player)
+    if (objmgr.GetPlayer(Arcemu::Util::GUID_LOPART(pGuid)) != NULL || m_loggingInPlayer || _player)
     {
         // A character with that name already exists 0x3E
         uint8 respons = E_CHAR_LOGIN_DUPLICATE_CHARACTER;

@@ -23,6 +23,7 @@
 #include "Common.h"
 #include "Database/DB2Store.hpp"
 #include "DB2Structure.hpp"
+#include "WUtil.h"
 
 #include <list>
 
