@@ -565,14 +565,13 @@ void Player::SendInitialLogonPackets()
     SendSetProficiency(2, weapon_proficiency);
 
     // Tutorial Flags
-    // Disabled for now
-    /*data.Initialize(SMSG_TUTORIAL_FLAGS); // updated opcode to 15595, don't know if structure changed
+    WorldPacket data(SMSG_TUTORIAL_FLAGS, 4 * 8);
     for(int i = 0; i < 8; i++)
     data << uint32(m_Tutorials[i]);
-    m_session->SendPacket(&data);*/
+    m_session->SendPacket(&data);
 
     // don't send this, it's just a sandbox
-    //smsg_TalentsInfo(false); // not updated (15595)
+    smsg_TalentsInfo(false); // not updated (15595)
 
     smsg_InitialSpells(); // not sure if updated (15595)
 

@@ -1081,9 +1081,7 @@ void WorldSession::FullLogin(Player* plr)
     SendPacket(&datab);
 
     WorldPacket dataldm(SMSG_LEARNED_DANCE_MOVES, 4 + 4);
-
     dataldm << uint64(0);
-
     SendPacket(&dataldm);
 
     plr->UpdateAttackSpeed();
@@ -1148,14 +1146,12 @@ void WorldSession::FullLogin(Player* plr)
             {
                 plr->SetMapId(pTrans->GetMapId());
 
-                StackWorldPacket<20> dataw(SMSG_NEW_WORLD);
-
+                WorldPacket dataw(SMSG_NEW_WORLD, 4 + 4 + 4 + 4 + 4);
                 dataw << c_tposx;
                 dataw << plr->GetOrientation();
                 dataw << c_tposz;
                 dataw << pTrans->GetMapId();
                 dataw << c_tposy;
-
                 SendPacket(&dataw);
 
                 // shit is sent in worldport ack.

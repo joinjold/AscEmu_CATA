@@ -500,8 +500,8 @@ bool World::SetInitialWorldSettings()
     new ChatHandler;
     new SpellProcMgr;
 
-    //Log.Debug("ApplyNormalFixes", "Loading...");
-    //ApplyNormalFixes();
+    Log.Debug("ApplyNormalFixes", "Loading...");
+    ApplyNormalFixes();
 
     Log.Debug("SpellFactoryMgr", "Loading...");
     new SpellFactoryMgr;
@@ -526,16 +526,16 @@ bool World::SetInitialWorldSettings()
     MAKE_TASK(ObjectMgr, LoadInstanceBossInfos);
     MAKE_TASK(ObjectMgr, LoadCreatureWaypoints);
     MAKE_TASK(ObjectMgr, LoadCreatureTimedEmotes);
-    //MAKE_TASK(ObjectMgr, LoadTrainers);
-    //MAKE_TASK(ObjectMgr, LoadSpellSkills);
-    //MAKE_TASK(ObjectMgr, LoadSpellOverride);
+    MAKE_TASK(ObjectMgr, LoadTrainers);
+    MAKE_TASK(ObjectMgr, LoadSpellSkills);
+    MAKE_TASK(ObjectMgr, LoadSpellOverride);
     MAKE_TASK(ObjectMgr, LoadVendors);
-    //MAKE_TASK(ObjectMgr, LoadAIThreatToSpellId);
-    //MAKE_TASK(ObjectMgr, LoadSpellProcs);
-    //MAKE_TASK(ObjectMgr, LoadSpellEffectsOverride);
-    //MAKE_TASK(ObjectMgr, LoadSpellTargetConstraints);
-    //MAKE_TASK(ObjectMgr, LoadDefaultPetSpells);
-    //MAKE_TASK(ObjectMgr, LoadPetSpellCooldowns);
+    MAKE_TASK(ObjectMgr, LoadAIThreatToSpellId);
+    MAKE_TASK(ObjectMgr, LoadSpellProcs);
+    MAKE_TASK(ObjectMgr, LoadSpellEffectsOverride);
+    MAKE_TASK(ObjectMgr, LoadSpellTargetConstraints);
+    MAKE_TASK(ObjectMgr, LoadDefaultPetSpells);
+    MAKE_TASK(ObjectMgr, LoadPetSpellCooldowns);
     MAKE_TASK(ObjectMgr, LoadGuildCharters);
     MAKE_TASK(ObjectMgr, LoadGMTickets);
     MAKE_TASK(ObjectMgr, SetHighestGuids);
