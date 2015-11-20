@@ -19,6 +19,7 @@
 #include "DB2Stores.hpp"
 #include "DBC/DBCStores.h"
 #include "Log.h"
+#include "WUtil.h"
 
 #include <map>
 
