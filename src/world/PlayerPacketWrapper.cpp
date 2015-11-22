@@ -213,7 +213,6 @@ void Player::SendLoginVerifyWorld(uint32 MapId, float X, float Y, float Z, float
     data << float(Y);
     data << float(Z);
     data << float(O);
-
     m_session->SendPacket(&data);
 }
 

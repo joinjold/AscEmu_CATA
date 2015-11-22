@@ -112,10 +112,31 @@ void WorldSession::HandleMoveWorldportAckOpcode(WorldPacket& recv_data)
 
 void WorldSession::HandleMoveTeleportAckOpcode(WorldPacket& recv_data)
 {
-    WoWGuid guid;
-    recv_data >> guid;
     uint32 flags, time;
     recv_data >> flags >> time;
+
+    // 15595
+    uint8 playerGuid[8];
+
+    playerGuid[5] = recv_data.readBit();
+    playerGuid[0] = recv_data.readBit();
+    playerGuid[1] = recv_data.readBit();
+    playerGuid[6] = recv_data.readBit();
+    playerGuid[3] = recv_data.readBit();
+    playerGuid[7] = recv_data.readBit();
+    playerGuid[2] = recv_data.readBit();
+    playerGuid[4] = recv_data.readBit();
+
+    recv_data.ReadByteSeq(playerGuid[4]);
+    recv_data.ReadByteSeq(playerGuid[3]);
+    recv_data.ReadByteSeq(playerGuid[7]);
+    recv_data.ReadByteSeq(playerGuid[6]);
+    recv_data.ReadByteSeq(playerGuid[5]);
+    recv_data.ReadByteSeq(playerGuid[1]);
+    recv_data.ReadByteSeq(playerGuid[3]);
+    recv_data.ReadByteSeq(playerGuid[0]);
+
+    WoWGuid guid = *(uint64*)playerGuid;
     if (m_MoverWoWGuid.GetOldGuid() == _player->GetGUID())
     {
         if (sWorld.antihack_teleport && !(HasGMPermissions() && sWorld.no_antihack_on_gm) && _player->GetPlayerStatus() != TRANSFER_PENDING)
@@ -784,9 +805,28 @@ void WorldSession::HandleSetActiveMoverOpcode(WorldPacket& recv_data)
 {
     CHECK_INWORLD_RETURN
 
-    // set current movement object
-    uint64 guid;
-    recv_data >> guid;
+    // 15595
+    uint8 playerGuid[8];
+
+    playerGuid[7] = recv_data.readBit();
+    playerGuid[2] = recv_data.readBit();
+    playerGuid[1] = recv_data.readBit();
+    playerGuid[0] = recv_data.readBit();
+    playerGuid[4] = recv_data.readBit();
+    playerGuid[5] = recv_data.readBit();
+    playerGuid[6] = recv_data.readBit();
+    playerGuid[3] = recv_data.readBit();
+
+    recv_data.ReadByteSeq(playerGuid[3]);
+    recv_data.ReadByteSeq(playerGuid[2]);
+    recv_data.ReadByteSeq(playerGuid[4]);
+    recv_data.ReadByteSeq(playerGuid[0]);
+    recv_data.ReadByteSeq(playerGuid[5]);
+    recv_data.ReadByteSeq(playerGuid[1]);
+    recv_data.ReadByteSeq(playerGuid[6]);
+    recv_data.ReadByteSeq(playerGuid[7]);
+
+    uint64 guid = *(uint64*)playerGuid;
 
     if (guid != m_MoverWoWGuid.GetOldGuid())
     {

@@ -7243,11 +7243,12 @@ void Player::_Relocate(uint32 mapid, const LocationVector & v, bool sendpending,
             RemoveFromWorld();
         }
 
-        data.Initialize(SMSG_NEW_WORLD);
-
-        data << uint32(mapid);
-        data << v;
+        data.Initialize(SMSG_NEW_WORLD, 4 + 4 + 4 + 4 + 4);
+        data << float(v.x);
         data << float(v.o);
+        data << float(v.z);
+        data << uint32(mapid);
+        data << float(v.y);
 
         m_session->SendPacket(&data);
 
@@ -8660,13 +8661,19 @@ void Player::SafeTeleport(MapMgr* mgr, const LocationVector & vec)
 
     m_mapId = mgr->GetMapId();
     m_instanceId = mgr->GetInstanceID();
-    WorldPacket data(SMSG_TRANSFER_PENDING, 20);
-    data << mgr->GetMapId();
+    WorldPacket data(SMSG_TRANSFER_PENDING, 4 + 4 + 4);
+    data.writeBit(0);   // unknown
+    data.writeBit(0);   // has transport
+    data << uint32(mgr->GetMapId());
     GetSession()->SendPacket(&data);
 
-    data.Initialize(SMSG_NEW_WORLD);
-    data << mgr->GetMapId() << vec << vec.o;
-    GetSession()->SendPacket(&data);
+    WorldPacket data2(SMSG_NEW_WORLD, 4 + 4 + 4 + 4 + 4);
+    data2 << float(vec.x);
+    data2 << float(vec.o);
+    data2 << float(vec.z);
+    data2 << mgr->GetMapId();
+    data2 << float(vec.y);
+    GetSession()->SendPacket(&data2);
 
     SetPlayerStatus(TRANSFER_PENDING);
     m_sentTeleportPosition = vec;

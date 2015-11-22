@@ -744,11 +744,32 @@ void WorldSession::HandleChatIgnoredOpcode(WorldPacket & recvPacket)
 
     CHECK_PACKET_SIZE(recvPacket, 8 + 1);
 
-    uint64 iguid;
     uint8 unk;
 
-    recvPacket >> iguid;
     recvPacket >> unk; // probably related to spam reporting
+
+    // 15595
+    uint8 playerGuid[8];
+
+    playerGuid[5] = recvPacket.readBit();
+    playerGuid[2] = recvPacket.readBit();
+    playerGuid[6] = recvPacket.readBit();
+    playerGuid[4] = recvPacket.readBit();
+    playerGuid[7] = recvPacket.readBit();
+    playerGuid[0] = recvPacket.readBit();
+    playerGuid[1] = recvPacket.readBit();
+    playerGuid[3] = recvPacket.readBit();
+
+    recvPacket.ReadByteSeq(playerGuid[0]);
+    recvPacket.ReadByteSeq(playerGuid[6]);
+    recvPacket.ReadByteSeq(playerGuid[5]);
+    recvPacket.ReadByteSeq(playerGuid[1]);
+    recvPacket.ReadByteSeq(playerGuid[4]);
+    recvPacket.ReadByteSeq(playerGuid[3]);
+    recvPacket.ReadByteSeq(playerGuid[7]);
+    recvPacket.ReadByteSeq(playerGuid[2]);
+
+    uint64 iguid = *(uint64*)playerGuid;
 
     Player* player = objmgr.GetPlayer(uint32(iguid));
     if (!player || !player->GetSession())

@@ -145,7 +145,6 @@ enum Opcodes
     CMSG_CHANNEL_MODERATE                           = 0x2944,
     CMSG_DESTROY_ITEMS                              = 0x0B2,
     SMSG_GAMEOBJECT_CUSTOM_ANIM                     = 0x0B3,
-    CMSG_AREATRIGGER                                = 0x0B4,
     MSG_MOVE_START_PITCH_UP                         = 0x0BF,
     MSG_MOVE_START_PITCH_DOWN                       = 0x0C0,
     MSG_MOVE_STOP_PITCH                             = 0x0C1,
@@ -155,7 +154,6 @@ enum Opcodes
     MSG_MOVE_TELEPORT_CHEAT                         = 0x0C6,
     MSG_MOVE_TELEPORT_ACK                           = 0x0C7,
     MSG_MOVE_TOGGLE_FALL_LOGGING                    = 0x0C8,
-    MSG_MOVE_STOP_SWIM                              = 0x0CB,
     MSG_MOVE_SET_RUN_SPEED_CHEAT                    = 0x0CC,
     MSG_MOVE_SET_RUN_SPEED                          = 0x0CD,
     MSG_MOVE_SET_RUN_BACK_SPEED_CHEAT               = 0x0CE,
@@ -1277,6 +1275,7 @@ enum Opcodes
     MSG_MOVE_START_STRAFE_LEFT                          = 0x3A16,
     MSG_MOVE_START_STRAFE_RIGHT                         = 0x3A02,
     MSG_MOVE_TELEPORT                                   = 0x55A0,
+    MSG_MOVE_STOP_SWIM                                  = 0x3802,
 
     // LFG Check packet sending in LfgHandler.cpp
     SMSG_LFG_PLAYER_INFO                                = 0x1370,   // not updated
@@ -1387,6 +1386,7 @@ enum Opcodes
     CMSG_REQUEST_HOTFIX                                 = 0x2401,   // unknown?
     CMSG_REQUEST_CEMETERY_LIST                          = 0x720A,   // unknown?
     CMSG_REORDER_CHARACTERS                             = 0x0593,   // unknown?
+    CMSG_AREATRIGGER                                    = 0x0937,   // unknown?
 
     NUM_MSG_TYPES                                       = 0xFFFF    // End of Opcodes
 };
