@@ -7095,8 +7095,9 @@ void Player::RegenerateHealth(bool inCombat)
     if (cur >= mh)
         return;
 
-    gtFloat* HPRegenBase = dbcHPRegenBase.LookupEntry(getLevel() - 1 + (getClass() - 1) * 100);
-    gtFloat* HPRegen = dbcHPRegen.LookupEntry(getLevel() - 1 + (getClass() - 1) * 100);
+    // unused 15595
+    //gtFloat* HPRegenBase = dbcHPRegenBase.LookupEntry(getLevel() - 1 + (getClass() - 1) * 100);
+    //gtFloat* HPRegen =  dbcHPRegen.LookupEntry(getLevel() - 1 + (getClass() - 1) * 100);
 
     uint32 basespirit = m_uint32Values[UNIT_FIELD_SPIRIT];
     uint32 extraspirit = 0;
@@ -7107,12 +7108,16 @@ void Player::RegenerateHealth(bool inCombat)
         basespirit = 50;
     }
 
-    float amt = basespirit * HPRegen->val + extraspirit * HPRegenBase->val;
+    // unused 15595
+    //float amt = basespirit * HPRegen->val + extraspirit * HPRegenBase->val;
+
+    float amt = 65;
 
     if (PctRegenModifier)
         amt += (amt * PctRegenModifier) / 100;
 
-    amt *= sWorld.getRate(RATE_HEALTH);//Apply conf file rate
+    amt *= sWorld.getRate(RATE_HEALTH);
+
     //Near values from official
     // wowwiki: Health Regeneration is increased by 33% while sitting.
     if (m_isResting)
@@ -7125,7 +7130,7 @@ void Player::RegenerateHealth(bool inCombat)
     {
         if (amt > 0)
         {
-            if (amt <= 1.0f)//this fixes regen like 0.98
+            if (amt <= 1.0f)
                 cur++;
             else
                 cur += float2int32(amt);
