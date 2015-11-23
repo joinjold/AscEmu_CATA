@@ -8343,7 +8343,7 @@ void Unit::BuildMovementPacket(ByteBuffer* data)
     *data << GetOrientation();
 
     // 0x00000200
-    if (GetUnitMovementFlags() & MOVEFLAG_TRANSPORT)
+    /*if (GetUnitMovementFlags() & MOVEFLAG_TRANSPORT)
     {
         if (IsPlayer() && static_cast<Player*>(this)->m_CurrentTransporter)
             transporter_info.guid = static_cast<Player*>(this)->m_CurrentTransporter->GetGUID();
@@ -8359,10 +8359,10 @@ void Unit::BuildMovementPacket(ByteBuffer* data)
 
         if (GetExtraUnitMovementFlags() & MOVEFLAG2_ALLOW_PITCHING)
             *data << uint32(GetMovementInfo()->transUnk_2);
-    }
+    }*/
 
     // 0x02200000
-    if ((GetUnitMovementFlags() & (MOVEFLAG_SWIMMING | MOVEFLAG_AIR_SWIMMING))
+    if ((GetUnitMovementFlags() & (MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_FLYING))
         || (GetExtraUnitMovementFlags() & MOVEFLAG2_ALLOW_PITCHING))
         *data << (float)GetMovementInfo()->pitch;
 
@@ -8394,7 +8394,7 @@ void Unit::BuildMovementPacket(ByteBuffer* data, float x, float y, float z, floa
     *data << o;
 
     // 0x00000200
-    if (GetUnitMovementFlags() & MOVEFLAG_TRANSPORT)
+    /*if (GetUnitMovementFlags() & MOVEFLAG_TRANSPORT)
     {
         if (IsPlayer() && static_cast<Player*>(this)->m_CurrentTransporter)
             transporter_info.guid = static_cast<Player*>(this)->m_CurrentTransporter->GetGUID();
@@ -8410,10 +8410,10 @@ void Unit::BuildMovementPacket(ByteBuffer* data, float x, float y, float z, floa
 
         if (GetExtraUnitMovementFlags() & MOVEFLAG2_ALLOW_PITCHING)
             *data << uint32(GetMovementInfo()->transUnk_2);
-    }
+    }*/
 
     // 0x02200000
-    if ((GetUnitMovementFlags() & (MOVEFLAG_SWIMMING | MOVEFLAG_AIR_SWIMMING))
+    if ((GetUnitMovementFlags() & (MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_FLYING))
         || (GetExtraUnitMovementFlags() & MOVEFLAG2_ALLOW_PITCHING))
         *data << (float)GetMovementInfo()->pitch;
 

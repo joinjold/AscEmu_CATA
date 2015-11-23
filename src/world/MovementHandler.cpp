@@ -210,7 +210,7 @@ void _HandleBreathing(MovementInfo & movement_info, Player* _player, WorldSessio
     }
 
     //player is swimming and not flagged as in the water
-    if (movement_info.flags & MOVEFLAG_SWIMMING && !(_player->m_UnderwaterState & UNDERWATERSTATE_SWIMMING))
+    if (movement_info.flags & MOVEMENTFLAG_FLYING && !(_player->m_UnderwaterState & UNDERWATERSTATE_SWIMMING))
     {
         _player->RemoveAurasByInterruptFlag(AURA_INTERRUPT_ON_ENTER_WATER);
 
@@ -226,7 +226,7 @@ void _HandleBreathing(MovementInfo & movement_info, Player* _player, WorldSessio
     }
 
     // player is not swimming and is not stationary and is flagged as in the water
-    if (!(movement_info.flags & MOVEFLAG_SWIMMING) && (movement_info.flags != MOVEFLAG_MOVE_STOP) && (_player->m_UnderwaterState & UNDERWATERSTATE_SWIMMING))
+    if (!(movement_info.flags & MOVEMENTFLAG_FLYING) && (movement_info.flags != MOVEMENTFLAG_NONE) && (_player->m_UnderwaterState & UNDERWATERSTATE_SWIMMING))
     {
         // player is above water level
         if ((movement_info.z + _player->m_noseLevel) > pSession->m_wLevel)
@@ -290,38 +290,37 @@ struct MovementFlagName
 
 static MovementFlagName MoveFlagsToNames[] =
 {
-    { MOVEFLAG_MOVE_STOP, "MOVEFLAG_MOVE_STOP" },
-    { MOVEFLAG_MOVE_FORWARD, "MOVEFLAG_MOVE_FORWARD" },
-    { MOVEFLAG_MOVE_BACKWARD, "MOVEFLAG_MOVE_BACKWARD" },
-    { MOVEFLAG_STRAFE_LEFT, "MOVEFLAG_STRAFE_LEFT" },
-    { MOVEFLAG_STRAFE_RIGHT, "MOVEFLAG_STRAFE_RIGHT" },
-    { MOVEFLAG_TURN_LEFT, "MOVEFLAG_TURN_LEFT" },
-    { MOVEFLAG_TURN_RIGHT, "MOVEFLAG_TURN_RIGHT" },
-    { MOVEFLAG_PITCH_DOWN, "MOVEFLAG_PITCH_DOWN" },
-    { MOVEFLAG_PITCH_UP, "MOVEFLAG_PITCH_UP" },
-    { MOVEFLAG_WALK, "MOVEFLAG_WALK" },
-    { MOVEFLAG_TRANSPORT, "MOVEFLAG_TRANSPORT" },
-    { MOVEFLAG_NO_COLLISION, "MOVEFLAG_NO_COLLISION" },
-    { MOVEFLAG_ROOTED, "MOVEFLAG_ROOTED" },
-
-    { MOVEFLAG_FALLING, "MOVEFLAG_FALLING" },
-    { MOVEFLAG_FALLING_FAR, "MOVEFLAG_FALLING_FAR" },
-    { MOVEFLAG_FREE_FALLING, "MOVEFLAG_FREE_FALLING" },
-    { MOVEFLAG_TB_PENDING_STOP, "MOVEFLAG_TB_PENDING_STOP" },
-    { MOVEFLAG_TB_PENDING_UNSTRAFE, "MOVEFLAG_TB_PENDING_UNSTRAFE" },
-
-    { MOVEFLAG_TB_PENDING_FORWARD, "MOVEFLAG_TB_PENDING_FORWARD" },
-    { MOVEFLAG_TB_PENDING_BACKWARD, "MOVEFLAG_TB_PENDING_BACKWARD" },
-    { MOVEFLAG_SWIMMING, "MOVEFLAG_SWIMMING" },
-
-    { MOVEFLAG_CAN_FLY, "MOVEFLAG_CAN_FLY" },
-    { MOVEFLAG_AIR_SUSPENSION, "MOVEFLAG_AIR_SUSPENSION" },
-    { MOVEFLAG_AIR_SWIMMING, "MOVEFLAG_AIR_SWIMMING" },
-
-    { MOVEFLAG_WATER_WALK, "MOVEFLAG_WATER_WALK" },
-    { MOVEFLAG_FEATHER_FALL, "MOVEFLAG_FEATHER_FALL" },
-    { MOVEFLAG_LEVITATE, "MOVEFLAG_LEVITATE" },
-    { MOVEFLAG_LOCAL, "MOVEFLAG_LOCAL" },
+    { MOVEMENTFLAG_NONE, "MOVEMENTFLAG_NONE" },
+    { MOVEMENTFLAG_FORWARD, "MOVEMENTFLAG_FORWARD" },
+    { MOVEMENTFLAG_BACKWARD, "MOVEMENTFLAG_BACKWARD" },
+    { MOVEMENTFLAG_STRAFE_LEFT, "MOVEMENTFLAG_STRAFE_LEFT" },
+    { MOVEMENTFLAG_STRAFE_RIGHT, "MOVEMENTFLAG_STRAFE_RIGHT" },
+    { MOVEMENTFLAG_LEFT, "MOVEMENTFLAG_LEFT" },
+    { MOVEMENTFLAG_RIGHT, "MOVEMENTFLAG_RIGHT" },
+    { MOVEMENTFLAG_PITCH_UP, "MOVEMENTFLAG_PITCH_UP" },
+    { MOVEMENTFLAG_PITCH_DOWN, "MOVEMENTFLAG_PITCH_DOWN" },
+    { MOVEMENTFLAG_WALKING, "MOVEMENTFLAG_WALKING" },
+    { MOVEMENTFLAG_DISABLE_GRAVITY, "MOVEMENTFLAG_DISABLE_GRAVITY" },
+    { MOVEMENTFLAG_ROOT, "MOVEMENTFLAG_ROOT" },
+    { MOVEMENTFLAG_FALLING, "MOVEMENTFLAG_FALLING" },
+    { MOVEMENTFLAG_FALLING_FAR, "MOVEMENTFLAG_FALLING_FAR" },
+    { MOVEMENTFLAG_PENDING_STOP, "MOVEMENTFLAG_PENDING_STOP" },
+    { MOVEMENTFLAG_PENDING_STRAFE_STOP, "MOVEMENTFLAG_PENDING_STRAFE_STOP" },
+    { MOVEMENTFLAG_PENDING_FORWARD, "MOVEMENTFLAG_PENDING_FORWARD" },
+    { MOVEMENTFLAG_PENDING_BACKWARD, "MOVEMENTFLAG_PENDING_BACKWARD" },
+    { MOVEMENTFLAG_PENDING_STRAFE_LEFT, "MOVEMENTFLAG_PENDING_STRAFE_LEFT" },
+    { MOVEMENTFLAG_PENDING_STRAFE_RIGHT, "MOVEMENTFLAG_PENDING_STRAFE_RIGHT" },
+    { MOVEMENTFLAG_PENDING_ROOT, "MOVEMENTFLAG_PENDING_ROOT" },
+    { MOVEMENTFLAG_SWIMMING, "MOVEMENTFLAG_SWIMMING" },
+    { MOVEMENTFLAG_ASCENDING, "MOVEMENTFLAG_ASCENDING" },
+    { MOVEMENTFLAG_DESCENDING, "MOVEMENTFLAG_DESCENDING" },
+    { MOVEMENTFLAG_CAN_FLY, "MOVEMENTFLAG_CAN_FLY" },
+    { MOVEMENTFLAG_FLYING, "MOVEMENTFLAG_FLYING" },
+    { MOVEMENTFLAG_SPLINE_ELEVATION, "MOVEMENTFLAG_SPLINE_ELEVATION" },
+    { MOVEMENTFLAG_WATERWALKING, "MOVEMENTFLAG_WATERWALKING" },
+    { MOVEMENTFLAG_FALLING_SLOW, "MOVEMENTFLAG_FALLING_SLOW" },
+    { MOVEMENTFLAG_HOVER, "MOVEMENTFLAG_HOVER" },
+    { MOVEMENTFLAG_NO_COLLISION, "MOVEMENTFLAG_NO_COLLISION" },
 };
 
 static const uint32 nmovementflags = sizeof(MoveFlagsToNames) / sizeof(MovementFlagName);
@@ -377,9 +376,9 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recv_data)
         Disconnect();
         return;
     }
-    if (recv_data.GetOpcode() == CMSG_MOVE_FALL_LAND || movement_info.flags & MOVEFLAG_SWIMMING)
+    if (recv_data.GetOpcode() == CMSG_MOVE_FALL_LAND || movement_info.flags & MOVEMENTFLAG_SWIMMING)
         _player->jumping = false;
-    if (!_player->jumping && (recv_data.GetOpcode() == CMSG_MOVE_JUMP || movement_info.flags & MOVEFLAG_FALLING))
+    if (!_player->jumping && (recv_data.GetOpcode() == CMSG_MOVE_JUMP || movement_info.flags & MOVEMENTFLAG_FALLING))
         _player->jumping = true;
 
     /************************************************************************/
@@ -570,7 +569,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recv_data)
     /************************************************************************/
     /* Hack Detection by Classic	                                        */
     /************************************************************************/
-    if (!movement_info.transGuid && recv_data.GetOpcode() != CMSG_MOVE_JUMP && !_player->FlyCheat && !_player->flying_aura && !(movement_info.flags & MOVEFLAG_SWIMMING || movement_info.flags & MOVEFLAG_FALLING) && movement_info.z > _player->GetPositionZ() && movement_info.x == _player->GetPositionX() && movement_info.y == _player->GetPositionY())
+    if (!movement_info.transGuid && recv_data.GetOpcode() != CMSG_MOVE_JUMP && !_player->FlyCheat && !_player->flying_aura && !(movement_info.flags & MOVEMENTFLAG_SWIMMING || movement_info.flags & MOVEMENTFLAG_FALLING) && movement_info.z > _player->GetPositionZ() && movement_info.x == _player->GetPositionX() && movement_info.y == _player->GetPositionY())
     {
         WorldPacket data(SMSG_MOVE_UNSET_CAN_FLY, 13);
         data << _player->GetNewGUID();
@@ -578,7 +577,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recv_data)
         SendPacket(&data);
     }
 
-    if ((movement_info.flags & MOVEFLAG_AIR_SWIMMING) && !(movement_info.flags & MOVEFLAG_SWIMMING) && !(_player->flying_aura || _player->FlyCheat))
+    if ((movement_info.flags & MOVEMENTFLAG_FLYING) && !(movement_info.flags & MOVEMENTFLAG_SWIMMING) && !(_player->flying_aura || _player->FlyCheat))
     {
         WorldPacket data(SMSG_MOVE_UNSET_CAN_FLY, 13);
         data << _player->GetNewGUID();
@@ -645,7 +644,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recv_data)
         else
             //whilst player is not falling, continuously update Z axis position.
             //once player lands this will be used to determine how far he fell.
-            if (!(movement_info.flags & MOVEFLAG_FALLING))
+            if (!(movement_info.flags & MOVEMENTFLAG_FALLING))
                 mover->z_axisposition = movement_info.z;
     }
 
@@ -718,11 +717,11 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recv_data)
     if ((movement_info.flags & MOVEFLAG_MOTION_MASK) != 0)
         flags |= AURA_INTERRUPT_ON_MOVEMENT;
 
-    if (!(movement_info.flags & MOVEFLAG_SWIMMING || movement_info.flags & MOVEFLAG_FALLING))
+    if (!(movement_info.flags & MOVEMENTFLAG_SWIMMING || movement_info.flags & MOVEMENTFLAG_FALLING))
         flags |= AURA_INTERRUPT_ON_LEAVE_WATER;
-    if (movement_info.flags & MOVEFLAG_SWIMMING)
+    if (movement_info.flags & MOVEMENTFLAG_SWIMMING)
         flags |= AURA_INTERRUPT_ON_ENTER_WATER;
-    if ((movement_info.flags & MOVEFLAG_TURNING_MASK) || _player->isTurning)
+    if ((movement_info.flags & MOVEMENTFLAG_MASK_TURNING) || _player->isTurning)
         flags |= AURA_INTERRUPT_ON_TURNING;
     /*if (movement_info.flags & MOVEFLAG_REDIRECTED)
         flags |= AURA_INTERRUPT_ON_JUMP;*/
@@ -929,11 +928,11 @@ void MovementInfo::init(WorldPacket& data)
     data >> flags >> unk_230 >> time;
     data >> x >> y >> z >> orientation;
 
-    if (flags & MOVEFLAG_TRANSPORT)
+    /*if (flags & MOVEFLAG_TRANSPORT)
     {
         data >> transGuid >> transX >> transY >> transZ >> transO >> transUnk >> transUnk_2;
-    }
-    if (flags & (MOVEFLAG_SWIMMING | MOVEFLAG_AIR_SWIMMING) || unk_230 & 0x20)
+    }*/
+    if (flags & (MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_FLYING) || unk_230 & 0x20)
     {
         data >> pitch;
     }
@@ -941,7 +940,7 @@ void MovementInfo::init(WorldPacket& data)
     {
         data >> redirectVelocity >> redirectSin >> redirectCos >> redirect2DSpeed;
     }*/
-    if (flags & MOVEFLAG_SPLINE_ELEVATION)
+    if (flags & MOVEMENTFLAG_SPLINE_ELEVATION)
     {
         data >> unk12;
     }
@@ -962,19 +961,19 @@ void MovementInfo::write(WorldPacket& data)
 
     data << x << y << z << orientation;
 
-    if (flags & MOVEFLAG_TRANSPORT)
+    /*if (flags & MOVEFLAG_TRANSPORT)
     {
         data << transGuid << transX << transY << transZ << transO << transUnk << transUnk_2;
-    }
-    if (flags & MOVEFLAG_SWIMMING)
+    }*/
+    if (flags & MOVEMENTFLAG_SWIMMING)
     {
         data << pitch;
     }
-    if (flags & MOVEFLAG_FALLING)
+    if (flags & MOVEMENTFLAG_FALLING)
     {
         data << redirectVelocity << redirectSin << redirectCos << redirect2DSpeed;
     }
-    if (flags & MOVEFLAG_SPLINE_ELEVATION)
+    if (flags & MOVEMENTFLAG_SPLINE_ELEVATION)
     {
         data << unk12;
     }
