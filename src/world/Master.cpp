@@ -575,7 +575,7 @@ bool Master::Run(int argc, char** argv)
 }
 
 static const char *REQUIRED_CHAR_DB_VERSION = "2015-11-14_02_characters";
-static const char *REQUIRED_WORLD_DB_VERSION = "2015-11-06_03_event_spawns";
+static const char *REQUIRED_WORLD_DB_VERSION = "2015-11-20_04_playercreateinfo_spells";
 
 bool Master::CheckDBVersion()
 {

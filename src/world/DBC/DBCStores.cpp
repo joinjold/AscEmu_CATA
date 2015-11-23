@@ -78,8 +78,8 @@ SERVER_DECL DBCStorage<TalentTabEntry> dbcTalentTab;
 SERVER_DECL DBCStorage<WorldMapOverlay> dbcWorldMapOverlayStore;
 
 SERVER_DECL DBCStorage<gtFloat> dbcBarberShopPrices;
-SERVER_DECL DBCStorage<gtFloat> dbcHPRegen;
-SERVER_DECL DBCStorage<gtFloat> dbcHPRegenBase;
+//SERVER_DECL DBCStorage<gtFloat> dbcHPRegen;
+//SERVER_DECL DBCStorage<gtFloat> dbcHPRegenBase;
 SERVER_DECL DBCStorage<gtFloat> dbcManaRegen;
 SERVER_DECL DBCStorage<gtFloat> dbcManaRegenBase;
 SERVER_DECL DBCStorage<gtFloat> dbcMeleeCrit;

@@ -7095,8 +7095,9 @@ void Player::RegenerateHealth(bool inCombat)
     if (cur >= mh)
         return;
 
-    gtFloat* HPRegenBase = dbcHPRegenBase.LookupEntry(getLevel() - 1 + (getClass() - 1) * 100);
-    gtFloat* HPRegen = dbcHPRegen.LookupEntry(getLevel() - 1 + (getClass() - 1) * 100);
+    // unused 15595
+    //gtFloat* HPRegenBase = dbcHPRegenBase.LookupEntry(getLevel() - 1 + (getClass() - 1) * 100);
+    //gtFloat* HPRegen =  dbcHPRegen.LookupEntry(getLevel() - 1 + (getClass() - 1) * 100);
 
     uint32 basespirit = m_uint32Values[UNIT_FIELD_SPIRIT];
     uint32 extraspirit = 0;
@@ -7107,12 +7108,16 @@ void Player::RegenerateHealth(bool inCombat)
         basespirit = 50;
     }
 
-    float amt = basespirit * HPRegen->val + extraspirit * HPRegenBase->val;
+    // unused 15595
+    //float amt = basespirit * HPRegen->val + extraspirit * HPRegenBase->val;
+
+    float amt = 65;
 
     if (PctRegenModifier)
         amt += (amt * PctRegenModifier) / 100;
 
-    amt *= sWorld.getRate(RATE_HEALTH);//Apply conf file rate
+    amt *= sWorld.getRate(RATE_HEALTH);
+
     //Near values from official
     // wowwiki: Health Regeneration is increased by 33% while sitting.
     if (m_isResting)
@@ -7125,7 +7130,7 @@ void Player::RegenerateHealth(bool inCombat)
     {
         if (amt > 0)
         {
-            if (amt <= 1.0f)//this fixes regen like 0.98
+            if (amt <= 1.0f)
                 cur++;
             else
                 cur += float2int32(amt);
@@ -7238,11 +7243,12 @@ void Player::_Relocate(uint32 mapid, const LocationVector & v, bool sendpending,
             RemoveFromWorld();
         }
 
-        data.Initialize(SMSG_NEW_WORLD);
-
-        data << uint32(mapid);
-        data << v;
+        data.Initialize(SMSG_NEW_WORLD, 4 + 4 + 4 + 4 + 4);
+        data << float(v.x);
         data << float(v.o);
+        data << float(v.z);
+        data << uint32(mapid);
+        data << float(v.y);
 
         m_session->SendPacket(&data);
 
@@ -8655,13 +8661,19 @@ void Player::SafeTeleport(MapMgr* mgr, const LocationVector & vec)
 
     m_mapId = mgr->GetMapId();
     m_instanceId = mgr->GetInstanceID();
-    WorldPacket data(SMSG_TRANSFER_PENDING, 20);
-    data << mgr->GetMapId();
+    WorldPacket data(SMSG_TRANSFER_PENDING, 4 + 4 + 4);
+    data.writeBit(0);   // unknown
+    data.writeBit(0);   // has transport
+    data << uint32(mgr->GetMapId());
     GetSession()->SendPacket(&data);
 
-    data.Initialize(SMSG_NEW_WORLD);
-    data << mgr->GetMapId() << vec << vec.o;
-    GetSession()->SendPacket(&data);
+    WorldPacket data2(SMSG_NEW_WORLD, 4 + 4 + 4 + 4 + 4);
+    data2 << float(vec.x);
+    data2 << float(vec.o);
+    data2 << float(vec.z);
+    data2 << mgr->GetMapId();
+    data2 << float(vec.y);
+    GetSession()->SendPacket(&data2);
 
     SetPlayerStatus(TRANSFER_PENDING);
     m_sentTeleportPosition = vec;
