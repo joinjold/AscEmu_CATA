@@ -123,32 +123,41 @@ void Object::_Create(uint32 mapid, float x, float y, float z, float ang)
 
 uint32 Object::BuildCreateUpdateBlockForPlayer(ByteBuffer* data, Player* target)
 {
-    if (!target)
-        return 0;
+    uint16 flags = 0;
+    uint32 flags2 = 0;
 
-    uint8 updatetype = UPDATETYPE_CREATE_OBJECT;
-    uint16 flags = m_updateFlag;
+    uint8 updatetype = 1; // UPDATETYPE_CREATE_OBJECT
+
+    switch (m_objectTypeId)
+    {
+        case TYPEID_CORPSE:
+        case TYPEID_DYNAMICOBJECT:
+            flags = UPDATEFLAG_STATIONARY_POSITION;
+            updatetype = 2;
+            break;
+
+        case TYPEID_GAMEOBJECT:
+            flags = UPDATEFLAG_STATIONARY_POSITION | UPDATEFLAG_ROTATION;
+            updatetype = 2;
+            break;
+
+        case TYPEID_UNIT:
+        case TYPEID_PLAYER:
+            flags = UPDATEFLAG_LIVING;
+            updatetype = 2;
+            break;
+    }
 
     if (target == this)
-        flags |= UPDATEFLAG_SELF;
-
-    switch (target->GetHighGUID())
     {
-        case HIGHGUID_TYPE_PLAYER:
-        case HIGHGUID_TYPE_PET:
-        case HIGHGUID_TYPE_CORPSE:
-        case HIGHGUID_TYPE_DYNAMICOBJECT:
-            updatetype = UPDATETYPE_CREATE_OBJECT2;
-            break;
-        case HIGHGUID_TYPE_UNIT:
-        case HIGHGUID_TYPE_VEHICLE:
-            // Update if it is a summon object
-            break;
-        case HIGHGUID_TYPE_GAMEOBJECT:
-            // Update if it is a summon object
-            break;
-        default:
-            break;
+        flags |= UPDATEFLAG_SELF;
+        updatetype = 2; // UPDATEFLAG_CREATE_OBJECT_SELF
+    }
+
+    if (IsUnit())
+    {
+        if (static_cast< Unit* >(this)->GetTargetGUID())
+            flags |= UPDATEFLAG_HAS_TARGET; // UPDATEFLAG_HAS_ATTACKING_TARGET
     }
 
     // build our actual update
@@ -160,7 +169,7 @@ uint32 Object::BuildCreateUpdateBlockForPlayer(ByteBuffer* data, Player* target)
 
     *data << m_objectTypeId;
 
-    _BuildMovementUpdate(data, flags, 0, target);
+    _BuildMovementUpdate(data, flags, flags2, target);
 
     // we have dirty data, or are creating for ourself.
     UpdateMask updateMask;
@@ -172,6 +181,7 @@ uint32 Object::BuildCreateUpdateBlockForPlayer(ByteBuffer* data, Player* target)
 
     // update count: 1 ;)
     return 1;
+
 }
 
 
