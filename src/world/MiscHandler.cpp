@@ -2663,3 +2663,36 @@ void WorldSession::HandleViolenceLevel(WorldPacket& recvPacket)
     // do something with this...
 }
 
+void WorldSession::HandleObjectUpdateFailedOpcode(WorldPacket& recv_data)
+{
+    uint8 guid[8];
+    guid[6] = recv_data.readBit();
+    guid[7] = recv_data.readBit();
+    guid[4] = recv_data.readBit();
+    guid[0] = recv_data.readBit();
+    guid[1] = recv_data.readBit();
+    guid[5] = recv_data.readBit();
+    guid[3] = recv_data.readBit();
+    guid[2] = recv_data.readBit();
+
+    recv_data.ReadByteSeq(guid[6]);
+    recv_data.ReadByteSeq(guid[7]);
+    recv_data.ReadByteSeq(guid[2]);
+    recv_data.ReadByteSeq(guid[3]);
+    recv_data.ReadByteSeq(guid[1]);
+    recv_data.ReadByteSeq(guid[4]);
+    recv_data.ReadByteSeq(guid[0]);
+    recv_data.ReadByteSeq(guid[5]);
+
+    uint64 playerguid = *(uint64*)guid;
+    Log.Error("HandleObjectUpdateFailedOpcode", "Object update failed for playerguid %u", Arcemu::Util::GUID_LOPART(playerguid));
+
+    // logout
+    if (_player->GetGUID() == playerguid)
+    {
+        LogoutPlayer(true);
+        return;
+    }
+
+}
+

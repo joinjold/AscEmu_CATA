@@ -1402,6 +1402,7 @@ enum Opcodes
     CMSG_REQUEST_CEMETERY_LIST                          = 0x720A,   // unknown?
     CMSG_REORDER_CHARACTERS                             = 0x0593,   // unknown?
     CMSG_AREATRIGGER                                    = 0x0937,   // unknown?
+    CMSG_OBJECT_UPDATE_FAILED                           = 0x3808,   // unknown?
 
     NUM_MSG_TYPES                                       = 0xFFFF    // End of Opcodes
 };

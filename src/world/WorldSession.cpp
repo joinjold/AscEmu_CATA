@@ -534,12 +534,14 @@ void WorldSession::InitPacketHandlerTable()
     //WorldPacketHandlers[CMSG_CHAR_RACE_CHANGE].handler = &WorldSession::HandleCharFactionOrRaceChange;
     //WorldPacketHandlers[CMSG_CHAR_RACE_CHANGE].status = STATUS_AUTHED;
 
-    /// \todo unhandled
     WorldPacketHandlers[CMSG_PLAYER_LOGIN].handler = &WorldSession::HandlePlayerLoginOpcode;
     WorldPacketHandlers[CMSG_PLAYER_LOGIN].status = STATUS_AUTHED;
 
     WorldPacketHandlers[CMSG_REALM_SPLIT].handler = &WorldSession::HandleRealmSplitOpcode;
     WorldPacketHandlers[CMSG_REALM_SPLIT].status = STATUS_AUTHED;
+
+    WorldPacketHandlers[CMSG_OBJECT_UPDATE_FAILED].handler = &WorldSession::HandleObjectUpdateFailedOpcode;
+    WorldPacketHandlers[CMSG_OBJECT_UPDATE_FAILED].status = STATUS_AUTHED;
 
     // 4.3.4 login
     WorldPacketHandlers[CMSG_LOAD_SCREEN].handler = &WorldSession::HandleLoadScreenOpcode;

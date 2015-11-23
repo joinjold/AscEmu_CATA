@@ -123,85 +123,32 @@ void Object::_Create(uint32 mapid, float x, float y, float z, float ang)
 
 uint32 Object::BuildCreateUpdateBlockForPlayer(ByteBuffer* data, Player* target)
 {
+    if (!target)
+        return 0;
+
+    uint8 updatetype = UPDATETYPE_CREATE_OBJECT;
     uint16 flags = 0;
-    uint32 flags2 = 0;
-
-    uint8 updatetype = 1; // UPDATETYPE_CREATE_OBJECT
-
-    //uint8 temp_objectTypeId = m_objectTypeId;
-
-    switch (m_objectTypeId)
-    {
-        case TYPEID_CORPSE:
-        case TYPEID_DYNAMICOBJECT:
-            flags = UPDATEFLAG_STATIONARY_POSITION; // UPDATEFLAG_HAS_STATIONARY_POSITION
-            updatetype = 2;
-            break;
-
-        case TYPEID_GAMEOBJECT:
-            flags = UPDATEFLAG_STATIONARY_POSITION | UPDATEFLAG_ROTATION;
-            //flags = 0x0040 | 0x0200; // UPDATEFLAG_HAS_STATIONARY_POSITION | UPDATEFLAG_ROTATION
-            updatetype = 2;
-            break;
-
-        case TYPEID_UNIT:
-        case TYPEID_PLAYER:
-            flags = UPDATEFLAG_LIVING;
-            updatetype = 2;
-            break;
-    }
-
-
-    /*if(IsGameObject())
-    {
-    //		switch( GetByte(GAMEOBJECT_BYTES_1,GAMEOBJECT_BYTES_TYPEID) )
-    switch(m_uint32Values[GAMEOBJECT_BYTES_1])
-    {
-    /*case GAMEOBJECT_TYPE_MO_TRANSPORT:
-    {
-    if(GetTypeFromGUID() != HIGHGUID_TYPE_TRANSPORTER)
-    return 0;   // bad transporter
-    else
-    flags = 0x0352;
-    }
-    break;
-    case GAMEOBJECT_TYPE_TRANSPORT: // 1
-    {
-    flags |= 0x0002 | 0x0040 | 0x0200; // UPDATEFLAG_TRANSPORT | UPDATEFLAG_HAS_STATIONARY_POSITION | UPDATEFLAG_ROTATION
-    }
-    break;
-    case GAMEOBJECT_TYPE_TRAP:
-    case GAMEOBJECT_TYPE_DUEL_ARBITER:
-    case GAMEOBJECT_TYPE_FLAGSTAND:
-    case GAMEOBJECT_TYPE_FLAGDROP:
-    updatetype = 2; // UPDATETYPE_CREATE_OBJECT2
-    break;
-    default:
-    break;
-    }
-    //The above 3 checks FAIL to identify transports, thus their flags remain 0x58, and this is BAAAAAAD! Later they don't get position x,y,z,o updates, so they appear randomly by a client-calculated path, they always face north, etc... By: VLack
-    //if(flags != 0x0352 && IsGameObject() && TO< GameObject* >(this)->GetInfo()->Type == GAMEOBJECT_TYPE_TRANSPORT && !(TO< GameObject* >(this)->GetOverrides() & GAMEOBJECT_OVERRIDE_PARENTROT))
-    //flags = 0x0352;
-    }*/
-
-    /*if(GetTypeFromGUID() == HIGHGUID_TYPE_VEHICLE)
-    {
-    flags |= UPDATEFLAG_VEHICLE;
-    updatetype = 2; // UPDATETYPE_CREATE_OBJECT_SELF
-    }*/
-
 
     if (target == this)
-    {
-        // player creating self
-        flags |= UPDATEFLAG_SELF;  // UPDATEFLAG_SELF
-        updatetype = 2; // UPDATEFLAG_CREATE_OBJECT_SELF
-    }
+        flags |= UPDATEFLAG_SELF;
 
-    if (IsUnit())
+    switch (target->GetHighGUID())
     {
-        if (static_cast< Unit* >(this)->GetTargetGUID())
-            flags |= UPDATEFLAG_HAS_TARGET; // UPDATEFLAG_HAS_ATTACKING_TARGET
+        case HIGHGUID_TYPE_PLAYER:
+        case HIGHGUID_TYPE_PET:
+        case HIGHGUID_TYPE_CORPSE:
+        case HIGHGUID_TYPE_DYNAMICOBJECT:
+            updatetype = UPDATETYPE_CREATE_OBJECT2;
+            break;
+        case HIGHGUID_TYPE_UNIT:
+        case HIGHGUID_TYPE_VEHICLE:
+            // Update if it is a summon object
+            break;
+        case HIGHGUID_TYPE_GAMEOBJECT:
+            // Update if it is a summon object
+            break;
+        default:
+            break;
     }
 
     // build our actual update
@@ -213,7 +160,7 @@ uint32 Object::BuildCreateUpdateBlockForPlayer(ByteBuffer* data, Player* target)
 
     *data << m_objectTypeId;
 
-    _BuildMovementUpdate(data, flags, flags2, target);
+    _BuildMovementUpdate(data, flags, 0, target);
 
     // we have dirty data, or are creating for ourself.
     UpdateMask updateMask;
@@ -225,98 +172,6 @@ uint32 Object::BuildCreateUpdateBlockForPlayer(ByteBuffer* data, Player* target)
 
     // update count: 1 ;)
     return 1;
-
-    // end here
-
-    // any other case
-    /*switch(m_objectTypeId)
-    {
-    // items + containers: 0x8
-    case TYPEID_ITEM:
-    case TYPEID_CONTAINER:
-    flags = 0x10;
-    break;
-    // player/unit: 0x68 (except self)
-    case TYPEID_UNIT:
-    flags = 0x70;
-    break;
-    case TYPEID_PLAYER:
-    flags = 0x70;
-    break;
-    // gameobject/dynamicobject
-    case TYPEID_GAMEOBJECT:
-    flags = 0x0350;
-    if(TO< GameObject* >(this)->GetDisplayId() == 3831) flags = 0x0252; //Deeprun Tram proper flags as of 3.2.0.
-    break;
-    case TYPEID_DYNAMICOBJECT:
-    flags = 0x0150;
-    break;
-    case TYPEID_CORPSE:
-    flags = 0x0150;
-    break;
-    // anyone else can get fucked and die!
-    }
-    if(target == this)
-    {
-    // player creating self
-    flags |= 0x01;
-    updatetype = UPDATETYPE_CREATE_YOURSELF;
-    }
-
-    // gameobject stuff
-    if(IsGameObject())
-    {
-    //		switch( GetByte(GAMEOBJECT_BYTES_1,GAMEOBJECT_BYTES_TYPEID) )
-    switch(m_uint32Values[GAMEOBJECT_BYTES_1])
-    {
-    case GAMEOBJECT_TYPE_MO_TRANSPORT:
-    {
-    if(GetTypeFromGUID() != HIGHGUID_TYPE_TRANSPORTER)
-    return 0;   // bad transporter
-    else
-    flags = 0x0352;
-    }
-    break;
-    case GAMEOBJECT_TYPE_TRANSPORT:
-    {
-    /* deeprun tram, etc
-    flags = 0x252;
-    }
-    break;
-    case GAMEOBJECT_TYPE_DUEL_ARBITER:
-    {
-    // duel flags have to stay as updatetype 3, otherwise
-    // it won't animate
-    updatetype = UPDATETYPE_CREATE_YOURSELF;
-    }
-    break;
-    }
-    //The above 3 checks FAIL to identify transports, thus their flags remain 0x58, and this is BAAAAAAD! Later they don't get position x,y,z,o updates, so they appear randomly by a client-calculated path, they always face north, etc... By: VLack
-    if(flags != 0x0352 && IsGameObject() && TO< GameObject* >(this)->GetInfo()->Type == GAMEOBJECT_TYPE_TRANSPORT && !(TO< GameObject* >(this)->GetOverrides() & GAMEOBJECT_OVERRIDE_PARENTROT))
-    flags = 0x0352;
-    }
-    if( IsVehicle() )
-    flags |= UPDATEFLAG_VEHICLE;
-    // build our actual update
-    *data << updatetype;
-    // we shouldn't be here, under any circumstances, unless we have a wowguid..
-    ARCEMU_ASSERT(m_wowGuid.GetNewGuidLen() > 0);
-    *data << m_wowGuid;
-    *data << m_objectTypeId;
-    _BuildMovementUpdate(data, flags, flags2, target);
-    // we have dirty data, or are creating for ourself.
-    UpdateMask updateMask;
-    updateMask.SetCount(m_valuesCount);
-    _SetCreateBits(&updateMask, target);
-    if(IsGameObject() && (TO< GameObject* >(this)->GetOverrides() & GAMEOBJECT_OVERRIDE_PARENTROT))
-    {
-    updateMask.SetBit(GAMEOBJECT_PARENTROTATION_02);
-    updateMask.SetBit(GAMEOBJECT_PARENTROTATION_03);
-    }
-    // this will cache automatically if needed
-    _BuildValuesUpdate(data, &updateMask, target);
-    // update count: 1 ;)
-    return 1;*/
 }
 
 
