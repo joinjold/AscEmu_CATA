@@ -127,7 +127,7 @@ uint32 Object::BuildCreateUpdateBlockForPlayer(ByteBuffer* data, Player* target)
         return 0;
 
     uint8 updatetype = UPDATETYPE_CREATE_OBJECT;
-    uint16 flags = 0;
+    uint16 flags = m_updateFlag;
 
     if (target == this)
         flags |= UPDATEFLAG_SELF;
@@ -275,7 +275,7 @@ uint32 Object::BuildValuesUpdateBlockForPlayer(ByteBuffer* buf, UpdateMask* mask
 
 //////////////////////////////////////////////////////////////////////////////////////////
 /// Build the Movement Data portion of the update packet Fills the data with this object's movement/speed info
-///\todo rewrite this stuff, document unknown fields and flags
+///\TODO rewrite this stuff, document unknown fields and flags
 uint32 TimeStamp();
 
 void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags, uint32 flags2, Player* target)

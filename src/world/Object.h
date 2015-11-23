@@ -709,6 +709,8 @@ class SERVER_DECL Object : public EventableObject
 		WoWGuid m_wowGuid;
 		/// Type id.
 		uint8 m_objectTypeId;
+
+        uint16 m_updateFlag;
 		/// Zone id.
 		uint32 m_zoneId;
 		/// Continent/map id.

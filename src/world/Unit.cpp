@@ -410,6 +410,8 @@ Unit::Unit()
     m_manaShieldId = 0;
     m_charmtemp = 0;
     m_auraRaidUpdateMask = 0;
+
+    m_updateFlag = UPDATEFLAG_LIVING;
 }
 
 Unit::~Unit()
