@@ -130,6 +130,13 @@ public:
         return retval;
     }
 
+    uint8 readUInt8()
+    {
+        uint8 u = 0;
+        (*this) >> u;
+        return u;
+    }
+
     bool readBit()
     {
         ++_bitpos;
