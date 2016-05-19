@@ -562,7 +562,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags, uint32 flags2,
             *data << m_runSpeed;	// run speed
 
         if (hasPitch) // this ok? // and this check here?
-            *data << moveinfo->pitch;
+            *data << moveinfo->GetPitch();
 
         *data << m_backFlySpeed;
 

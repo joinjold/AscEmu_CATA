@@ -261,6 +261,7 @@ set(headers
 	Map.h
 	MapCell.h
 	MapMgr.h
+	Movement/MovementStructures.h
     MapMgrDefines.hpp
 	MapScriptInterface.h
 	Master.h
