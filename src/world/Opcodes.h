@@ -252,25 +252,11 @@ enum Opcodes
     CMSG_PET_RENAME                                 = 0x177,
     SMSG_PET_NAME_INVALID                           = 0x178,
     SMSG_PET_MODE                                   = 0x17A,
-    CMSG_NPC_TEXT_QUERY                             = 0x17F,
-    SMSG_NPC_TEXT_UPDATE                            = 0x180,
-    SMSG_NPC_WONT_TALK                              = 0x181,
-    CMSG_QUESTLOG_SWAP_QUEST                        = 0x193,
-    CMSG_QUESTLOG_REMOVE_QUEST                      = 0x194,
-    SMSG_QUESTLOG_FULL                              = 0x195,
-    SMSG_QUESTUPDATE_FAILED                         = 0x196,
-    SMSG_QUESTUPDATE_FAILEDTIMER                    = 0x197,
-    SMSG_QUESTUPDATE_COMPLETE                       = 0x198,
-    SMSG_QUESTUPDATE_ADD_KILL                       = 0x199,
-    SMSG_QUESTUPDATE_ADD_ITEM                       = 0x19A,
-    CMSG_QUEST_CONFIRM_ACCEPT                       = 0x19B,
-    SMSG_QUEST_CONFIRM_ACCEPT                       = 0x19C,
-    CMSG_PUSHQUESTTOPARTY                           = 0x19D,
-    CMSG_SELL_ITEM                                  = 0x1A0,
-    SMSG_SELL_ITEM                                  = 0x1A1,
-    CMSG_BUY_ITEM                                   = 0x1A2,
+    CMSG_SELL_ITEM                                  = 0x04E15,//4.3.4
+    SMSG_SELL_ITEM                                  = 0x06105,//4.3.4
+    CMSG_BUY_ITEM                                   = 0x00736,//4.3.4
     CMSG_BUY_ITEM_IN_SLOT                           = 0x1A3,
-    SMSG_BUY_ITEM                                   = 0x1A4,
+    SMSG_BUY_ITEM                                   = 0x00F26,//4.3.4
     SMSG_BUY_FAILED                                 = 0x1A5,
     CMSG_TAXICLEARALLNODES                          = 0x1A6,
     CMSG_TAXIENABLEALLNODES                         = 0x1A7,
@@ -1348,6 +1334,9 @@ enum Opcodes
     SMSG_QUESTGIVER_QUEST_FAILED                        = 0x4236,   // unchecked
     CMSG_QUESTGIVER_STATUS_MULTIPLE_QUERY               = 0x6305,   // unchecked
     SMSG_QUESTGIVER_STATUS_MULTIPLE                     = 0x4F25,   // unchecked
+    CMSG_NPC_TEXT_QUERY                                 = 0x4E24,
+    SMSG_NPC_TEXT_UPDATE                                = 0x4436,
+    SMSG_NPC_WONT_TALK                                  = 0x1182,
 
     //Player
     SMSG_CHAT_PLAYER_NOT_FOUND                          = 0x2526,
@@ -1395,7 +1384,20 @@ enum Opcodes
     CMSG_READ_ITEM                                      = 0x2F16,   //
     SMSG_READ_ITEM_OK                                   = 0x2605,   // 
     SMSG_READ_ITEM_FAILED                               = 0x0F16,   // 
-    SMSG_ITEM_COOLDOWN                                  = 0x4D14,   // 
+    SMSG_ITEM_COOLDOWN                                  = 0x4D14,   //
+
+    //Quest
+    CMSG_QUESTLOG_SWAP_QUEST                            = 0x1194,
+    CMSG_QUESTLOG_REMOVE_QUEST                          = 0x0D16,
+    SMSG_QUESTLOG_FULL                                  = 0x0E36,
+    SMSG_QUESTUPDATE_FAILED                             = 0x6324,
+    SMSG_QUESTUPDATE_FAILEDTIMER                        = 0x6427,
+    SMSG_QUESTUPDATE_COMPLETE                           = 0x2937,
+    SMSG_QUESTUPDATE_ADD_KILL                           = 0x0D27,
+    SMSG_QUESTUPDATE_ADD_ITEM                           = 0x119B,
+    CMSG_QUEST_CONFIRM_ACCEPT                           = 0x0D15,
+    SMSG_QUEST_CONFIRM_ACCEPT                           = 0x6F07,
+    CMSG_PUSHQUESTTOPARTY                               = 0x4B14,
 
     //Unknown packet send by client to server
     CMSG_UNREGISTER_ALL_ADDON_PREFIXES                  = 0x3D54,   // unknown?
