@@ -174,12 +174,6 @@ void WorldSession::HandleMoveTeleportAckOpcode(WorldPacket& recv_data)
 
 }
 
-void _HandleBreathing(MovementInfo & movement_info, Player* _player, WorldSession* pSession)
-{
-
-
-}
-
 struct MovementFlagName
 {
     uint32 flag;
@@ -232,12 +226,94 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recv_data)
     if (m_MoverWoWGuid != mover->GetGUID())                    // there must always be a mover
         return;
 
+    if (_player->GetCharmedByGUID() || !_player->IsInWorld() || _player->GetPlayerStatus() == TRANSFER_PENDING || _player->GetTaxiState())
+    {
+        return;
+    }
+
+    /************************************************************************/
+    /* Clear standing state to stand.				                        */
+    /************************************************************************/
+    if (recv_data.GetOpcode() == CMSG_MOVE_START_FORWARD)
+        _player->SetStandState(STANDSTATE_STAND);
+
     /* extract packet */
     MovementInfo movementInfo;
     recv_data >> movementInfo;
 
-    // Todo Add Swimming Jumping ....
-    _player->SetPosition(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z, movementInfo.GetPos()->o);
+    /************************************************************************/
+    /* Anti-Teleport                                                        */
+    /************************************************************************/
+
+    if (!(HasGMPermissions() && sWorld.no_antihack_on_gm) && !_player->GetCharmedUnitGUID())
+    {
+        if (sWorld.antihack_teleport && _player->m_position.Distance2DSq(movement_info.GetPos()->x, movement_info.GetPos()->y) > 3025.0f
+            && _player->m_runSpeed < 50.0f && !_player->transporter_info.guid)
+        {
+            sCheatLog.writefromsession(this, "Disconnected for teleport hacking. Player speed: %f, Distance traveled: %f", _player->m_runSpeed, sqrt(_player->m_position.Distance2DSq(movement_info.GetPos()->x, movement_info.GetPos()->y)));
+            Disconnect();
+            return;
+        }
+    }
+
+    /************************************************************************/
+    /* Remove Emote State                                                   */
+    /************************************************************************/
+    if (_player->GetEmoteState())
+        _player->SetEmoteState(0);
+
+    /************************************************************************/
+    /* Make sure the co-ordinates are valid.                                */
+    /************************************************************************/
+    if (!((movement_info.GetPos()->y >= _minY) && (movement_info.GetPos()->y <= _maxY)) || !((movement_info.GetPos()->x >= _minX) && (movement_info.GetPos()->x <= _maxX)))
+    {
+        Disconnect();
+        return;
+    }
+
+    //update the detector
+    if (sWorld.antihack_speed && !_player->GetTaxiState() && _player->transporter_info.guid == 0 && !_player->GetSession()->GetPermissionCount())
+    {
+        // simplified: just take the fastest speed. less chance of fuckups too
+        float speed = (_player->flying_aura) ? _player->m_flySpeed : (_player->m_swimSpeed > _player->m_runSpeed) ? _player->m_swimSpeed : _player->m_runSpeed;
+
+        _player->SDetector->AddSample(movement_info.GetPos()->x, movement_info.GetPos()->y, getMSTime(), speed);
+
+        if (_player->SDetector->IsCheatDetected())
+            _player->SDetector->ReportCheater(_player);
+    }
+
+    /************************************************************************/
+    /* Jumping Cheks                                                        */
+    /************************************************************************/
+    _player->IsPlayerJumping(movementInfo, opcode);
+
+    /************************************************************************/
+    /* Fall damage generation                                               */
+    /************************************************************************/
+    if (opcode == CMSG_MOVE_FALL_LAND && _player )
+        _player->HandleFall(movementInfo);
+    else
+    {
+        //whilst player is not falling, continuously update Z axis position.
+        //once player lands this will be used to determine how far he fell.
+        if (!(movement_info.GetMovementFlags() & MOVEMENTFLAG_FALLING))
+            mover->z_axisposition = movement_info.GetPos()->z;
+    }
+
+    /************************************************************************/
+    /* Breathing                                                            */
+    /************************************************************************/
+    _player->HandleBreathing(movementInfo, this);
+
+
+    /************************************************************************/
+    /* Update our Positiin                                                  */
+    /************************************************************************/
+    if (m_MoverWoWGuid.GetOldGuid() == _player->GetGUID())
+    {
+        _player->SetPosition(movementInfo.GetPos()->x, movementInfo.GetPos()->y, movementInfo.GetPos()->z, movementInfo.GetPos()->o);
+    }
 
     WorldPacket data(SMSG_PLAYER_MOVE, recv_data.size());
     data << movementInfo;
