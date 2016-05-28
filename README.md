@@ -1,6 +1,6 @@
 ﻿# ![logo](http://ascemu.org/style/img/logo.png)
 ﻿
-`master (4.3.4)`[![master Build Status](https://travis-ci.org/AscEmu/AscEmu_CATA.svg?branch=master)](https://travis-ci.org/AscEmu/AscEmu_CATA)
+[![Travis Status](https://travis-ci.org/AscEmu/AscEmu_CATA.svg?branch=master)](https://travis-ci.org/AscEmu/AscEmu_CATA)
 
 ##No support! Use one of our stable projects!
 
