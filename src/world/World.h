@@ -705,7 +705,7 @@ class SERVER_DECL World : public Singleton<World>, public EventableObject, publi
 
         void LogoutPlayers();
 
-        typedef HM_NAMESPACE::hash_map<uint32, WorldSession*> SessionMap;
+        typedef std::unordered_map<uint32, WorldSession*> SessionMap;
         SessionMap m_sessions;
         RWLock m_sessionlock;
 
@@ -714,7 +714,7 @@ class SERVER_DECL World : public Singleton<World>, public EventableObject, publi
         //! Timers
         
 
-        typedef HM_NAMESPACE::hash_map<uint32, AreaTrigger*> AreaTriggerMap;
+        typedef std::unordered_map<uint32, AreaTrigger*> AreaTriggerMap;
         AreaTriggerMap m_AreaTrigger;
 
         Arcemu::PerformanceCounter perfcounter;

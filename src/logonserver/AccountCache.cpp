@@ -68,13 +68,8 @@ void AccountMgr::ReloadAccounts(bool silent)
     }
 
     // check for any purged/deleted accounts
-#ifdef WIN32
-    HM_NAMESPACE::hash_map<std::string, Account*>::iterator itr = AccountDatabase.begin();
-    HM_NAMESPACE::hash_map<std::string, Account*>::iterator it2;
-#else
     std::map<std::string, Account*>::iterator itr = AccountDatabase.begin();
     std::map<std::string, Account*>::iterator it2;
-#endif
 
     for(; itr != AccountDatabase.end();)
     {
@@ -489,7 +484,7 @@ void InformationCore::SendRealms(AuthSocket* Socket)
 
     // loop realms :/
     std::map<uint32, Realm*>::iterator itr = m_realms.begin();
-    HM_NAMESPACE::hash_map<uint32, uint8>::iterator it;
+    std::unordered_map<uint32, uint8>::iterator it;
     for(; itr != m_realms.end(); ++itr)
     {
         if (itr->second->GameBuild == Socket->GetChallenge()->build)
