@@ -35,6 +35,7 @@ class SummonHandler;
 #include "SummonHandler.h"
 
 #include "WorldSession.h"
+#include "WorldPacket.h"
 
 class Vehicle;
 
@@ -316,7 +317,7 @@ public:
     }
     void ClearTransportData()
     {
-        t_guid = NULL;
+        t_guid = 0;
         t_pos.x = 0.0f;
         t_pos.y = 0.0f;
         t_pos.z = 0.0f;
