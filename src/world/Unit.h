@@ -34,7 +34,7 @@ class DynamicObject;
 class SummonHandler;
 #include "SummonHandler.h"
 
-#include "WorldSession.h"
+//#include "WorldSession.h"
 #include "WorldPacket.h"
 
 class Vehicle;
