@@ -639,14 +639,14 @@ void Creature::DeleteQuest(QuestRelation* Q)
     }
 }
 
-Quest* Creature::FindQuest(uint32 quest_id, uint8 quest_relation)
+Quest const* Creature::FindQuest(uint32 quest_id, uint8 quest_relation)
 {
     std::list<QuestRelation*>::iterator it;
     for (it = m_quests->begin(); it != m_quests->end(); ++it)
     {
         QuestRelation* ptr = (*it);
 
-        if ((ptr->qst->id == quest_id) && (ptr->type & quest_relation))
+        if ((ptr->qst->GetQuestId() == quest_id) && (ptr->type & quest_relation))
         {
             return ptr->qst;
         }
@@ -661,7 +661,7 @@ uint16 Creature::GetQuestRelation(uint32 quest_id)
 
     for (it = m_quests->begin(); it != m_quests->end(); ++it)
     {
-        if ((*it)->qst->id == quest_id)
+        if ((*it)->qst->GetQuestId() == quest_id)
         {
             quest_relation |= (*it)->type;
         }
@@ -799,7 +799,7 @@ bool Creature::HasQuest(uint32 id, uint32 type)
     if (!m_quests) return false;
     for (std::list<QuestRelation*>::iterator itr = m_quests->begin(); itr != m_quests->end(); ++itr)
         {
-            if ((*itr)->qst->id == id && (*itr)->type & type)
+            if ((*itr)->qst->GetQuestId() == id && (*itr)->type & type)
                 return true;
         }
     return false;
@@ -1597,7 +1597,9 @@ bool Creature::Load(CreatureSpawn* spawn, uint32 mode, MapInfo* info)
     if (proto->Mana != 0)
         SetPowerType(POWER_TYPE_MANA);
     else
-        SetPowerType(0);
+        SetPowerType(POWER_TYPE_MANA);
+
+    PowerFields[POWER_TYPE_MANA] = 0;	//mana is stored in slot 0
 
     if (proto->guardtype == GUARDTYPE_CITY)
         m_aiInterface->m_isGuard = true;
@@ -1680,6 +1682,8 @@ void Creature::Load(CreatureProto* proto_, float x, float y, float z, float o)
     SetMaxHealth(health);
     SetBaseHealth(health);
 
+    SetPowerType(POWER_TYPE_MANA);
+    PowerFields[ POWER_TYPE_MANA ] = 0; //mana is stored in slot 0
     SetMaxPower(POWER_TYPE_MANA, proto->Mana);
     SetBaseMana(proto->Mana);
     SetPower(POWER_TYPE_MANA, proto->Mana);
@@ -1799,7 +1803,11 @@ void Creature::Load(CreatureProto* proto_, float x, float y, float z, float o)
         m_useAI = false;
     }
 
-    SetPowerType(POWER_TYPE_MANA);
+    /* more hacks! */
+    if (proto->Mana != 0)
+        SetPowerType(POWER_TYPE_MANA);
+    else
+        SetPowerType(POWER_TYPE_MANA);
 
     if (proto->guardtype == GUARDTYPE_CITY)
         m_aiInterface->m_isGuard = true;

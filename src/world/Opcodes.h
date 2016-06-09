@@ -242,7 +242,6 @@ enum Opcodes
     SMSG_AURACASTLOG_OBSOLETE                       = 0x1D1,
     CMSG_RECLAIM_CORPSE                             = 0x1D2,
     CMSG_WRAP_ITEM                                  = 0x1D3,
-    SMSG_LEVELUP_INFO                               = 0x1D4,
     MSG_MINIMAP_PING                                = 0x1D5,
     SMSG_RESISTLOG                                  = 0x1D6,
     SMSG_ENCHANTMENTLOG                             = 0x1D7,
@@ -250,8 +249,6 @@ enum Opcodes
     SMSG_CLEAR_COOLDOWN                             = 0x1DE,
     SMSG_GAMEOBJECT_PAGETEXT                        = 0x1DF,
     SMSG_COOLDOWN_CHEAT                             = 0x1E1,
-    CMSG_QUEST_POI_QUERY                            = 0x1E3,
-    SMSG_QUEST_POI_QUERY_RESPONSE                   = 0x1E4,
     CMSG_GHOST                                      = 0x1E5,
     SMSG_INVALID_PROMOTION_CODE                     = 0x1E7,
     SMSG_ITEM_ENCHANT_TIME_UPDATE                   = 0x1EB,
@@ -308,7 +305,6 @@ enum Opcodes
     CMSG_MAIL_CREATE_TEXT_ITEM                      = 0x24A,
     SMSG_DEBUGAURAPROC                              = 0x24D,
     SMSG_PERIODICAURALOG                            = 0x24E,
-    CMSG_LEARN_TALENT                               = 0x251,
     SMSG_RESURRECT_FAILED                           = 0x252,
     CMSG_TOGGLE_PVP                                 = 0x253,
     SMSG_ZONE_UNDER_ATTACK                          = 0x254,
@@ -378,7 +374,6 @@ enum Opcodes
     SMSG_SET_FORCED_REACTIONS                       = 0x2A5,
     SMSG_GAMEOBJECT_RESET_STATE                     = 0x2A7,
     CMSG_REPAIR_ITEM                                = 0x2A8,
-    MSG_TALENT_WIPE_CONFIRM                         = 0x2AA,
     SMSG_SUMMON_REQUEST                             = 0x2AB,
     CMSG_SUMMON_RESPONSE                            = 0x2AC,
     MSG_MOVE_TOGGLE_GRAVITY_CHEAT                   = 0x2AD,
@@ -626,7 +621,6 @@ enum Opcodes
     SMSG_USERLIST_ADD                               = 0x3F0,
     SMSG_USERLIST_REMOVE                            = 0x3F1,
     SMSG_USERLIST_UPDATE                            = 0x3F2,
-    SMSG_INSPECT_TALENT                             = 0x3F4,
     SMSG_GOGOGO_OBSOLETE                            = 0x3F5,
     SMSG_ECHO_PARTY_SQUELCH                         = 0x3F6,
     CMSG_SET_TITLE_SUFFIX                           = 0x3F7,
@@ -643,8 +637,6 @@ enum Opcodes
     SMSG_RAID_READY_CHECK_ERROR                     = 0x408,
     MSG_QUERY_GUILD_BANK_TEXT                       = 0x40A,
     CMSG_SET_GUILD_BANK_TEXT                        = 0x40B,
-    CMSG_SET_GRANTABLE_LEVELS                       = 0x40C,
-    CMSG_GRANT_LEVEL                                = 0x40D,
     CMSG_REFER_A_FRIEND                             = 0x40E,
     CMSG_GROUPACTION_THROTTLED                      = 0x411,
     SMSG_OVERRIDE_LIGHT                             = 0x412,
@@ -656,8 +648,6 @@ enum Opcodes
     CMSG_QUERY_SERVER_BUCK_DATA                     = 0x41B,
     CMSG_CLEAR_SERVER_BUCK_DATA                     = 0x41C,
     SMSG_SERVER_BUCK_DATA                           = 0x41D,
-    SMSG_PROPOSE_LEVEL_GRANT                        = 0x41F,
-    CMSG_ACCEPT_LEVEL_GRANT                         = 0x420,
     SMSG_REFER_A_FRIEND_FAILURE                     = 0x421,
     SMSG_SPLINE_MOVE_SET_FLYING                     = 0x422,
     SMSG_SPLINE_MOVE_UNSET_FLYING                   = 0x423,
@@ -726,11 +716,9 @@ enum Opcodes
     CMSG_COMPLETE_MOVIE                             = 0x465,
     CMSG_SET_GLYPH_SLOT                             = 0x466,
     CMSG_SET_GLYPH                                  = 0x467,
-    SMSG_ACHIEVEMENT_EARNED                         = 0x468,
     SMSG_DYNAMIC_DROP_ROLL_RESULT                   = 0x469,
     SMSG_CRITERIA_UPDATE                            = 0x46A,
     CMSG_QUERY_INSPECT_ACHIEVEMENTS                 = 0x46B,
-    SMSG_RESPOND_INSPECT_ACHIEVEMENTS               = 0x46C,
     CMSG_DISMISS_CONTROLLED_VEHICLE                 = 0x46D,
     CMSG_COMPLETE_ACHIEVEMENT_CHEAT                 = 0x46E,
     SMSG_QUESTUPDATE_ADD_PVP_KILL                   = 0x46F,
@@ -744,10 +732,8 @@ enum Opcodes
     CMSG_REQUEST_VEHICLE_PREV_SEAT                  = 0x477,
     CMSG_REQUEST_VEHICLE_NEXT_SEAT                  = 0x478,
     CMSG_REQUEST_VEHICLE_SWITCH_SEAT                = 0x479,
-    CMSG_PET_LEARN_TALENT                           = 0x47A,
     CMSG_PET_UNLEARN_TALENTS                        = 0x47B,
     SMSG_SET_PHASE_SHIFT                            = 0x47C,
-    SMSG_ALL_ACHIEVEMENT_DATA                       = 0x47D,
     CMSG_FORCE_SAY_CHEAT                            = 0x47E,
     SMSG_HEALTH_UPDATE                              = 0x47F,
     SMSG_HIGHEST_THREAT_UPDATE                      = 0x482,
@@ -768,12 +754,10 @@ enum Opcodes
     CMSG_ENABLETAXI                                 = 0x493,
     SMSG_PRE_RESURRECT                              = 0x494,
     CMSG_FLOOD_GRACE_CHEAT                          = 0x497,
-    SMSG_SERVER_FIRST_ACHIEVEMENT                   = 0x498,
     CMSG_CHANGE_SEATS_ON_CONTROLLED_VEHICLE         = 0x49B,
     CMSG_HEARTH_AND_RESURRECT                       = 0x49C,
     SMSG_CONTROL_VEHICLE                            = 0x49D,
     SMSG_CRITERIA_DELETED                           = 0x49E,
-    SMSG_ACHIEVEMENT_DELETED                        = 0x49F,
     CMSG_SERVER_INFO_QUERY                          = 0x4A0,
     SMSG_SERVER_INFO_RESPONSE                       = 0x4A1,
     CMSG_CHECK_LOGIN_CRITERIA                       = 0x4A2,
@@ -804,9 +788,6 @@ enum Opcodes
     CMSG_EQUIPMENT_SET_SAVE                         = 0x4BD,
     CMSG_UPDATE_PROJECTILE_POSITION                 = 0x4BE,
     SMSG_SET_PROJECTILE_POSITION                    = 0x4BF,
-    SMSG_TALENTS_INFO                               = 0x4C0,
-    CMSG_LEARN_TALENTS_MULTIPLE                     = 0x4C1,
-    CMSG_LEARN_PREVIEW_TALENTS_PET                  = 0x4C2,
     UMSG_UNKNOWN_1219                               = 0x4C3,
     UMSG_UNKNOWN_1220                               = 0x4C4,
     UMSG_UNKNOWN_1221                               = 0x4C5,
@@ -853,7 +834,6 @@ enum Opcodes
     SMSG_SERVERINFO                                 = 0x4F5,
     CMSG_CHAR_RACE_CHANGE                           = 0x4F8,
     MSG_VIEW_PHASE_SHIFT                            = 0x4F9,
-    SMSG_TALENTS_INVOLUNTARILY_RESET                = 0x4FA,
     CMSG_DEBUG_SERVER_GEO                           = 0x4FB,
     SMSG_DEBUG_SERVER_GEO                           = 0x4FC,
     UMSG_UPDATE_GROUP_INFO                          = 0x4FE,
@@ -863,8 +843,6 @@ enum Opcodes
     SMSG_AFK_MONITOR_INFO_RESPONSE                  = 0x504,
     CMSG_AFK_MONITOR_INFO_CLEAR                     = 0x505,
     SMSG_CORPSE_NOT_IN_INSTANCE                     = 0x506,
-    CMSG_SET_ALLOW_LOW_LEVEL_RAID1                  = 0x508,
-    CMSG_SET_ALLOW_LOW_LEVEL_RAID2                  = 0x509,
     SMSG_CAMERA_SHAKE                               = 0x50A,
     SMSG_SOCKET_GEMS_RESULT                         = 0x50B,
     CMSG_SET_CHARACTER_MODEL                        = 0x50C,
@@ -1322,6 +1300,23 @@ enum Opcodes
     CMSG_LF_GUILD_GET_APPLICATIONS                      = 0x1230,   // not implemented
     CMSG_LF_GUILD_BROWSE                                = 0x0548,   // not implemented
     CMSG_SET_TITLE                                      = 0x2117,
+    SMSG_LEVELUP_INFO                                   = 0x00435,
+    CMSG_SET_GRANTABLE_LEVELS                           = 0x40C, // old opcode ned neew ? research
+    CMSG_GRANT_LEVEL                                    = 0x00000,
+    SMSG_PROPOSE_LEVEL_GRANT                            = 0x06114,
+    CMSG_ACCEPT_LEVEL_GRANT                             = 0x00205,
+    CMSG_SET_ALLOW_LOW_LEVEL_RAID1                      = 0x04435,
+    CMSG_SET_ALLOW_LOW_LEVEL_RAID2                      = 0x00536,
+
+    SMSG_TALENTS_INFO                                   = 0x06F26,
+    CMSG_LEARN_PREVIEW_TALENTS                          = 0x02415,
+    CMSG_LEARN_TALENT                                   = 0x06E24,
+    CMSG_LEARN_TALENTS_MULTIPLE                         = 0x4C1, // unk need new
+    CMSG_LEARN_PREVIEW_TALENTS_PET                      = 0x00000,
+    MSG_TALENT_WIPE_CONFIRM                             = 0x00107,
+    SMSG_INSPECT_TALENT                                 = 0x04014,
+    CMSG_PET_LEARN_TALENT                               = 0x00000,
+    SMSG_TALENTS_INVOLUNTARILY_RESET                    = 0x02C27,
 
 
     CMSG_WORLD_STATE_UI_TIMER_UPDATE                    = 0x4605,
@@ -1350,6 +1345,7 @@ enum Opcodes
     SMSG_READ_ITEM_OK                                   = 0x2605,   // 
     SMSG_READ_ITEM_FAILED                               = 0x0F16,   // 
     SMSG_ITEM_COOLDOWN                                  = 0x4D14,   //
+    SMSG_DB_REPLY                                       = 0x038A4,
 
     //Quest
     CMSG_QUESTLOG_SWAP_QUEST                            = 0x1194,
@@ -1363,6 +1359,8 @@ enum Opcodes
     CMSG_QUEST_CONFIRM_ACCEPT                           = 0x0D15,
     SMSG_QUEST_CONFIRM_ACCEPT                           = 0x6F07,
     CMSG_PUSHQUESTTOPARTY                               = 0x4B14,
+    CMSG_QUEST_POI_QUERY                                = 0x4037,
+    SMSG_QUEST_POI_QUERY_RESPONSE                       = 0x6304,
 
     //Loot
     CMSG_LOOT_METHOD                                    = 0x2F24,
@@ -1405,6 +1403,13 @@ enum Opcodes
 
     MSG_MOVE_SET_FLIGHT_SPEED_CHEAT                     = 0x137E,
     MSG_MOVE_SET_FLIGHT_BACK_SPEED_CHEAT                = 0x1380,
+
+    //Achievements
+    SMSG_RESPOND_INSPECT_ACHIEVEMENTS = 0x015B0,
+    SMSG_ACHIEVEMENT_EARNED = 0x04405,
+    SMSG_ALL_ACHIEVEMENT_DATA = 0x058B1,
+    SMSG_SERVER_FIRST_ACHIEVEMENT = 0x06424,
+    SMSG_ACHIEVEMENT_DELETED = 0x06A16,
 
     //Unknown packet send by client to server
     CMSG_UNREGISTER_ALL_ADDON_PREFIXES                  = 0x3D54,   // unknown?

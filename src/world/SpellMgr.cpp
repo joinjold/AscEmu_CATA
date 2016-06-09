@@ -187,7 +187,7 @@ void SpellFactoryMgr::LoadSpellAreas()
 		}
 		*/
 
-		if (spellArea.questStart && !QuestStorage.LookupEntry(spellArea.questStart))
+		if (spellArea.questStart && !objmgr.GetQuestTemplate(spellArea.questStart))
 		{
 			Log.Error("SpellArea", "Spell %u listed in `spell_area` have wrong start quest (%u) requirement.", spell, spellArea.questStart);
 			continue;
@@ -195,7 +195,7 @@ void SpellFactoryMgr::LoadSpellAreas()
 
 		if (spellArea.questEnd)
 		{
-			if (!QuestStorage.LookupEntry(spellArea.questEnd))
+            if (!objmgr.GetQuestTemplate(spellArea.questEnd))
 			{
 				Log.Error("SpellArea", "Spell %u listed in `spell_area` have wrong end quest (%u) requirement.", spell, spellArea.questEnd);
 				continue;

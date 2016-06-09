@@ -632,13 +632,13 @@ void GameObject::DeleteQuest(QuestRelation* Q)
     }
 }
 
-Quest* GameObject::FindQuest(uint32 quest_id, uint8 quest_relation)
+Quest const* GameObject::FindQuest(uint32 quest_id, uint8 quest_relation)
 {
     std::list< QuestRelation* >::iterator it;
     for (it = m_quests->begin(); it != m_quests->end(); ++it)
     {
         QuestRelation* ptr = (*it);
-        if ((ptr->qst->id == quest_id) && (ptr->type & quest_relation))
+        if ((ptr->qst->GetQuestId() == quest_id) && (ptr->type & quest_relation))
         {
             return ptr->qst;
         }
@@ -652,7 +652,7 @@ uint16 GameObject::GetQuestRelation(uint32 quest_id)
     std::list< QuestRelation* >::iterator it;
     for (it = m_quests->begin(); it != m_quests->end(); ++it)
     {
-        if ((*it) != NULL && (*it)->qst->id == quest_id)
+        if ((*it) != NULL && (*it)->qst->GetQuestId() == quest_id)
         {
             quest_relation |= (*it)->type;
         }

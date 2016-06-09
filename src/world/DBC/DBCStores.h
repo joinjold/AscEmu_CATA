@@ -1581,6 +1581,12 @@ struct ScalingStatValuesEntry
     uint32 cloak_armor;
 };
 
+struct QuestSortEntry
+{
+    uint32      id;                                         // 0        m_ID
+    //DBCString name;                                       // 1        m_SortName_lang
+};
+
 struct QuestXP
 {
     uint32 questLevel;     // 0
@@ -1676,6 +1682,23 @@ struct LFGDungeonEntry
     uint32 Entry() const { return ID + (type << 24); }
 };
 
+struct FactionEntry
+{
+    uint32      ID;                                         // 0        m_ID
+    int32       reputationListID;                           // 1        m_reputationIndex
+    uint32      BaseRepRaceMask[4];                         // 2-5      m_reputationRaceMask
+    uint32      BaseRepClassMask[4];                        // 6-9      m_reputationClassMask
+    int32       BaseRepValue[4];                            // 10-13    m_reputationBase
+    uint32      ReputationFlags[4];                         // 14-17    m_reputationFlags
+    uint32      team;                                       // 18       m_parentFactionID
+    float       spilloverRateIn;                            // 19       Faction gains incoming rep * spilloverRateIn
+    float       spilloverRateOut;                           // 20       Faction outputs rep * spilloverRateOut as spillover reputation
+    uint32      spilloverMaxRankIn;                         // 21       The highest rank the faction will profit from incoming spillover
+    //uint32    spilloverRank_unk;                          // 22       It does not seem to be the max standing at which a faction outputs spillover ...so no idea
+    char*       name;                                       // 23       m_name_lang
+    //DBCString description;                                // 24       m_description_lang
+    //uint32                                                // 25                                                       // 56 string flags
+};
 
 #define MAX_VEHICLE_SEATS 8
 
@@ -2238,6 +2261,7 @@ extern SERVER_DECL DBCStorage<AreaTriggerEntry> dbcAreaTrigger;
 extern SERVER_DECL DBCStorage<ScalingStatDistributionEntry> dbcScalingStatDistribution;
 extern SERVER_DECL DBCStorage<ScalingStatValuesEntry> dbcScalingStatValues;
 extern SERVER_DECL DBCStorage<ItemLimitCategoryEntry> dbcItemLimitCategory;
+extern SERVER_DECL DBCStorage<QuestSortEntry> sQuestSortStore;
 extern SERVER_DECL DBCStorage<QuestXP> dbcQuestXP;
 extern SERVER_DECL DBCStorage<MailTemplateEntry> dbcMailTemplateEntry;
 extern SERVER_DECL DBCStorage<WMOAreaTableEntry> dbcWMOAreaTable;
@@ -2264,6 +2288,7 @@ extern SERVER_DECL DBCStorage<SpellScalingEntry>					dbcSpellScaling;
 extern SERVER_DECL DBCStorage<SpellTargetRestrictionsEntry>			dbcSpellTargetRestrictions;
 extern SERVER_DECL DBCStorage<SpellTotemsEntry>						dbcSpellTotems;
 extern SERVER_DECL DBCStorage<gtClassLevelFloat>					dbcGTSpellScale;
+extern SERVER_DECL DBCStorage<FactionEntry>                         sFactionStore;
 
 bool LoadDBCs();
 

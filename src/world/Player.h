@@ -53,7 +53,7 @@ class SpeedCheatDetector;
 struct GuildMember;
 struct skilllineentry;
 class QueryBuffer;
-struct Quest;
+class Quest;
 struct SpellShapeshiftFormEntry;
 class CBattleground;
 class Instance;

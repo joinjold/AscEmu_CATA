@@ -30,17 +30,17 @@
 #include <unordered_map>
 #include <list>
 
-struct Quest;
+class Quest;
 
 struct QuestRelation
 {
-    Quest* qst;
+    Quest const* qst;
     uint8 type;
 };
 
 struct QuestAssociation
 {
-    Quest* qst;
+    Quest const* qst;
     uint8 item_count;
 };
 
@@ -94,19 +94,19 @@ class SERVER_DECL QuestMgr : public Singleton <QuestMgr>
 
         ~QuestMgr();
 
-        uint32 PlayerMeetsReqs(Player* plr, Quest* qst, bool skiplevelcheck);
+        uint32 PlayerMeetsReqs(Player* plr, Quest const* qst, bool skiplevelcheck);
 
         uint32 CalcStatus(Object* quest_giver, Player* plr);
         uint32 CalcQuestStatus(Object* quest_giver, Player* plr, QuestRelation* qst);
-        uint32 CalcQuestStatus(Object* quest_giver, Player* plr, Quest* qst, uint8 type, bool skiplevelcheck);
+        uint32 CalcQuestStatus(Object* quest_giver, Player* plr, Quest const* qst, uint8 type, bool skiplevelcheck);
         uint32 CalcQuestStatus(Player* plr, uint32 qst);
         uint32 ActiveQuestsCount(Object* quest_giver, Player* plr);
 
         //Packet Forging...
-        void BuildOfferReward(WorldPacket* data, Quest* qst, Object* qst_giver, uint32 menutype, uint32 language, Player* plr);
-        void BuildQuestDetails(WorldPacket* data, Quest* qst, Object* qst_giver, uint32 menutype, uint32 language, Player* plr);
-        void BuildRequestItems(WorldPacket* data, Quest* qst, Object* qst_giver, uint32 status, uint32 language);
-        void BuildQuestComplete(Player*, Quest* qst);
+        void BuildOfferReward(WorldPacket* data, Quest const* qst, Object* qst_giver, uint32 menutype, uint32 language, Player* plr);
+        void BuildQuestDetails(WorldPacket* data, Quest const* qst, Object* qst_giver, uint32 menutype, uint32 language, Player* plr);
+        void BuildRequestItems(WorldPacket* data, Quest const* qst, Object* qst_giver, uint32 status, uint32 language);
+        void BuildQuestComplete(Player*, Quest const* qst);
         void BuildQuestList(WorldPacket* data, Object* qst_giver, Player* plr, uint32 language);
         bool OnActivateQuestGiver(Object* qst_giver, Player* plr);
         bool isRepeatableQuestFinished(Player* plr, Quest* qst);
@@ -127,18 +127,18 @@ class SERVER_DECL QuestMgr : public Singleton <QuestMgr>
         void OnPlayerExploreArea(Player* plr, uint32 AreaID);
         void AreaExplored(Player* plr, uint32 QuestID);// scriptdev2
 
-        void OnQuestAccepted(Player* plr, Quest* qst, Object* qst_giver);
-        void OnQuestFinished(Player* plr, Quest* qst, Object* qst_giver, uint32 reward_slot);
+        void OnQuestAccepted(Player* plr, Quest const* qst, Object* qst_giver);
+        void OnQuestFinished(Player* plr, Quest const* qst, Object* qst_giver, uint32 reward_slot);
 
-        void GiveQuestRewardReputation(Player* plr, Quest* qst, Object* qst_giver);
+        void GiveQuestRewardReputation(Player* plr, Quest const* qst, Object* qst_giver);
 
-        uint32 GenerateQuestXP(Player* plr, Quest* qst);
-        uint32 GenerateRewardMoney(Player* plr, Quest* qst);
+        uint32 GenerateQuestXP(Player* plr, Quest const* qst);
+        uint32 GenerateRewardMoney(Player* plr, Quest const* qst);
 
-        void SendQuestInvalid(INVALID_REASON reason, Player* plyr);
-        void SendQuestFailed(FAILED_REASON failed, Quest* qst, Player* plyr);
-        void SendQuestUpdateFailed(Quest* pQuest, Player* plyr);
-        void SendQuestUpdateFailedTimer(Quest* pQuest, Player* plyr);
+        void SendQuestInvalid(QuestFailedReasons reason, Player* plyr);
+        void SendQuestFailed(FAILED_REASON failed, Quest const* qst, Player* plyr);
+        void SendQuestUpdateFailed(Quest const* pQuest, Player* plyr);
+        void SendQuestUpdateFailedTimer(Quest const* pQuest, Player* plyr);
         void SendQuestLogFull(Player* plyr);
 
         void LoadNPCQuests(Creature* qst_giver);
@@ -149,23 +149,21 @@ class SERVER_DECL QuestMgr : public Singleton <QuestMgr>
         QuestAssociationList* GetQuestAssociationListForItemId(uint32 itemId);
         uint32 GetGameObjectLootQuest(uint32 GO_Entry);
         void SetGameObjectLootQuest(uint32 GO_Entry, uint32 Item_Entry);
-        inline bool IsQuestRepeatable(Quest* qst) { return (qst->is_repeatable == 1 ? true : false); }
-        inline bool IsQuestDaily(Quest* qst) { return (qst->is_repeatable == 2 ? true : false); }
 
-        bool CanStoreReward(Player* plyr, Quest* qst, uint32 reward_slot);
+        bool CanStoreReward(Player* plyr, Quest const* qst, uint32 reward_slot);
 
         inline int32 QuestHasMob(Quest* qst, uint32 mob)
         {
             for (uint32 i = 0; i < 4; ++i)
-                if (qst->required_mob[i] == (int32)mob)
-                    return qst->required_mobcount[i];
+                if (qst->ReqCreatureOrGOId[i] == (int32)mob)
+                    return qst->ReqCreatureOrGOCount[i];
             return -1;
         }
 
         inline int32 GetOffsetForMob(Quest* qst, uint32 mob)
         {
             for (uint32 i = 0; i < 4; ++i)
-                if (qst->required_mob[i] == (int32)mob)
+                if (qst->ReqCreatureOrGOId[i] == (int32)mob)
                     return i;
 
             return -1;
@@ -174,11 +172,50 @@ class SERVER_DECL QuestMgr : public Singleton <QuestMgr>
         inline int32 GetOffsetForItem(Quest* qst, uint32 itm)
         {
             for (uint32 i = 0; i < MAX_REQUIRED_QUEST_ITEM; ++i)
-                if (qst->required_item[i] == itm)
+                if (qst->ReqItemId[i] == itm)
                     return i;
 
             return -1;
         }
+
+        inline uint8 ClassByQuestSort(int32 QuestSort)
+        {
+            switch (QuestSort)
+            {
+            case QUEST_SORT_WARLOCK:        return WARLOCK;
+            case QUEST_SORT_WARRIOR:        return WARRIOR;
+            case QUEST_SORT_SHAMAN:         return SHAMAN;
+            case QUEST_SORT_PALADIN:        return PALADIN;
+            case QUEST_SORT_MAGE:           return MAGE;
+            case QUEST_SORT_ROGUE:          return ROGUE;
+            case QUEST_SORT_HUNTER:         return HUNTER;
+            case QUEST_SORT_PRIEST:         return PRIEST;
+            case QUEST_SORT_DRUID:          return DRUID;
+            case QUEST_SORT_DEATH_KNIGHT:   return DEATHKNIGHT;
+            }
+            return 0;
+        }
+
+        inline uint32 SkillByQuestSort(int32 QuestSort)
+        {
+            switch (QuestSort)
+            {
+            case QUEST_SORT_HERBALISM:      return SKILL_HERBALISM;
+            case QUEST_SORT_FISHING:        return SKILL_FISHING;
+            case QUEST_SORT_BLACKSMITHING:  return SKILL_BLACKSMITHING;
+            case QUEST_SORT_ALCHEMY:        return SKILL_ALCHEMY;
+            case QUEST_SORT_LEATHERWORKING: return SKILL_LEATHERWORKING;
+            case QUEST_SORT_ENGINERING:     return SKILL_ENGINERING;
+            case QUEST_SORT_TAILORING:      return SKILL_TAILORING;
+            case QUEST_SORT_COOKING:        return SKILL_COOKING;
+            case QUEST_SORT_FIRST_AID:      return SKILL_FIRST_AID;
+            case QUEST_SORT_JEWELCRAFTING:  return SKILL_JEWELCRAFTING;
+            case QUEST_SORT_INSCRIPTION:    return SKILL_INSCRIPTION;
+            case QUEST_SORT_ARCHAEOLOGY:    return SKILL_ARCHAEOLOGY;
+            }
+            return 0;
+        }
+
         void LoadExtraQuestStuff();
 
         //////////////////////////////////////////////////////////////////////////////////////////
@@ -193,6 +230,8 @@ class SERVER_DECL QuestMgr : public Singleton <QuestMgr>
         //////////////////////////////////////////////////////////////////////////////////////////
         void FillQuestMenu(Creature*, Player*, Arcemu::Gossip::Menu &);
 
+         std::unordered_map<uint32, uint32> m_ObjectLootQuestList;
+
     private:
 
         std::unordered_map<uint32, std::list<QuestRelation*>* > m_npc_quests;
@@ -204,13 +243,13 @@ class SERVER_DECL QuestMgr : public Singleton <QuestMgr>
         inline std::unordered_map<uint32, std::list<QuestAssociation*>* >& GetQuestAssociationList()
         {return m_quest_associations;}
 
-        std::unordered_map<uint32, uint32> m_ObjectLootQuestList;
 
-        template <class T> void _AddQuest(uint32 entryid, Quest* qst, uint8 type);
+        template <class T> void _AddQuest(uint32 entryid, Quest const* qst, uint8 type);
+
 
         template <class T> std::unordered_map<uint32, std::list<QuestRelation*>* >& _GetList();
 
-        void AddItemQuestAssociation(uint32 itemId, Quest* qst, uint8 item_count);
+        void AddItemQuestAssociation(uint32 itemId, Quest const* qst, uint8 item_count);
 
         // Quest Loading
         void _RemoveChar(char* c, std::string* str);

@@ -191,9 +191,9 @@ void WorldSession::_HandleAreaTriggerOpcode(uint32 id)
                         case AREA_TRIGGER_FAILURE_NO_ATTUNE_QA:
                         {
                             MapInfo* pMi = WorldMapInfoStorage.LookupEntry(pAreaTrigger->Mapid);
-                            Quest* pQuest = QuestStorage.LookupEntry(pMi->required_quest_A);
+                            Quest const* pQuest = objmgr.GetQuestTemplate(pMi->required_quest_A);
                             if (pQuest)
-                                snprintf(msg, 200, GetPlayer()->GetSession()->LocalizedWorldSrv(35), pQuest->title);
+                                snprintf(msg, 200, GetPlayer()->GetSession()->LocalizedWorldSrv(35), pQuest->GetCharTitleId());
                             else
                                 snprintf(msg, 200, "%s", GetPlayer()->GetSession()->LocalizedWorldSrv(36));
 
@@ -203,9 +203,9 @@ void WorldSession::_HandleAreaTriggerOpcode(uint32 id)
                         case AREA_TRIGGER_FAILURE_NO_ATTUNE_QH:
                         {
                             MapInfo* pMi = WorldMapInfoStorage.LookupEntry(pAreaTrigger->Mapid);
-                            Quest* pQuest = QuestStorage.LookupEntry(pMi->required_quest_H);
+                            Quest const* pQuest = objmgr.GetQuestTemplate(pMi->required_quest_H);
                             if (pQuest)
-                                snprintf(msg, 200, GetPlayer()->GetSession()->LocalizedWorldSrv(35), pQuest->title);
+                                snprintf(msg, 200, GetPlayer()->GetSession()->LocalizedWorldSrv(35), pQuest->GetCharTitleId());
                             else
                                 snprintf(msg, 200, "%s", GetPlayer()->GetSession()->LocalizedWorldSrv(36));
 

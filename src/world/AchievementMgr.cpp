@@ -1256,8 +1256,8 @@ void AchievementMgr::UpdateAchievementCriteria(AchievementCriteriaTypes type)
                 std::set<uint32>::iterator qc = GetPlayer()->m_finishedQuests.begin();
                 for (; qc != GetPlayer()->m_finishedQuests.end(); ++qc)
                 {
-                    Quest* qst = QuestStorage.LookupEntry(*qc);
-                    if (qst && qst->zone_id == achievementCriteria->complete_quests_in_zone.zoneID)
+                    Quest const* qst = objmgr.GetQuestTemplate(*qc);
+                    if (qst && qst->GetZoneOrSort() == achievementCriteria->complete_quests_in_zone.zoneID)
                     {
                         ++qcinzone;
                     }

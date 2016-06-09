@@ -22,7 +22,7 @@
 #include <map>
 #pragma once
 
-struct Quest;
+class Quest;
 class Creature;
 class Item;
 class Player;
@@ -369,7 +369,7 @@ namespace Arcemu
         };
 
         typedef std::vector<Gossip::Item> ItemList;
-        typedef std::map<Quest*, uint8> QuestList;
+        typedef std::map<Quest const*, uint8> QuestList;
 
         class SERVER_DECL Menu
         {
@@ -408,7 +408,7 @@ namespace Arcemu
                 /// \param Quest * - the quest
                 /// \param uint8 - the icon
                 //////////////////////////////////////////////////////////////////////////////////////////
-                void AddQuest(Quest*, uint8);
+                void AddQuest(Quest const*, uint8);
 
                 //////////////////////////////////////////////////////////////////////////////////////////
                 /// Removes a quest.

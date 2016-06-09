@@ -135,6 +135,7 @@
 #define SKILL_PET_BIRD_OF_PREY        655
 #define SKILL_PET_WIND_SERPENT        656
 #define SKILL_LANG_GUTTERSPEAK        673
+#define SKILL_DUALWIELD               674
 #define SKILL_KODO_RIDING             713
 #define SKILL_RACIAL_TROLL            733
 #define SKILL_RACIAL_GNOME            753

@@ -112,13 +112,13 @@ void LfgMgr::LoadRewards()
             maxLevel = 85;
         }
 
-        if (firstQuestId && !QuestStorage.LookupEntry(firstQuestId))
+        if (firstQuestId && !objmgr.GetQuestTemplate(firstQuestId))
         {
             Log.Debug("LFGMgr", "First quest %u specified for dungeon %u in table `lfg_dungeon_rewards` does not exist!", firstQuestId, dungeonId);
             firstQuestId = 0;
         }
 
-        if (otherQuestId && !QuestStorage.LookupEntry(otherQuestId))
+        if (otherQuestId && !objmgr.GetQuestTemplate(otherQuestId))
         {
             Log.Debug("LFGMgr", "Other quest %u specified for dungeon %u in table `lfg_dungeon_rewards` does not exist!", otherQuestId, dungeonId);
             otherQuestId = 0;

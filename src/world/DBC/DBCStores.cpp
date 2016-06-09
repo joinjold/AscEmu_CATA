@@ -86,6 +86,7 @@ SERVER_DECL DBCStorage<gtFloat> dbcMeleeCrit;
 SERVER_DECL DBCStorage<gtFloat> dbcMeleeCritBase;
 SERVER_DECL DBCStorage<gtFloat> dbcSpellCrit;
 SERVER_DECL DBCStorage<gtFloat> dbcSpellCritBase;
+SERVER_DECL DBCStorage<QuestSortEntry> sQuestSortStore;
 SERVER_DECL DBCStorage<QuestXP> dbcQuestXP;
 SERVER_DECL DBCStorage<MailTemplateEntry> dbcMailTemplateEntry;
 SERVER_DECL DBCStorage<WMOAreaTableEntry> dbcWMOAreaTable;
@@ -113,6 +114,7 @@ SERVER_DECL DBCStorage<SpellShapeshiftEntry>		dbcSpellShapeshift;
 SERVER_DECL DBCStorage<SpellTargetRestrictionsEntry>	dbcSpellTargetRestrictions;
 SERVER_DECL DBCStorage<SpellTotemsEntry>			dbcSpellTotems;
 SERVER_DECL DBCStorage<gtClassLevelFloat>			dbcGTSpellScale;
+SERVER_DECL DBCStorage<FactionEntry>                sFactionStore;
 
 const char* WorldMapOverlayStoreFormat = "nxiiiixxxxxxxxx";
 const char* BarberShopStyleEntryFormat = "nxxxxxxi";
@@ -204,6 +206,8 @@ const char* SpellReagentsEntryfmt = "uiiiiiiiiiiiiiiii";
 const char* SpellScalingEntryfmt = "uiiiiffffffffffi";
 const char* SpellTargetRestrictionsEntryfmt = "uixiii";
 const char* SpellTotemsEntryfmt = "uiiii";
+const char QuestSortEntryfmt[] = "nx";
+const char FactionEntryfmt[] = "niiiiiiiiiiiiiiiiiiffixsxx";
 
 template<class T>
 bool loader_stub(const char* filename, const char* format, bool ind, T& l, bool loadstrs)
@@ -278,6 +282,7 @@ bool LoadDBCs()
     LOAD_DBC("DBC/ScalingStatDistribution.dbc", scalingstatdistributionformat, true, dbcScalingStatDistribution, false);
     LOAD_DBC("DBC/ScalingStatValues.dbc", scalingstatvaluesformat, true, dbcScalingStatValues, false);
     LOAD_DBC("DBC/ItemLimitCategory.dbc", itemlimitcategoryformat, true, dbcItemLimitCategory, true);
+    LOAD_DBC("DBC/QuestSort.dbc", QuestSortEntryfmt, false, sQuestSortStore, false);
     LOAD_DBC("DBC/QuestXP.dbc", questxpformat, false, dbcQuestXP, false);
     LOAD_DBC("DBC/MailTemplate.dbc", mailTemplateEntryFormat, true, dbcMailTemplateEntry, true);
     LOAD_DBC("DBC/WMOAreaTable.dbc", wmoareaformat, true, dbcWMOAreaTable, false);
@@ -305,6 +310,10 @@ bool LoadDBCs()
     //DBC::LoadDBC(available_dbc_locales, bad_dbc_files, sLFGDungeonStore, dbc_path, "LFGDungeons.dbc");
     LOAD_DBC("DBC/Vehicle.dbc", VehicleEntryfmt, true, dbcVehicle, true);
     LOAD_DBC("DBC/VehicleSeat.dbc", VehicleSeatEntryfmt, true, dbcVehicleSeat, false);
+    LOAD_DBC("DBC/Faction.dbc", FactionEntryfmt, false, sFactionStore, false);
+
+
+
 
     MapManagement::AreaManagement::AreaStorage::Initialise(&sAreaStore);
     auto area_map_collection = MapManagement::AreaManagement::AreaStorage::GetMapCollection();

@@ -64,6 +64,9 @@ struct LfgRoleCheck;
 #define CHECK_GUID_EXISTS(guidx) if (_player == NULL || _player->GetMapMgr() == NULL || _player->GetMapMgr()->GetUnit((guidx)) == NULL) { return; }
 #define CHECK_PACKET_SIZE(pckp, ssize) if (ssize && pckp.size() < ssize) { Disconnect(); return; }
 
+#define DB2_REPLY_SPARSE 2442913102
+#define DB2_REPLY_ITEM   1344507586
+
 /**********************************************************************************
 * Worldsocket related
 **********************************************************************************/
@@ -641,6 +644,9 @@ class SERVER_DECL WorldSession
         void HandleUnlearnSkillOpcode(WorldPacket& recv_data);
         void HandleRandomRollOpcode(WorldPacket& recv_data);
         void HandleOpenItemOpcode(WorldPacket& recv_data);
+        void HandleRequestHotfix(WorldPacket& recv_data);
+        void SendItemDb2Reply(uint32 entry);
+        void SendItemSparseDb2Reply(uint32 entry);
 
         void HandleToggleHelmOpcode(WorldPacket& recv_data);
         void HandleToggleCloakOpcode(WorldPacket& recv_data);
@@ -805,7 +811,7 @@ class SERVER_DECL WorldSession
         void SystemMessage(const char* format, ...);
 
         uint32 language;
-        WorldPacket* BuildQuestQueryResponse(Quest* qst);
+        WorldPacket* BuildQuestQueryResponse(Quest const* qst);
         uint32 m_muted;
 
         void SendClientCacheVersion(uint32 version);

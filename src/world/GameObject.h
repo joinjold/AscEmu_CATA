@@ -71,8 +71,9 @@ enum GAMEOBJECT_OVERRIDES
     /// Later other types might folow, or the upper bytes might get used for the AREAWIDE option in the overrides variable...
 };
 
-typedef std::unordered_map<Quest*, uint32 > GameObjectGOMap;
-typedef std::unordered_map<Quest*, std::map<uint32, uint32> > GameObjectItemMap;
+typedef std::unordered_map<Quest const*, uint32 > GameObjectGOMap;
+typedef std::unordered_map<Quest const*, std::map<uint32, uint32> > GameObjectItemMap;
+
 
 #pragma pack(push,1)
 struct GameObjectInfo
@@ -213,7 +214,7 @@ class SERVER_DECL GameObject : public Object
         bool HasQuests() { return m_quests != NULL; };
         void AddQuest(QuestRelation* Q);
         void DeleteQuest(QuestRelation* Q);
-        Quest* FindQuest(uint32 quest_id, uint8 quest_relation);
+        Quest const* FindQuest(uint32 quest_id, uint8 quest_relation);
         uint16 GetQuestRelation(uint32 quest_id);
         uint32 NumOfQuests();
         std::list<QuestRelation*>::iterator QuestsBegin() { return m_quests->begin(); };

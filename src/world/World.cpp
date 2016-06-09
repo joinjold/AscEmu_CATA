@@ -519,6 +519,7 @@ bool World::SetInitialWorldSettings()
 
     Storage_LoadAdditionalTables();
 
+    MAKE_TASK(ObjectMgr, LoadQuests);
     MAKE_TASK(ObjectMgr, LoadPlayerCreateInfo);
     MAKE_TASK(ObjectMgr, LoadPlayersInfo);
     tl.wait();
@@ -526,6 +527,8 @@ bool World::SetInitialWorldSettings()
     MAKE_TASK(ObjectMgr, LoadInstanceBossInfos);
     MAKE_TASK(ObjectMgr, LoadCreatureWaypoints);
     MAKE_TASK(ObjectMgr, LoadCreatureTimedEmotes);
+
+  
     MAKE_TASK(ObjectMgr, LoadTrainers);
     MAKE_TASK(ObjectMgr, LoadSpellSkills);
     MAKE_TASK(ObjectMgr, LoadSpellOverride);

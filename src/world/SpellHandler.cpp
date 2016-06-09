@@ -84,7 +84,7 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     if (itemProto->QuestId)
     {
         // Item Starter
-        Quest* qst = QuestStorage.LookupEntry(itemProto->QuestId);
+        Quest const* qst = objmgr.GetQuestTemplate(itemProto->QuestId);
         if (!qst)
             return;
 
@@ -334,9 +334,13 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     CHECK_INWORLD_RETURN
 
     uint32 spellId;
-    uint8 cn, unk; //Alice : Added to 3.0.2
+    uint8 cn;
+    uint32 glyphSlot;
+    uint8 missileflag;
 
-    recvPacket >> cn >> spellId >> unk;
+    recvPacket >> cn >> spellId;
+    recvPacket >> glyphSlot;
+    recvPacket >> missileflag;
     // check for spell id
     SpellEntry* spellInfo = dbcSpell.LookupEntryForced(spellId);
 

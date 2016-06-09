@@ -93,7 +93,7 @@ void Gossip::Menu::RemoveItem(uint32 id)
     }
 }
 
-void Gossip::Menu::AddQuest(Quest* quest, uint8 icon)
+void Gossip::Menu::AddQuest(Quest const* quest, uint8 icon)
 {
     this->questlist_.insert(std::make_pair(quest, icon));
 }
@@ -119,12 +119,16 @@ WorldPacket& operator<<(WorldPacket& packet, const Gossip::Menu & menu)
     {
         for (Gossip::QuestList::const_iterator itr = menu.questlist_.begin(); itr != menu.questlist_.end(); ++itr)
         {
-            packet << itr->first->id << uint32(itr->second) << itr->first->min_level << itr->first->quest_flags << uint8(0);
-            LocalizedQuest* lq = sLocalizationMgr.GetLocalizedQuest(itr->first->id, menu.language_);
+            packet << itr->first->GetQuestId();
+            packet << uint32(itr->second);
+            packet << itr->first->GetMinLevel();
+            packet << itr->first->GetQuestFlags();
+            packet << uint8(0);
+            LocalizedQuest* lq = sLocalizationMgr.GetLocalizedQuest(itr->first->GetQuestId(), menu.language_);
             if (lq != NULL)
                 packet << lq->Title;
             else
-                packet << itr->first->title;
+                packet << itr->first->GetTitle();
         }
     }
     return packet;
@@ -146,12 +150,16 @@ StackBuffer<size>& operator<<(StackBuffer<size> & packet, const Gossip::Menu & m
         std::string title;
         for (Gossip::QuestList::const_iterator itr = menu.questlist_.begin(); itr != menu.questlist_.end(); ++itr)
         {
-            packet << itr->first->id << uint32(itr->second) << itr->first->min_level << itr->first->quest_flags << uint8(0);
-            LocalizedQuest* lq = sLocalizationMgr.GetLocalizedQuest(itr->first->id, menu.language_);
+            packet << itr->first->GetQuestId();
+            packet << uint32(itr->second);
+            packet << itr->first->GetMinLevel();
+            packet << itr->first->GetFlags();
+            packet << uint8(0);
+            LocalizedQuest* lq = sLocalizationMgr.GetLocalizedQuest(itr->first->GetQuestId(), menu.language_);
             if (lq != NULL)
                 title = lq->Title;
             else
-                title = itr->first->title;
+                title = itr->first->GetTitle();
             packet << title;
         }
     }

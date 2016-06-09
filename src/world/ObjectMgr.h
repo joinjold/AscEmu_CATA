@@ -479,6 +479,7 @@ class SERVER_DECL ObjectMgr : public Singleton < ObjectMgr >, public EventableOb
 
         // other objects
         typedef std::tr1::unordered_map<uint32, AreaTrigger> AreaTriggerContainer;
+        typedef std::unordered_map<uint32, Quest*> QuestMap;
 
         // Set typedef's
         typedef std::unordered_map<uint32, Group*>                        GroupMap;
@@ -693,6 +694,25 @@ class SERVER_DECL ObjectMgr : public Singleton < ObjectMgr >, public EventableOb
 
         void ResetDailies();
 
+        typedef std::multimap<int32, uint32> ExclusiveQuestGroups;
+        ExclusiveQuestGroups mExclusiveQuestGroups;
+
+        Quest const* GetQuestTemplate(uint32 quest_id) const
+        {
+            QuestMap::const_iterator itr = mQuestTemplates.find(quest_id);
+            return itr != mQuestTemplates.end() ? itr->second : NULL;
+        }
+
+        Quest* GetQuestTemp(uint32 quest_id)
+        {
+            QuestMap::const_iterator itr = mQuestTemplates.find(quest_id);
+            return itr != mQuestTemplates.end() ? itr->second : NULL;
+        }
+
+        QuestMap const& GetQuestTemplates() const { return mQuestTemplates; }
+
+        void LoadQuestLoot(uint32 GO_Entry,uint32 Item_Entry);
+
         uint32 GenerateCreatureSpawnID();
         uint32 GenerateGameObjectSpawnID();
 
@@ -804,6 +824,7 @@ class SERVER_DECL ObjectMgr : public Singleton < ObjectMgr >, public EventableOb
         EventScriptMaps      mEventScriptMaps;
         SpellEffectMaps      mSpellEffectMaps;
 
+
 // we don't want too serious people to see this, they'd freak out!
 #ifndef ENABLE_ALWAYS_SERIOUS_MODE_GCC_STL_HACK
 
@@ -845,6 +866,7 @@ class SERVER_DECL ObjectMgr : public Singleton < ObjectMgr >, public EventableOb
 
 #define ENABLE_ALWAYS_SERIOUS_MODE_GCC_STL_HACK
 
+
     protected:
         BCEntryStorage m_BCEntryStorage;        /// broadcast system.
         RWLock playernamelock;
@@ -866,6 +888,8 @@ class SERVER_DECL ObjectMgr : public Singleton < ObjectMgr >, public EventableOb
         Arcemu::Threading::AtomicCounter m_hiPlayerGuid;
 
         RWLock m_charterLock;
+
+        QuestMap            mQuestTemplates;
 
         ReputationModMap m_reputation_faction;
         ReputationModMap m_reputation_creature;

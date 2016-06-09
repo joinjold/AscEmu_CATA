@@ -1201,7 +1201,7 @@ void ObjectMgr::ProcessGameobjectQuests()
     QueryResult* result2 = WorldDatabase.Query("SELECT * FROM gameobject_quest_pickup_binding");
 
     GameObjectInfo* gameobject_info;
-    Quest* qst;
+    Quest const* qst;
 
     if (result)
     {
@@ -1209,7 +1209,7 @@ void ObjectMgr::ProcessGameobjectQuests()
         {
             Field* fields = result->Fetch();
             gameobject_info = GameObjectNameStorage.LookupEntry(fields[0].GetUInt32());
-            qst = QuestStorage.LookupEntry(fields[1].GetUInt32());
+            qst = objmgr.GetQuestTemplate(fields[1].GetUInt32());
             if (gameobject_info && qst)
                 gameobject_info->itemMap[qst].insert(std::make_pair(fields[2].GetUInt32(), fields[3].GetUInt32()));
 
@@ -1224,7 +1224,7 @@ void ObjectMgr::ProcessGameobjectQuests()
         {
             Field* fields = result2->Fetch();
             gameobject_info = GameObjectNameStorage.LookupEntry(fields[0].GetUInt32());
-            qst = QuestStorage.LookupEntry(fields[1].GetUInt32());
+            qst = objmgr.GetQuestTemplate(fields[1].GetUInt32());
             if (gameobject_info && qst)
                 gameobject_info->goMap.insert(std::make_pair(qst, fields[2].GetUInt32()));
 
@@ -3990,7 +3990,7 @@ void ObjectMgr::EventScriptsUpdate(Player* plr, uint32 next_event)
                 QuestLogEntry* pQuest = plr->GetQuestLogForEntry(itr->second.data_2);
                 if (pQuest != NULL)
                 {
-                    if (pQuest->GetMobCount(itr->second.data_5) < pQuest->GetQuest()->required_mobcount[itr->second.data_5])
+                    if (pQuest->GetMobCount(itr->second.data_5) < pQuest->GetQuest()->ReqCreatureOrGOId[itr->second.data_5])
                     {
                         pQuest->SetMobCount(itr->second.data_5, pQuest->GetMobCount(itr->second.data_5) + 1);
                         pQuest->SendUpdateAddKill(itr->second.data_5);
@@ -4046,6 +4046,785 @@ void ObjectMgr::EventScriptsUpdate(Player* plr, uint32 next_event)
         if (itr->second.nextevent != 0)
         {
             objmgr.CheckforScripts(plr, itr->second.nextevent);
+        }
+    }
+}
+
+void ObjectMgr::LoadQuests()
+{
+    // For reload case
+    for (QuestMap::const_iterator itr = mQuestTemplates.begin(); itr != mQuestTemplates.end(); ++itr)
+        delete itr->second;
+    mQuestTemplates.clear();
+
+    //mExclusiveQuestGroups.clear();
+
+    //                                                      
+    QueryResult* result = WorldDatabase.Query("SELECT "
+        //0     1      2        3        4           5       6            7             8              9               10             11                 12
+        "Id, Method, Level, MinLevel, MaxLevel, ZoneOrSort, Type, SuggestedPlayers, LimitTime, RequiredClasses, RequiredRaces, RequiredSkillId, RequiredSkillPoints, "
+        //         13                 14                    15                   16                      17                  18                         19                  20
+        "RequiredFactionId1, RequiredFactionId2, RequiredFactionValue1, RequiredFactionValue2, RequiredMinRepFaction, RequiredMaxRepFaction, RequiredMinRepValue, RequiredMaxRepValue, "
+        //     21         22             23                24             25              26                    27                28            29              30              31
+        "PrevQuestId, NextQuestId, ExclusiveGroup, NextQuestIdChain, RewardXPId, RewardOrRequiredMoney, RewardMoneyMaxLevel, RewardSpell, RewardSpellCast, RewardHonor, RewardHonorMultiplier, "
+        //         32                  33            34             35               36         37         38            39                40                41               42                 43
+        "RewardMailTemplateId, RewardMailDelay, SourceItemId, SourceItemCount, SourceSpellId, Flags, SpecialFlags, MinimapTargetMark, RewardTitleId, RequiredPlayerKills, RewardTalents, RewardArenaPoints, "
+        //      44            45                    46                    47                  48               49             50              51             52                53                54                55               56
+        "RewardSkillId, RewardSkillPoints, RewardReputationMask, QuestGiverPortrait, QuestTurnInPortrait, RewardItemId1, RewardItemId2, RewardItemId3, RewardItemId4, RewardItemCount1, RewardItemCount2, RewardItemCount3, RewardItemCount4, "
+        //         57                  58                  59                    60                    61                   62                      63                  64                        65                       66                      67                      68
+        "RewardChoiceItemId1, RewardChoiceItemId2, RewardChoiceItemId3, RewardChoiceItemId4, RewardChoiceItemId5, RewardChoiceItemId6, RewardChoiceItemCount1, RewardChoiceItemCount2, RewardChoiceItemCount3, RewardChoiceItemCount4, RewardChoiceItemCount5, RewardChoiceItemCount6, "
+        //        69                70                71                72             73                   74                      75                     76                    77                      78
+        "RewardFactionId1, RewardFactionId2, RewardFactionId3, RewardFactionId4, RewardFactionId5, RewardFactionValueId1, RewardFactionValueId2, RewardFactionValueId3, RewardFactionValueId4, RewardFactionValueId5, "
+        //                79                          80                           81                              82                           83
+        "RewardFactionValueIdOverride1, RewardFactionValueIdOverride2, RewardFactionValueIdOverride3, RewardFactionValueIdOverride4, RewardFactionValueIdOverride5, "
+        //    84        85      86      87          88       89        90      91          92             93              94
+        "PointMapId, PointX, PointY, PointOption, Title, Objectives, Details, EndText, CompletedText, OfferRewardText, RequestItemsText, "
+        //        95              96               97               98                  99                     100                      101                  102
+        "RequiredNpcOrGo1, RequiredNpcOrGo2, RequiredNpcOrGo3, RequiredNpcOrGo4, RequiredNpcOrGoCount1, RequiredNpcOrGoCount2, RequiredNpcOrGoCount3, RequiredNpcOrGoCount4, "
+        //         103                     104                    105                   106                     107                       108                     109                       110
+        "RequiredSourceItemId1, RequiredSourceItemId2, RequiredSourceItemId3, RequiredSourceItemId4, RequiredSourceItemCount1, RequiredSourceItemCount2, RequiredSourceItemCount3, RequiredSourceItemCount4, "
+        //       111               112             113             114              115             116                 117                   118               119               120                 121                 122
+        "RequiredItemId1, RequiredItemId2, RequiredItemId3, RequiredItemId4, RequiredItemId5, RequiredItemId6, RequiredItemCount1, RequiredItemCount2, RequiredItemCount3, RequiredItemCount4, RequiredItemCount5, RequiredItemCount6, "
+        //      123             124                 125                126                  127              128              129             130           131
+        "RequiredSpell, RequiredSpellCast1, RequiredSpellCast2, RequiredSpellCast3, RequiredSpellCast4, ObjectiveText1, ObjectiveText2, ObjectiveText3, ObjectiveText4, "
+        //     132                  133               134               135                  136                  137                     138                   139
+        "RewardCurrencyId1, RewardCurrencyId2, RewardCurrencyId3, RewardCurrencyId4, RewardCurrencyCount1, RewardCurrencyCount2, RewardCurrencyCount3, RewardCurrencyCount4, "
+        //      140                  141                 142                   143                    144                    145                     146                   147
+        "RequiredCurrencyId1, RequiredCurrencyId2, RequiredCurrencyId3, RequiredCurrencyId4, RequiredCurrencyCount1, RequiredCurrencyCount2, RequiredCurrencyCount3, RequiredCurrencyCount4, "
+        //      148                  149                 150                   151               152          153
+        "QuestGiverTextWindow, QuestGiverTargetName, QuestTurnTextWindow, QuestTurnTargetName, SoundAccept, SoundTurnIn, "
+        //      154          155            156            157               158                159                  160                  161                162             163
+        "DetailsEmote1, DetailsEmote2, DetailsEmote3, DetailsEmote4, DetailsEmoteDelay1, DetailsEmoteDelay2, DetailsEmoteDelay3, DetailsEmoteDelay4, EmoteOnIncomplete, EmoteOnComplete, "
+        //      164                 165               166                167                   168                       169                     170                  171
+        "OfferRewardEmote1, OfferRewardEmote2, OfferRewardEmote3, OfferRewardEmote4, OfferRewardEmoteDelay1, OfferRewardEmoteDelay2, OfferRewardEmoteDelay3, OfferRewardEmoteDelay4, "
+        //    172           173              174                175
+        "ReqEmoteId, ReqExploreTrigger1, ReqExploreTrigger2, ReqExploreTrigger3"
+        " FROM quests");
+    if (!result)
+    {
+        Log.Error("ObjectMgr", ">> Loaded 0 quests definitions from quests");
+        return;
+    }
+
+    do
+    {
+        Field *fields = result->Fetch();
+
+        uint32 quest_id = fields[0].GetUInt32();
+
+        Quest* newQuest = new Quest();
+
+        newQuest->QuestId = quest_id;
+        newQuest->QuestMethod = fields[1].GetUInt32();
+        newQuest->QuestLevel = fields[2].GetInt32();
+        newQuest->MinLevel = fields[3].GetUInt32();
+        newQuest->MaxLevel = fields[4].GetUInt32();
+        newQuest->ZoneOrSort = fields[5].GetInt32();
+        newQuest->Type = fields[6].GetUInt32();
+        newQuest->SuggestedPlayers = fields[7].GetUInt32();
+        newQuest->LimitTime = fields[8].GetUInt32();
+        newQuest->SkillOrClassMask = fields[9].GetUInt32();
+        newQuest->RequiredRaces = fields[10].GetUInt32();
+        newQuest->RequiredSkillId = fields[11].GetUInt32();
+        newQuest->RequiredSkillValue = fields[12].GetUInt32();
+        newQuest->RepObjectiveFaction = fields[13].GetUInt32();
+        newQuest->RepObjectiveFaction2 = fields[14].GetUInt32();
+        newQuest->RepObjectiveValue = fields[15].GetInt32();
+        newQuest->RepObjectiveValue2 = fields[16].GetInt32();
+        newQuest->RequiredMinRepFaction = fields[17].GetUInt32();
+        newQuest->RequiredMaxRepFaction = fields[18].GetUInt32();
+        newQuest->RequiredMinRepValue = fields[19].GetInt32();
+        newQuest->RequiredMaxRepValue = fields[20].GetInt32();
+        newQuest->PrevQuestId = fields[21].GetInt32();
+        newQuest->NextQuestId = fields[22].GetInt32();
+        newQuest->ExclusiveGroup = fields[23].GetInt32();
+        newQuest->NextQuestInChain = fields[24].GetUInt32();
+        newQuest->XPId = fields[25].GetUInt32();
+        newQuest->RewOrReqMoney = fields[26].GetInt32();
+        newQuest->RewMoneyMaxLevel = fields[27].GetUInt32();
+        newQuest->RewSpell = fields[28].GetUInt32();
+        newQuest->RewSpellCast = fields[29].GetInt32();
+        newQuest->RewHonorAddition = fields[30].GetUInt32();
+        newQuest->RewHonorMultiplier = fields[31].GetFloat();
+        newQuest->RewMailTemplateId = fields[32].GetUInt32();
+        newQuest->RewMailDelaySecs = fields[33].GetUInt32();
+        newQuest->SrcItemId = fields[34].GetUInt32();
+        newQuest->SrcItemCount = fields[35].GetUInt32();
+        newQuest->SrcSpell = fields[36].GetUInt32();
+        newQuest->QuestFlags = fields[37].GetUInt32();
+        newQuest->SpecialFlags = fields[38].GetUInt16();
+        newQuest->MinimapTargetMark = fields[39].GetUInt32();
+        newQuest->CharTitleId = fields[40].GetUInt32();
+        newQuest->PlayersSlain = fields[41].GetUInt32();
+        newQuest->BonusTalents = fields[42].GetUInt32();
+        newQuest->RewArenaPoints = fields[43].GetInt32();
+        newQuest->RewSkillLineId = fields[44].GetUInt32();
+        newQuest->RewSkillPoints = fields[45].GetUInt32();
+        newQuest->RewRepMask = fields[46].GetUInt32();
+        newQuest->QuestGiverPortrait = fields[47].GetUInt32();
+        newQuest->QuestTurnInPortrait = fields[48].GetUInt32();
+
+
+        for (uint8 i = 0; i < QUEST_REWARDS_COUNT; ++i)
+            newQuest->RewItemId[i] = fields[49 + i].GetUInt32();
+
+        for (uint8 i = 0; i < QUEST_REWARDS_COUNT; ++i)
+            newQuest->RewItemCount[i] = fields[53 + i].GetUInt32();
+
+        for (uint8 i = 0; i < QUEST_REWARD_CHOICES_COUNT; ++i)
+            newQuest->RewChoiceItemId[i] = fields[57 + i].GetUInt32();
+
+        for (uint8 i = 0; i < QUEST_REWARD_CHOICES_COUNT; ++i)
+            newQuest->RewChoiceItemCount[i] = fields[63 + i].GetUInt32();
+
+        for (uint8 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)
+            newQuest->RewRepFaction[i] = fields[69 + i].GetUInt32();
+
+        for (uint8 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)
+            newQuest->RewRepValueId[i] = fields[74 + i].GetInt32();
+
+        for (uint8 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)
+            newQuest->RewRepValue[i] = fields[79 + i].GetInt32();
+
+        newQuest->PointMapId = fields[84].GetUInt32();
+        newQuest->PointX = fields[85].GetFloat();
+        newQuest->PointY = fields[86].GetFloat();
+        newQuest->PointOpt = fields[87].GetUInt32();
+        newQuest->Title = fields[88].GetString();
+        newQuest->Objectives = fields[89].GetString();
+        newQuest->Details = fields[90].GetString();
+        newQuest->EndText = fields[91].GetString();
+        newQuest->OfferRewardText = fields[92].GetString();
+        newQuest->RequestItemsText = fields[93].GetString();
+        newQuest->CompletedText = fields[94].GetString();
+
+
+        for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+            newQuest->ReqCreatureOrGOId[i] = fields[95 + i].GetInt32();
+
+        for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+            newQuest->ReqCreatureOrGOCount[i] = fields[99 + i].GetUInt32();
+
+        for (uint8 i = 0; i < QUEST_SOURCE_ITEM_IDS_COUNT; ++i)
+            newQuest->ReqSourceId[i] = fields[103 + i].GetUInt32();
+
+        for (uint8 i = 0; i < QUEST_SOURCE_ITEM_IDS_COUNT; ++i)
+            newQuest->ReqSourceCount[i] = fields[107 + i].GetUInt32();
+
+        for (uint8 i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; ++i)
+            newQuest->ReqItemId[i] = fields[111 + i].GetUInt32();
+
+        for (uint8 i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; ++i)
+            newQuest->ReqItemCount[i] = fields[117 + i].GetUInt32();
+
+        newQuest->RequiredSpell = fields[123].GetUInt32();
+
+        for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i) // To be removed
+            newQuest->RequiredSpellCast[i] = fields[124 + i].GetUInt32();
+
+        for (uint8 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+            newQuest->ObjectiveText[i] = fields[128 + i].GetString();
+
+        for (uint8 i = 0; i < QUEST_CURRENCY_COUNT; ++i)
+            newQuest->RewCurrencyId[i] = fields[132 + i].GetUInt32();
+
+
+        for (uint8 i = 0; i < QUEST_CURRENCY_COUNT; ++i)
+            newQuest->RewCurrencyCount[i] = fields[136 + i].GetUInt32();
+
+
+        newQuest->QuestGiverTextWindow = fields[148].GetString();
+        newQuest->QuestGiverTargetName = fields[149].GetString();
+        newQuest->QuestTurnTextWindow = fields[150].GetString();
+        newQuest->QuestTurnTargetName = fields[151].GetString();
+        newQuest->SoundAccept = fields[152].GetUInt32();
+        newQuest->SoundTurnIn = fields[153].GetUInt32();
+
+        for (int i = 0; i < QUEST_EMOTE_COUNT; ++i)
+            newQuest->DetailsEmote[i] = fields[154 + i].GetUInt32();
+
+        for (int i = 0; i < QUEST_EMOTE_COUNT; ++i)
+            newQuest->DetailsEmoteDelay[i] = fields[158 + i].GetUInt32();
+
+        newQuest->IncompleteEmote = fields[162].GetUInt32();
+        newQuest->CompleteEmote = fields[163].GetUInt32();
+
+        for (int i = 0; i < QUEST_EMOTE_COUNT; ++i)
+            newQuest->OfferRewardEmote[i] = fields[164 + i].GetInt32();
+
+        for (int i = 0; i < QUEST_EMOTE_COUNT; ++i)
+            newQuest->OfferRewardEmoteDelay[i] = fields[168 + i].GetUInt32();
+
+        newQuest->ReqEmoteId = fields[172].GetUInt32();
+
+        newQuest->m_reqExploreTrigger[0] = 0;
+        newQuest->m_reqExploreTrigger[1] = 0;
+        newQuest->m_reqExploreTrigger[2] = 0;
+
+        for (int i = 0; i < 3; ++i)
+            newQuest->m_reqExploreTrigger[i] = fields[173 + i].GetUInt32();
+
+        newQuest->QuestFlags |= newQuest->SpecialFlags << 20;
+        if (newQuest->QuestFlags & QUEST_SPECIAL_FLAG_AUTO_ACCEPT)
+            newQuest->QuestFlags |= QUEST_FLAGS_AUTO_ACCEPT;
+
+        newQuest->m_reqitemscount = 0;
+        newQuest->m_reqCreatureOrGOcount = 0;
+        newQuest->m_rewitemscount = 0;
+        newQuest->m_rewchoiceitemscount = 0;
+        newQuest->m_rewCurrencyCount = 0;
+        newQuest->m_reqCurrencyCount = 0;
+
+        newQuest->m_reqMobType[0] = 0;
+        newQuest->m_reqMobType[1] = 0;
+        newQuest->m_reqMobType[2] = 0;
+        newQuest->m_reqMobType[3] = 0;
+
+        for (int i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+        {
+            if (newQuest->ReqCreatureOrGOId[i] != 0)
+            {
+                if (newQuest->ReqCreatureOrGOId[i] < 0)
+                {
+                    auto gameobject_info = GameObjectNameStorage.LookupEntry(newQuest->ReqCreatureOrGOId[i] * -1);
+                    if (gameobject_info)
+                    {
+                        newQuest->m_reqMobType[i] = QUEST_MOB_TYPE_GAMEOBJECT;
+                        newQuest->ReqCreatureOrGOId[i] *= -1;
+                    }
+                    else
+                    {
+                        // if quest has neither valid gameobject, log it.
+                        LOG_DEBUG("Quest %lu has required_mobtype[%d]==%lu, it's not a valid GameObject.", newQuest->GetQuestId(), i, newQuest->ReqCreatureOrGOId[i]);
+                    }
+                }
+                else
+                {
+                    CreatureInfo* c_info = CreatureNameStorage.LookupEntry(newQuest->ReqCreatureOrGOId[i]);
+                    if (c_info)
+                        newQuest->m_reqMobType[i] = QUEST_MOB_TYPE_CREATURE;
+                    else
+                    {
+                        // if quest has neither valid creature, log it.
+                        LOG_DEBUG("Quest %lu has required_mobtype[%d]==%lu, it's not a valid Creature.", newQuest->GetQuestId(), i, newQuest->ReqCreatureOrGOId[i]);
+                    }
+                }
+
+                newQuest->m_reqCreatureOrGOcount++;
+            }
+        }
+
+        for (int i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; ++i)
+            if (newQuest->ReqItemId[i])
+                ++newQuest->m_reqitemscount;
+
+        for (int i = 0; i < QUEST_REWARDS_COUNT; ++i)
+            if (newQuest->RewItemId[i])
+                ++newQuest->m_rewitemscount;
+
+        for (int i = 0; i < QUEST_REWARD_CHOICES_COUNT; ++i)
+            if (newQuest->RewChoiceItemId[i])
+                ++newQuest->m_rewchoiceitemscount;
+
+        for (int i = 0; i < QUEST_CURRENCY_COUNT; ++i)
+            if (newQuest->RewCurrencyId[i])
+                ++newQuest->m_rewCurrencyCount;
+
+        for (int i = 0; i < QUEST_CURRENCY_COUNT; ++i)
+            if (newQuest->ReqCurrencyCount[i])
+                ++newQuest->m_reqCurrencyCount;
+
+        newQuest->pQuestScript = NULL;
+
+        mQuestTemplates[quest_id] = newQuest;
+    } while (result->NextRow());
+
+    std::map<uint32, uint32> usedMailTemplates;
+
+    // Post processing
+    for (QuestMap::iterator iter = mQuestTemplates.begin(); iter != mQuestTemplates.end(); ++iter)
+    {
+        Quest * qinfo = iter->second;
+
+        // additional quest integrity checks (GO, creature_template and item_template must be loaded already)
+
+        if (qinfo->GetQuestMethod() >= 3)
+            Log.Debug("ObjectMgr", "Quest %u has `Method` = %u, expected values are 0, 1 or 2.", qinfo->GetQuestId(), qinfo->GetQuestMethod());
+
+        if (qinfo->SpecialFlags > QUEST_SPECIAL_FLAG_DB_ALLOWED)
+        {
+            Log.Debug("ObjectMgr", "Quest %u has `SpecialFlags` = %u, above max flags not allowed for database.", qinfo->GetQuestId(), qinfo->SpecialFlags);
+        }
+
+        if (qinfo->HasFlag(QUEST_FLAGS_DAILY) && qinfo->HasFlag(QUEST_FLAGS_WEEKLY))
+        {
+            Log.Debug("ObjectMgr", "Weekly Quest %u is marked as daily quest in `QuestFlags`, removed daily flag.", qinfo->GetQuestId());
+            qinfo->QuestFlags &= ~QUEST_FLAGS_DAILY;
+        }
+
+        if (qinfo->HasFlag(QUEST_FLAGS_DAILY))
+        {
+            if (!qinfo->HasSpecialFlag(QUEST_SPECIAL_FLAG_REPEATABLE))
+            {
+                Log.Debug("ObjectMgr", "Daily Quest %u not marked as repeatable in `SpecialFlags`, added.", qinfo->GetQuestId());
+                qinfo->SetSpecialFlag(QUEST_SPECIAL_FLAG_REPEATABLE);
+            }
+        }
+
+        if (qinfo->HasFlag(QUEST_FLAGS_WEEKLY))
+        {
+            if (!qinfo->HasSpecialFlag(QUEST_SPECIAL_FLAG_REPEATABLE))
+            {
+                Log.Debug("ObjectMgr", "Weekly Quest %u not marked as repeatable in `SpecialFlags`, added.", qinfo->GetQuestId());
+                qinfo->SetSpecialFlag(QUEST_SPECIAL_FLAG_REPEATABLE);
+            }
+        }
+
+        if (qinfo->HasFlag(QUEST_FLAGS_AUTO_REWARDED))
+        {
+            // at auto-reward can be rewarded only RewChoiceItemId[0]
+            for (int j = 1; j < QUEST_REWARD_CHOICES_COUNT; ++j)
+            {
+                if (uint32 id = qinfo->RewChoiceItemId[j])
+                {
+                    Log.Debug("ObjectMgr", "Quest %u has `RewChoiceItemId%d` = %u but item from `RewChoiceItemId%d` can't be rewarded with quest flag QUEST_FLAGS_AUTO_REWARDED.",
+                        qinfo->GetQuestId(), j + 1, id, j + 1);
+                    // no changes, quest ignore this data
+                }
+            }
+        }
+
+        // client quest log visual (sort case)
+        if (qinfo->ZoneOrSort < 0)
+        {
+            QuestSortEntry const* qSort = sQuestSortStore.LookupEntry(-int32(qinfo->ZoneOrSort));
+            if (!qSort)
+            {
+                Log.Debug("ObjectMgr", "Quest %u has `ZoneOrSort` = %i (sort case) but quest sort with this id does not exist.",
+                    qinfo->GetQuestId(), qinfo->ZoneOrSort);
+                // no changes, quest not dependent from this value but can have problems at client (note some may be 0, we must allow this so no check)
+            }
+
+            //check SkillOrClass value (class case).
+            if (sQuestMgr.ClassByQuestSort(-int32(qinfo->ZoneOrSort)))
+            {
+                // SkillOrClass should not have class case when class case already set in ZoneOrSort.
+                if (qinfo->SkillOrClassMask < 0)
+                {
+                    Log.Debug("ObjectMgr", "Quest %u has `ZoneOrSort` = %i (class sort case) and `SkillOrClassMask` = %i (class case), redundant.",
+                        qinfo->GetQuestId(), qinfo->ZoneOrSort, qinfo->SkillOrClassMask);
+                }
+            }
+
+            //check for proper SkillOrClass value (skill case)
+            if (int32 skill_id = sQuestMgr.SkillByQuestSort(-int32(qinfo->ZoneOrSort)))
+            {
+                // skill is positive value in SkillOrClass
+                if (qinfo->SkillOrClassMask != skill_id)
+                {
+                    Log.Debug("ObjectMgr", "Quest %u has `ZoneOrSort` = %i (skill sort case) but `SkillOrClassMask` does not have a corresponding value (%i).",
+                        qinfo->GetQuestId(), qinfo->ZoneOrSort, skill_id);
+                    //override, and force proper value here?
+                }
+            }
+        }
+
+        // SkillOrClassMask (class case)
+        if (qinfo->SkillOrClassMask < 0)
+        {
+            if (!(-int32(qinfo->SkillOrClassMask) & CLASSMASK_ALL_PLAYABLE))
+            {
+                Log.Debug("ObjectMgr", "Quest %u has `SkillOrClassMask` = %i (class case) but classmask does not have valid class",
+                    qinfo->GetQuestId(), qinfo->SkillOrClassMask);
+            }
+        }
+        // SkillOrClassMask (skill case)
+        else if (qinfo->SkillOrClassMask > 0)
+        {
+            if (!dbcSkillLine.LookupEntry(qinfo->SkillOrClassMask))
+            {
+                Log.Debug("ObjectMgr", "Quest %u has `SkillOrClass` = %u (skill case) but skill (%i) does not exist",
+                    qinfo->GetQuestId(), qinfo->SkillOrClassMask, qinfo->SkillOrClassMask);
+            }
+        }
+
+        if (qinfo->RequiredSkillValue)
+        {
+            if (qinfo->SkillOrClassMask <= 0)
+            {
+                Log.Debug("ObjectMgr", "Quest %u has `RequiredSkillValue` = %u but `SkillOrClass` = %i (class case), value ignored.",
+                    qinfo->GetQuestId(), qinfo->RequiredSkillValue, qinfo->SkillOrClassMask);
+                // no changes, quest can't be done for this requirement (fail at wrong skill id)
+            }
+        }
+        // else Skill quests can have 0 skill level, this is ok
+
+        if (qinfo->RepObjectiveFaction2 && !sFactionStore.LookupEntry(qinfo->RepObjectiveFaction2))
+        {
+            Log.Debug("ObjectMgr", "Quest %u has `RepObjectiveFaction2` = %u but faction template %u does not exist, quest can't be done.",
+                qinfo->GetQuestId(), qinfo->RepObjectiveFaction2, qinfo->RepObjectiveFaction2);
+            // no changes, quest can't be done for this requirement
+        }
+
+        if (qinfo->RepObjectiveFaction && !sFactionStore.LookupEntry(qinfo->RepObjectiveFaction))
+        {
+            Log.Debug("ObjectMgr", "Quest %u has `RepObjectiveFaction` = %u but faction template %u does not exist, quest can't be done.",
+                qinfo->GetQuestId(), qinfo->RepObjectiveFaction, qinfo->RepObjectiveFaction);
+            // no changes, quest can't be done for this requirement
+        }
+
+        if (qinfo->RequiredMinRepFaction && !sFactionStore.LookupEntry(qinfo->RequiredMinRepFaction))
+        {
+            Log.Debug("ObjectMgr", "Quest %u has `RequiredMinRepFaction` = %u but faction template %u does not exist, quest can't be done.",
+                qinfo->GetQuestId(), qinfo->RequiredMinRepFaction, qinfo->RequiredMinRepFaction);
+            // no changes, quest can't be done for this requirement
+        }
+
+        if (qinfo->RequiredMaxRepFaction && !sFactionStore.LookupEntry(qinfo->RequiredMaxRepFaction))
+        {
+            Log.Debug("ObjectMgr", "Quest %u has `RequiredMaxRepFaction` = %u but faction template %u does not exist, quest can't be done.",
+                qinfo->GetQuestId(), qinfo->RequiredMaxRepFaction, qinfo->RequiredMaxRepFaction);
+            // no changes, quest can't be done for this requirement
+        }
+
+        if (qinfo->RequiredMinRepValue && qinfo->RequiredMaxRepValue && qinfo->RequiredMaxRepValue <= qinfo->RequiredMinRepValue)
+        {
+            Log.Debug("ObjectMgr", "Quest %u has `RequiredMaxRepValue` = %d and `RequiredMinRepValue` = %d, quest can't be done.",
+                qinfo->GetQuestId(), qinfo->RequiredMaxRepValue, qinfo->RequiredMinRepValue);
+            // no changes, quest can't be done for this requirement
+        }
+
+        if (!qinfo->RepObjectiveFaction && qinfo->RepObjectiveValue > 0)
+        {
+            Log.Debug("ObjectMgr", "Quest %u has `RepObjectiveValue` = %d but `RepObjectiveFaction` is 0, value has no effect",
+                qinfo->GetQuestId(), qinfo->RepObjectiveValue);
+            // warning
+        }
+
+        if (!qinfo->RepObjectiveFaction2 && qinfo->RepObjectiveValue2 > 0)
+        {
+            Log.Debug("ObjectMgr", "Quest %u has `RepObjectiveValue2` = %d but `RepObjectiveFaction2` is 0, value has no effect",
+                qinfo->GetQuestId(), qinfo->RepObjectiveValue2);
+            // warning
+        }
+
+        if (!qinfo->RequiredMinRepFaction && qinfo->RequiredMinRepValue > 0)
+        {
+            Log.Debug("ObjectMgr", "Quest %u has `RequiredMinRepValue` = %d but `RequiredMinRepFaction` is 0, value has no effect",
+                qinfo->GetQuestId(), qinfo->RequiredMinRepValue);
+            // warning
+        }
+
+        if (!qinfo->RequiredMaxRepFaction && qinfo->RequiredMaxRepValue > 0)
+        {
+            Log.Debug("ObjectMgr", "Quest %u has `RequiredMaxRepValue` = %d but `RequiredMaxRepFaction` is 0, value has no effect",
+                qinfo->GetQuestId(), qinfo->RequiredMaxRepValue);
+            // warning
+        }
+
+        if (qinfo->CharTitleId && !dbcCharTitlesEntry.LookupEntry(qinfo->CharTitleId))
+        {
+            Log.Debug("ObjectMgr", "Quest %u has `CharTitleId` = %u but CharTitle Id %u does not exist, quest can't be rewarded with title.",
+                qinfo->GetQuestId(), qinfo->GetCharTitleId(), qinfo->GetCharTitleId());
+            qinfo->CharTitleId = 0;
+            // quest can't reward this title
+        }
+
+        if (qinfo->SrcItemId)
+        {
+            if (!ItemPrototypeStorage.LookupEntry(qinfo->SrcItemId))
+            {
+                Log.Debug("ObjectMgr", "Quest %u has `SrcItemId` = %u but item with entry %u does not exist, quest can't be done.",
+                    qinfo->GetQuestId(), qinfo->SrcItemId, qinfo->SrcItemId);
+                qinfo->SrcItemId = 0;                       // quest can't be done for this requirement
+            }
+            else if (qinfo->SrcItemCount == 0)
+            {
+                Log.Debug("ObjectMgr", "Quest %u has `SrcItemId` = %u but `SrcItemCount` = 0, set to 1 but need fix in DB.",
+                    qinfo->GetQuestId(), qinfo->SrcItemId);
+                qinfo->SrcItemCount = 1;                    // update to 1 for allow quest work for backward compatibility with DB
+            }
+        }
+        else if (qinfo->SrcItemCount > 0)
+        {
+            Log.Debug("ObjectMgr", "Quest %u has `SrcItemId` = 0 but `SrcItemCount` = %u, useless value.",
+                qinfo->GetQuestId(), qinfo->SrcItemCount);
+            qinfo->SrcItemCount = 0;                          // no quest work changes in fact
+        }
+
+        if (qinfo->SrcSpell)
+        {
+            SpellEntry const* spellInfo = dbcSpell.LookupEntry(qinfo->SrcSpell);
+            if (!spellInfo)
+            {
+                Log.Debug("ObjectMgr", "Quest %u has `SrcSpell` = %u but spell %u doesn't exist, quest can't be done.",
+                    qinfo->GetQuestId(), qinfo->SrcSpell, qinfo->SrcSpell);
+                qinfo->SrcSpell = 0;                        // quest can't be done for this requirement
+            }
+        }
+
+        for (uint8 j = 0; j < QUEST_ITEM_OBJECTIVES_COUNT; ++j)
+        {
+            uint32 id = qinfo->ReqItemId[j];
+            if (id)
+            {
+                if (qinfo->ReqItemCount[j] == 0)
+                {
+                    Log.Debug("ObjectMgr", "Quest %u has `ReqItemId%d` = %u but `ReqItemCount%d` = 0, quest can't be done.",
+                        qinfo->GetQuestId(), j + 1, id, j + 1);
+                    // no changes, quest can't be done for this requirement
+                }
+
+                if (!ItemPrototypeStorage.LookupEntry(id))
+                {
+                    Log.Debug("ObjectMgr", "Quest %u has `ReqItemId%d` = %u but item with entry %u does not exist, quest can't be done.",
+                        qinfo->GetQuestId(), j + 1, id, id);
+                    qinfo->ReqItemCount[j] = 0;             // prevent incorrect work of quest
+                }
+            }
+            else if (qinfo->ReqItemCount[j] > 0)
+            {
+                Log.Debug("ObjectMgr", "Quest %u has `ReqItemId%d` = 0 but `ReqItemCount%d` = %u, quest can't be done.",
+                    qinfo->GetQuestId(), j + 1, j + 1, qinfo->ReqItemCount[j]);
+                qinfo->ReqItemCount[j] = 0;                 // prevent incorrect work of quest
+            }
+        }
+
+        for (uint8 j = 0; j < QUEST_SOURCE_ITEM_IDS_COUNT; ++j)
+        {
+            uint32 id = qinfo->ReqSourceId[j];
+            if (id)
+            {
+                if (!ItemPrototypeStorage.LookupEntry(id))
+                {
+                    Log.Debug("ObjectMgr", "Quest %u has `ReqSourceId%d` = %u but item with entry %u does not exist, quest can't be done.",
+                        qinfo->GetQuestId(), j + 1, id, id);
+                    // no changes, quest can't be done for this requirement
+                }
+            }
+            else
+            {
+                if (qinfo->ReqSourceCount[j]>0)
+                {
+                    Log.Debug("ObjectMgr", "Quest %u has `ReqSourceId%d` = 0 but `ReqSourceCount%d` = %u.",
+                        qinfo->GetQuestId(), j + 1, j + 1, qinfo->ReqSourceCount[j]);
+                    // no changes, quest ignore this data
+                }
+            }
+        }
+
+        for (uint8 j = 0; j < QUEST_OBJECTIVES_COUNT; ++j)
+        {
+            uint32 id = qinfo->ReqSpell[j];
+            if (id)
+            {
+                SpellEntry const* spellInfo = dbcSpell.LookupEntry(id);
+                if (!spellInfo)
+                {
+                    Log.Debug("ObjectMgr", "Quest %u has `ReqSpellCast%d` = %u but spell %u does not exist, quest can't be done.",
+                        qinfo->GetQuestId(), j + 1, id, id);
+                    continue;
+                }
+            }
+        }
+
+        for (uint8 j = 0; j < QUEST_OBJECTIVES_COUNT; ++j)
+        {
+            int32 id = qinfo->ReqCreatureOrGOId[j];
+            if (id < 0 && !GameObjectNameStorage.LookupEntry(-id))
+            {
+                Log.Debug("ObjectMgr", "Quest %u has `ReqCreatureOrGOId%d` = %i but gameobject %u does not exist, quest can't be done.",
+                    qinfo->GetQuestId(), j + 1, id, uint32(-id));
+                qinfo->ReqCreatureOrGOId[j] = 0;            // quest can't be done for this requirement
+            }
+
+            if (id > 0 && !CreatureNameStorage.LookupEntry(id))
+            {
+                Log.Debug("ObjectMgr", "Quest %u has `ReqCreatureOrGOId%d` = %i but creature with entry %u does not exist, quest can't be done.",
+                    qinfo->GetQuestId(), j + 1, id, uint32(id));
+                qinfo->ReqCreatureOrGOId[j] = 0;            // quest can't be done for this requirement
+            }
+
+            if (id)
+            {
+                if (!qinfo->ReqCreatureOrGOCount[j])
+                {
+                    Log.Debug("ObjectMgr", "Quest %u has `ReqCreatureOrGOId%d` = %u but `ReqCreatureOrGOCount%d` = 0, quest can't be done.",
+                        qinfo->GetQuestId(), j + 1, id, j + 1);
+                    // no changes, quest can be incorrectly done, but we already report this
+                }
+            }
+            else if (qinfo->ReqCreatureOrGOCount[j]>0)
+            {
+                Log.Debug("ObjectMgr", "Quest %u has `ReqCreatureOrGOId%d` = 0 but `ReqCreatureOrGOCount%d` = %u.",
+                    qinfo->GetQuestId(), j + 1, j + 1, qinfo->ReqCreatureOrGOCount[j]);
+                // no changes, quest ignore this data
+            }
+        }
+
+        for (uint8 j = 0; j < QUEST_REWARD_CHOICES_COUNT; ++j)
+        {
+            uint32 id = qinfo->RewChoiceItemId[j];
+            if (id)
+            {
+                if (!ItemPrototypeStorage.LookupEntry(id))
+                {
+                    Log.Debug("ObjectMgr", "Quest %u has `RewChoiceItemId%d` = %u but item with entry %u does not exist, quest will not reward this item.",
+                        qinfo->GetQuestId(), j + 1, id, id);
+                    qinfo->RewChoiceItemId[j] = 0;          // no changes, quest will not reward this
+                }
+
+                if (!qinfo->RewChoiceItemCount[j])
+                {
+                    Log.Debug("ObjectMgr", "Quest %u has `RewChoiceItemId%d` = %u but `RewChoiceItemCount%d` = 0, quest can't be done.",
+                        qinfo->GetQuestId(), j + 1, id, j + 1);
+                    // no changes, quest can't be done
+                }
+            }
+            else if (qinfo->RewChoiceItemCount[j] > 0)
+            {
+                Log.Debug("ObjectMgr", "Quest %u has `RewChoiceItemId%d` = 0 but `RewChoiceItemCount%d` = %u.",
+                    qinfo->GetQuestId(), j + 1, j + 1, qinfo->RewChoiceItemCount[j]);
+                // no changes, quest ignore this data
+            }
+        }
+
+        for (uint8 j = 0; j < QUEST_REWARDS_COUNT; ++j)
+        {
+            uint32 id = qinfo->RewItemId[j];
+            if (id)
+            {
+                if (!ItemPrototypeStorage.LookupEntry(id))
+                {
+                    Log.Debug("ObjectMgr", "Quest %u has `RewItemId%d` = %u but item with entry %u does not exist, quest will not reward this item.",
+                        qinfo->GetQuestId(), j + 1, id, id);
+                    qinfo->RewItemId[j] = 0;                // no changes, quest will not reward this item
+                }
+
+                if (!qinfo->RewItemCount[j])
+                {
+                    Log.Debug("ObjectMgr", "Quest %u has `RewItemId%d` = %u but `RewItemCount%d` = 0, quest will not reward this item.",
+                        qinfo->GetQuestId(), j + 1, id, j + 1);
+                    // no changes
+                }
+            }
+            else if (qinfo->RewItemCount[j] > 0)
+            {
+                Log.Debug("ObjectMgr", "Quest %u has `RewItemId%d` = 0 but `RewItemCount%d` = %u.",
+                    qinfo->GetQuestId(), j + 1, j + 1, qinfo->RewItemCount[j]);
+                // no changes, quest ignore this data
+            }
+        }
+
+        for (uint8 j = 0; j < QUEST_REPUTATIONS_COUNT; ++j)
+        {
+            if (qinfo->RewRepFaction[j])
+            {
+                if (abs(qinfo->RewRepValueId[j]) > 9)
+                {
+                    Log.Debug("ObjectMgr", "Quest %u has RewRepValueId%d = %i. That is outside the range of valid values (-9 to 9).", qinfo->GetQuestId(), j + 1, qinfo->RewRepValueId[j]);
+                }
+                if (!sFactionStore.LookupEntry(qinfo->RewRepFaction[j]))
+                {
+                    Log.Debug("ObjectMgr", "Quest %u has `RewRepFaction%d` = %u but raw faction (faction.dbc) %u does not exist, quest will not reward reputation for this faction.", qinfo->GetQuestId(), j + 1, qinfo->RewRepFaction[j], qinfo->RewRepFaction[j]);
+                    qinfo->RewRepFaction[j] = 0;            // quest will not reward this
+                }
+            }
+
+            else if (qinfo->RewRepValue[j] != 0)
+            {
+                Log.Debug("ObjectMgr", "Quest %u has `RewRepFaction%d` = 0 but `RewRepValue%d` = %i.",
+                    qinfo->GetQuestId(), j + 1, j + 1, qinfo->RewRepValue[j]);
+                // no changes, quest ignore this data
+            }
+        }
+
+        if (qinfo->RewSpell)
+        {
+            SpellEntry const* spellInfo = dbcSpell.LookupEntry(qinfo->RewSpell);
+
+            if (!spellInfo)
+            {
+                Log.Debug("ObjectMgr", "Quest %u has `RewSpell` = %u but spell %u does not exist, spell removed as display reward.",
+                    qinfo->GetQuestId(), qinfo->RewSpell, qinfo->RewSpell);
+                qinfo->RewSpell = 0;                        // no spell reward will display for this quest
+            }
+        }
+
+        if (qinfo->RewSpellCast > 0)
+        {
+            SpellEntry const* spellInfo = dbcSpell.LookupEntry(qinfo->RewSpellCast);
+
+            if (!spellInfo)
+            {
+                Log.Debug("ObjectMgr", "Quest %u has `RewSpellCast` = %u but spell %u does not exist, quest will not have a spell reward.",
+                    qinfo->GetQuestId(), qinfo->RewSpellCast, qinfo->RewSpellCast);
+                qinfo->RewSpellCast = 0;                    // no spell will be casted on player
+            }
+        }
+
+        if (qinfo->NextQuestInChain)
+        {
+            QuestMap::iterator qNextItr = mQuestTemplates.find(qinfo->NextQuestInChain);
+            if (qNextItr == mQuestTemplates.end())
+            {
+                Log.Debug("ObjectMgr", "Quest %u has `NextQuestInChain` = %u but quest %u does not exist, quest chain will not work.",
+                    qinfo->GetQuestId(), qinfo->NextQuestInChain, qinfo->NextQuestInChain);
+                qinfo->NextQuestInChain = 0;
+            }
+            else
+                qNextItr->second->prevChainQuests.push_back(qinfo->GetQuestId());
+        }
+
+        // fill additional data stores
+        if (qinfo->PrevQuestId)
+        {
+            if (mQuestTemplates.find(abs(qinfo->GetPrevQuestId())) == mQuestTemplates.end())
+            {
+                Log.Debug("ObjectMgr", "Quest %d has PrevQuestId %i, but no such quest", qinfo->GetQuestId(), qinfo->GetPrevQuestId());
+            }
+            else
+            {
+                qinfo->prevQuests.push_back(qinfo->PrevQuestId);
+            }
+        }
+
+        if (qinfo->NextQuestId)
+        {
+            QuestMap::iterator qNextItr = mQuestTemplates.find(abs(qinfo->GetNextQuestId()));
+            if (qNextItr == mQuestTemplates.end())
+            {
+                Log.Debug("ObjectMgr", "Quest %d has NextQuestId %i, but no such quest", qinfo->GetQuestId(), qinfo->GetNextQuestId());
+            }
+            else
+            {
+                int32 signedQuestId = qinfo->NextQuestId < 0 ? -int32(qinfo->GetQuestId()) : int32(qinfo->GetQuestId());
+                qNextItr->second->prevQuests.push_back(signedQuestId);
+            }
+        }
+
+        if (qinfo->ExclusiveGroup)
+            mExclusiveQuestGroups.insert(std::pair<int32, uint32>(qinfo->ExclusiveGroup, qinfo->GetQuestId()));
+    }
+    Log.Debug("ObjectMgr", ">> Loaded %lu quests definitions", (unsigned long)mQuestTemplates.size());
+}
+
+void ObjectMgr::LoadQuestLoot(uint32 GO_Entry, uint32 Item_Entry)
+{
+    // Find the quest that has that item
+    uint32 QuestID = 0;
+    uint32 i;
+
+    for (QuestMap::const_iterator itr = mQuestTemplates.begin(); itr != mQuestTemplates.end(); ++itr)
+    {
+        for (i = 0; i < MAX_REQUIRED_QUEST_ITEM; ++i)
+        {
+            if (itr->second->ReqItemId[i] == Item_Entry)
+            {
+                QuestID = itr->second->GetQuestId();
+                sQuestMgr.m_ObjectLootQuestList[GO_Entry] = QuestID;
+                return;
+            }
         }
     }
 }

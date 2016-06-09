@@ -200,35 +200,35 @@ void WorldSession::HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& recv_data)
     {
         data << uint32(*it);                               // Dungeon Entry (id + type)
         LfgReward const* reward = sLfgMgr.GetRandomDungeonReward(*it, level);
-        Quest* qRew = NULL;
+        Quest const* qRew = NULL;
         uint8 done = 0;
         if (reward)
         {
-            qRew = QuestStorage.LookupEntry(reward->reward[0].questId);
+            qRew = objmgr.GetQuestTemplate(reward->reward[0].questId);
             if (qRew)
             {
-                done = GetPlayer()->HasFinishedQuest(qRew->id);
+                done = GetPlayer()->HasFinishedQuest(qRew->GetQuestId());
                 if (done)
-                    qRew = QuestStorage.LookupEntry(reward->reward[1].questId);
+                    qRew = objmgr.GetQuestTemplate(reward->reward[1].questId);
             }
         }
         if (qRew)
         {
             data << uint8(done);
-            data << uint32(qRew->reward_money);
-            data << uint32(qRew->reward_xp);
+            data << uint32(qRew->GetRewOrReqMoney());
+            data << uint32(qRew->XPValue(GetPlayer()));
             data << uint32(reward->reward[done].variableMoney);
             data << uint32(reward->reward[done].variableXP);
             ///\todo FIXME Linux: error: cast from const uint32* {aka const unsigned int*} to uint8 {aka unsigned char} loses precision 
             /// can someone check this now ?
             data << uint8(qRew->GetRewItemsCount());
             for (uint8 i = 0; i < 4; ++i)
-                if (qRew->reward_item[i] != 0)
+                if (qRew->RewItemId[i] != 0)
                 {
-                    ItemPrototype* item = ItemPrototypeStorage.LookupEntry(qRew->reward_item[i]);
-                    data << uint32(qRew->reward_item[i]);
+                    ItemPrototype* item = ItemPrototypeStorage.LookupEntry(qRew->RewItemId[i]);
+                    data << uint32(qRew->RewItemId[i]);
                     data << uint32(item ? item->DisplayInfoID : 0);
-                    data << uint32(qRew->reward_itemcount[i]);
+                    data << uint32(qRew->RewItemCount[i]);
                 }
         }
         else

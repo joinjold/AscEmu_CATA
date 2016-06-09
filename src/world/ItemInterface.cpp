@@ -2129,7 +2129,7 @@ int8 ItemInterface::CanEquipItemInSlot(int8 DstInvSlot, int8 slot, ItemPrototype
                 {
                     if (mainweapon->GetProto()->InventoryType != INVTYPE_2HWEAPON)
                     {
-                        if (m_pOwner->_HasSkillLine(SKILL_DUAL_WIELD))
+                        if (m_pOwner->_HasSkillLine(SKILL_DUAL_WIELD) || m_pOwner->_HasSkillLine(SKILL_DUALWIELD))
                             return 0;
                         else
                             return INV_ERR_CANT_DUAL_WIELD;
@@ -2144,7 +2144,7 @@ int8 ItemInterface::CanEquipItemInSlot(int8 DstInvSlot, int8 slot, ItemPrototype
                 }
                 else
                 {
-                    if (m_pOwner->_HasSkillLine(SKILL_DUAL_WIELD))
+                    if (m_pOwner->_HasSkillLine(SKILL_DUAL_WIELD) || m_pOwner->_HasSkillLine(SKILL_DUALWIELD))
                         return 0;
                     else
                         return INV_ERR_CANT_DUAL_WIELD;
