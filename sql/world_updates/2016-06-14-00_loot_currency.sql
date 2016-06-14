@@ -1,0 +1,171 @@
+UPDATE `world_db_version` SET `LastUpdate`='2016-06-14-00_loot_currency' WHERE (`LastUpdate`='2016-06-09_00_quests');
+
+
+SET FOREIGN_KEY_CHECKS=0;
+
+-- ----------------------------
+-- Table structure for `loot_currency`
+-- ----------------------------
+DROP TABLE IF EXISTS `loot_currency`;
+CREATE TABLE `loot_currency` (
+  `entry` int(10) unsigned NOT NULL default '0',
+  `currency` mediumint(10) unsigned NOT NULL default '0',
+  `amt` int(10) unsigned NOT NULL default '0',
+  `max_plr_level` int(10) unsigned NOT NULL default '0',
+  `diff_mask` int(10) unsigned NOT NULL default '65535'
+) ENGINE=MyISAM DEFAULT CHARSET=latin1;
+
+-- ----------------------------
+-- Records of loot_currency
+-- ----------------------------
+INSERT INTO `loot_currency` VALUES ('40586', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('40765', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('40825', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('40788', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('39665', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('39679', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('39698', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('39700', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('39705', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('43878', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('43873', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('43875', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('44577', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('43612', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('43614', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('49045', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('44819', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('40586', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('40765', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('40825', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('40788', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('39665', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('39679', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('39698', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('39700', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('39705', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('43878', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('43873', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('43875', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('44577', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('43612', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('43614', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('49045', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('44819', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('39625', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('39625', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('40177', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('40177', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('40319', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('40319', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('40484', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('40484', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('39425', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('39425', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('39428', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('39428', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('39788', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('39788', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('39587', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('39587', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('39731', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('39731', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('39732', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('39732', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('39378', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('39378', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('47120', '395', '70', '85', '48');
+INSERT INTO `loot_currency` VALUES ('41570', '395', '70', '85', '48');
+INSERT INTO `loot_currency` VALUES ('42180', '395', '70', '85', '48');
+INSERT INTO `loot_currency` VALUES ('42179', '395', '70', '85', '48');
+INSERT INTO `loot_currency` VALUES ('42178', '395', '70', '85', '48');
+INSERT INTO `loot_currency` VALUES ('42166', '395', '70', '85', '48');
+INSERT INTO `loot_currency` VALUES ('41378', '395', '70', '85', '48');
+INSERT INTO `loot_currency` VALUES ('41442', '395', '70', '85', '48');
+INSERT INTO `loot_currency` VALUES ('43296', '395', '70', '85', '48');
+INSERT INTO `loot_currency` VALUES ('41376', '395', '70', '85', '48');
+INSERT INTO `loot_currency` VALUES ('44600', '396', '70', '85', '128');
+INSERT INTO `loot_currency` VALUES ('44600', '395', '70', '85', '176');
+INSERT INTO `loot_currency` VALUES ('45992', '396', '70', '85', '128');
+INSERT INTO `loot_currency` VALUES ('45992', '395', '70', '85', '176');
+INSERT INTO `loot_currency` VALUES ('45993', '396', '70', '85', '128');
+INSERT INTO `loot_currency` VALUES ('45993', '395', '70', '85', '176');
+INSERT INTO `loot_currency` VALUES ('43735', '396', '70', '85', '128');
+INSERT INTO `loot_currency` VALUES ('43735', '395', '70', '85', '176');
+INSERT INTO `loot_currency` VALUES ('43687', '396', '70', '85', '128');
+INSERT INTO `loot_currency` VALUES ('43687', '395', '70', '85', '176');
+INSERT INTO `loot_currency` VALUES ('43686', '396', '70', '85', '128');
+INSERT INTO `loot_currency` VALUES ('43686', '395', '70', '85', '176');
+INSERT INTO `loot_currency` VALUES ('43688', '396', '70', '85', '128');
+INSERT INTO `loot_currency` VALUES ('43688', '395', '70', '85', '176');
+INSERT INTO `loot_currency` VALUES ('43689', '396', '70', '85', '128');
+INSERT INTO `loot_currency` VALUES ('43689', '395', '70', '85', '176');
+INSERT INTO `loot_currency` VALUES ('43324', '396', '70', '85', '128');
+INSERT INTO `loot_currency` VALUES ('43324', '395', '70', '85', '176');
+INSERT INTO `loot_currency` VALUES ('45871', '396', '70', '85', '128');
+INSERT INTO `loot_currency` VALUES ('45871', '395', '70', '85', '176');
+INSERT INTO `loot_currency` VALUES ('45870', '396', '70', '85', '128');
+INSERT INTO `loot_currency` VALUES ('45870', '395', '70', '85', '176');
+INSERT INTO `loot_currency` VALUES ('45872', '396', '70', '85', '128');
+INSERT INTO `loot_currency` VALUES ('45872', '395', '70', '85', '176');
+INSERT INTO `loot_currency` VALUES ('46753', '396', '70', '85', '128');
+INSERT INTO `loot_currency` VALUES ('46753', '395', '70', '85', '176');
+INSERT INTO `loot_currency` VALUES ('39625', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('39625', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('40177', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('40177', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('40319', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('40319', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('40484', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('40484', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('39425', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('39425', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('39428', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('39428', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('39788', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('39788', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('39587', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('39587', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('39731', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('39731', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('39732', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('39732', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('39378', '396', '70', '85', '8');
+INSERT INTO `loot_currency` VALUES ('39378', '395', '70', '85', '12');
+INSERT INTO `loot_currency` VALUES ('47120', '395', '70', '85', '48');
+INSERT INTO `loot_currency` VALUES ('41570', '395', '70', '85', '48');
+INSERT INTO `loot_currency` VALUES ('42180', '395', '70', '85', '48');
+INSERT INTO `loot_currency` VALUES ('42179', '395', '70', '85', '48');
+INSERT INTO `loot_currency` VALUES ('42178', '395', '70', '85', '48');
+INSERT INTO `loot_currency` VALUES ('42166', '395', '70', '85', '48');
+INSERT INTO `loot_currency` VALUES ('41378', '395', '70', '85', '48');
+INSERT INTO `loot_currency` VALUES ('41442', '395', '70', '85', '48');
+INSERT INTO `loot_currency` VALUES ('43296', '395', '70', '85', '48');
+INSERT INTO `loot_currency` VALUES ('41376', '395', '70', '85', '48');
+INSERT INTO `loot_currency` VALUES ('44600', '396', '70', '85', '128');
+INSERT INTO `loot_currency` VALUES ('44600', '395', '70', '85', '176');
+INSERT INTO `loot_currency` VALUES ('45992', '396', '70', '85', '128');
+INSERT INTO `loot_currency` VALUES ('45992', '395', '70', '85', '176');
+INSERT INTO `loot_currency` VALUES ('45993', '396', '70', '85', '128');
+INSERT INTO `loot_currency` VALUES ('45993', '395', '70', '85', '176');
+INSERT INTO `loot_currency` VALUES ('43735', '396', '70', '85', '128');
+INSERT INTO `loot_currency` VALUES ('43735', '395', '70', '85', '176');
+INSERT INTO `loot_currency` VALUES ('43687', '396', '70', '85', '128');
+INSERT INTO `loot_currency` VALUES ('43687', '395', '70', '85', '176');
+INSERT INTO `loot_currency` VALUES ('43686', '396', '70', '85', '128');
+INSERT INTO `loot_currency` VALUES ('43686', '395', '70', '85', '176');
+INSERT INTO `loot_currency` VALUES ('43688', '396', '70', '85', '128');
+INSERT INTO `loot_currency` VALUES ('43688', '395', '70', '85', '176');
+INSERT INTO `loot_currency` VALUES ('43689', '396', '70', '85', '128');
+INSERT INTO `loot_currency` VALUES ('43689', '395', '70', '85', '176');
+INSERT INTO `loot_currency` VALUES ('43324', '396', '70', '85', '128');
+INSERT INTO `loot_currency` VALUES ('43324', '395', '70', '85', '176');
+INSERT INTO `loot_currency` VALUES ('45871', '396', '70', '85', '128');
+INSERT INTO `loot_currency` VALUES ('45871', '395', '70', '85', '176');
+INSERT INTO `loot_currency` VALUES ('45870', '396', '70', '85', '128');
+INSERT INTO `loot_currency` VALUES ('45870', '395', '70', '85', '176');
+INSERT INTO `loot_currency` VALUES ('45872', '396', '70', '85', '128');
+INSERT INTO `loot_currency` VALUES ('45872', '395', '70', '85', '176');
+INSERT INTO `loot_currency` VALUES ('46753', '396', '70', '85', '128');
+INSERT INTO `loot_currency` VALUES ('46753', '395', '70', '85', '176');
+INSERT INTO `loot_currency` VALUES ('35490', '241', '70', '85', '65535');
