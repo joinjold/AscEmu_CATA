@@ -321,7 +321,7 @@ class SCRIPT_DECL EasyFunctions
             if (!pQuest)
                 return;
 
-            if (pQuest->GetMobCount(i) < pQuest->GetQuest()->required_mobcount[i])
+            if (pQuest->GetMobCount(i) < pQuest->GetQuest()->ReqCreatureOrGOId[i])
             {
                 pQuest->SetMobCount(i, pQuest->GetMobCount(i) + 1);
                 pQuest->SendUpdateAddKill(i);
@@ -339,7 +339,7 @@ class SCRIPT_DECL EasyFunctions
             if (!pQuest)
                 return;
 
-            if (pQuest->GetMobCount(i) < pQuest->GetQuest()->required_mobcount[i])
+            if (pQuest->GetMobCount(i) < pQuest->GetQuest()->ReqCreatureOrGOId[i])
             {
                 pQuest->SetMobCount(i, pQuest->GetMobCount(i) + 1);
                 pQuest->SendUpdateAddKill(i);

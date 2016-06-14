@@ -892,7 +892,7 @@ void ArathiBasin::AssaultControlPoint(Player* pPlayer, uint32 Id)
             {
                 case AB_CONTROL_POINT_MINE:
                     {
-                        if(en && en->GetMobCount(0) < en->GetQuest()->required_mobcount[0])
+                        if(en && en->GetMobCount(0) < en->GetQuest()->ReqCreatureOrGOId[0])
                         {
                             en->SetMobCount(0, en->GetMobCount(0) + 1);
                             en->SendUpdateAddKill(0);
@@ -902,7 +902,7 @@ void ArathiBasin::AssaultControlPoint(Player* pPlayer, uint32 Id)
                     break;
                 case AB_CONTROL_POINT_LUMBERMILL:
                     {
-                        if(en && en->GetMobCount(1) < en->GetQuest()->required_mobcount[1])
+                        if(en && en->GetMobCount(1) < en->GetQuest()->ReqCreatureOrGOId[1])
                         {
                             en->SetMobCount(1, en->GetMobCount(1) + 1);
                             en->SendUpdateAddKill(1);
@@ -912,7 +912,7 @@ void ArathiBasin::AssaultControlPoint(Player* pPlayer, uint32 Id)
                     break;
                 case AB_CONTROL_POINT_BLACKSMITH:
                     {
-                        if(en && en->GetMobCount(2) < en->GetQuest()->required_mobcount[2])
+                        if(en && en->GetMobCount(2) < en->GetQuest()->ReqCreatureOrGOId[2])
                         {
                             en->SetMobCount(2, en->GetMobCount(2) + 1);
                             en->SendUpdateAddKill(2);
@@ -922,7 +922,7 @@ void ArathiBasin::AssaultControlPoint(Player* pPlayer, uint32 Id)
                     break;
                 case AB_CONTROL_POINT_STABLE:
                     {
-                        if(en && en->GetMobCount(3) < en->GetQuest()->required_mobcount[3])
+                        if(en && en->GetMobCount(3) < en->GetQuest()->ReqCreatureOrGOId[3])
                         {
                             en->SetMobCount(3, en->GetMobCount(3) + 1);
                             en->SendUpdateAddKill(3);
@@ -939,7 +939,7 @@ void ArathiBasin::AssaultControlPoint(Player* pPlayer, uint32 Id)
             {
                 case AB_CONTROL_POINT_MINE:
                     {
-                        if(en && en->GetMobCount(0) < en->GetQuest()->required_mobcount[0])
+                        if(en && en->GetMobCount(0) < en->GetQuest()->ReqCreatureOrGOId[0])
                         {
                             en->SetMobCount(0, en->GetMobCount(0) + 1);
                             en->SendUpdateAddKill(0);
@@ -949,7 +949,7 @@ void ArathiBasin::AssaultControlPoint(Player* pPlayer, uint32 Id)
                     break;
                 case AB_CONTROL_POINT_LUMBERMILL:
                     {
-                        if(en && en->GetMobCount(1) < en->GetQuest()->required_mobcount[1])
+                        if(en && en->GetMobCount(1) < en->GetQuest()->ReqCreatureOrGOId[1])
                         {
                             en->SetMobCount(1, en->GetMobCount(1) + 1);
                             en->SendUpdateAddKill(1);
@@ -959,7 +959,7 @@ void ArathiBasin::AssaultControlPoint(Player* pPlayer, uint32 Id)
                     break;
                 case AB_CONTROL_POINT_BLACKSMITH:
                     {
-                        if(en && en->GetMobCount(2) < en->GetQuest()->required_mobcount[2])
+                        if(en && en->GetMobCount(2) < en->GetQuest()->ReqCreatureOrGOId[2])
                         {
                             en->SetMobCount(2, en->GetMobCount(2) + 1);
                             en->SendUpdateAddKill(2);
@@ -969,7 +969,7 @@ void ArathiBasin::AssaultControlPoint(Player* pPlayer, uint32 Id)
                     break;
                 case AB_CONTROL_POINT_FARM:
                     {
-                        if(en && en->GetMobCount(3) < en->GetQuest()->required_mobcount[3])
+                        if(en && en->GetMobCount(3) < en->GetQuest()->ReqCreatureOrGOId[3])
                         {
                             en->SetMobCount(3, en->GetMobCount(3) + 1);
                             en->SendUpdateAddKill(3);
