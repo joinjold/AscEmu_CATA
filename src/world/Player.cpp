@@ -10342,8 +10342,7 @@ void Player::_AddSkillLine(uint32 SkillLine, uint32 Curr_sk, uint32 Max_sk)
 
 void Player::_UpdateSkillFields()
 {
-    uint32 f = PLAYER_SKILL_RANK_0;     // field
-    uint32 m = PLAYER_SKILL_MAX_RANK_0; // maximum (not used currently)
+    uint32 f = PLAYER_SKILL_LINEID_0;     // field
 
     /* Set the valid skills */
     for (SkillMap::iterator itr = m_skills.begin(); itr != m_skills.end();)
