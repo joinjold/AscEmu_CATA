@@ -697,13 +697,6 @@ struct ItemPrototype
     }
 };
 
-struct ItemName
-{
-    uint32 entry;
-    char* name;
-    uint32 slot;
-};
-
 typedef struct
 {
     uint32 setid;
