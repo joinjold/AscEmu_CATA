@@ -35,7 +35,6 @@ extern SERVER_DECL SQLStorage<TeleportCoords, HashMapStorageContainer<TeleportCo
 extern SERVER_DECL SQLStorage<FishingZoneEntry, HashMapStorageContainer<FishingZoneEntry> >             FishingZoneStorage;
 extern SERVER_DECL SQLStorage<MapInfo, ArrayStorageContainer<MapInfo> >                                 WorldMapInfoStorage;
 extern SERVER_DECL SQLStorage<ZoneGuardEntry, HashMapStorageContainer<ZoneGuardEntry> >                 ZoneGuardStorage;
-extern SERVER_DECL SQLStorage<UnitModelSizeEntry, HashMapStorageContainer<UnitModelSizeEntry> >         UnitModelSizeStorage;
 extern SERVER_DECL SQLStorage<CreatureText, HashMapStorageContainer<CreatureText> >             CreatureTextStorage;
 extern SERVER_DECL SQLStorage<GossipMenuOption, HashMapStorageContainer<GossipMenuOption> >             GossipMenuOptionStorage;
 extern SERVER_DECL SQLStorage<WorldStringTable, HashMapStorageContainer<WorldStringTable> >             WorldStringTableStorage;

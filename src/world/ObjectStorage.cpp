@@ -23,7 +23,7 @@
 
 /** Table formats converted to strings
  */
-const char * gItemPrototypeFormat                       = "uuuusuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuffuffuuuuuuuuuufuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuusuuuuuuuuuuuuuuuuuuuuuuuuuuuuu";
+const char * gItemPrototypeFormat                       = "uuuusuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuffuffuuuuuuuuuufuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuusuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu";
 const char * gCreatureNameFormat                        = "usssuuuuuuuuuuuffcuuuuuuu";
 const char * gGameObjectNameFormat                      = "uuussssuuuuuuuuuuuuuuuuuuuuuuuufuuuuuu";
 const char * gCreatureProtoFormat                       = "uuuuuuufuuuffuuffuuuuuuuuffsuuufffuuuuuuuuuuuuuuuuu";
@@ -41,7 +41,6 @@ const char* gFishingFormat                              = "uuu";
 const char* gWorldMapInfoFormat                         = "uuuuuufffusuuuuuuuufu";
 const char* gPointOfInterestFormat                      = "uffuuus"; // added for guards to point it to minimap
 const char* gZoneGuardsFormat                           = "uuu";
-const char* gUnitModelSizeFormat                        = "ufu";
 const char* gCreatureTextFormat                         = "usuuuuuuuuu";
 const char* gGossipMenuOptionFormat                     = "us";
 const char* gWorldStringTableFormat                     = "us";  // p2wow added [for worldserver common message storage]
@@ -66,7 +65,6 @@ SERVER_DECL SQLStorage<TeleportCoords, HashMapStorageContainer<TeleportCoords> >
 SERVER_DECL SQLStorage<FishingZoneEntry, HashMapStorageContainer<FishingZoneEntry> >        FishingZoneStorage;
 SERVER_DECL SQLStorage<MapInfo, ArrayStorageContainer<MapInfo> >                            WorldMapInfoStorage;
 SERVER_DECL SQLStorage<ZoneGuardEntry, HashMapStorageContainer<ZoneGuardEntry> >            ZoneGuardStorage;
-SERVER_DECL SQLStorage<UnitModelSizeEntry, HashMapStorageContainer<UnitModelSizeEntry> >    UnitModelSizeStorage;
 SERVER_DECL SQLStorage<CreatureText, HashMapStorageContainer<CreatureText> >                CreatureTextStorage;
 SERVER_DECL SQLStorage<GossipMenuOption, HashMapStorageContainer<GossipMenuOption> >        GossipMenuOptionStorage;
 SERVER_DECL SQLStorage<WorldStringTable, HashMapStorageContainer<WorldStringTable> >        WorldStringTableStorage;
@@ -351,19 +349,6 @@ void ObjectMgr::LoadExtraCreatureProtoStuff()
 
 void ObjectMgr::LoadExtraItemStuff()
 {
-    std::map<uint32, uint32> foodItems;
-    QueryResult* result = WorldDatabase.Query("SELECT * FROM itempetfood ORDER BY entry");
-    if (result)
-    {
-        Field* f = result->Fetch();
-        do
-        {
-            foodItems.insert(std::make_pair(f[0].GetUInt32(), f[1].GetUInt32()));
-        }
-        while(result->NextRow());
-        delete result;
-    }
-
     StorageContainerIterator<ItemPrototype> * itr = ItemPrototypeStorage.MakeIterator();
     ItemPrototype* pItemPrototype;
     while(!itr->AtEnd())
@@ -390,13 +375,6 @@ void ObjectMgr::LoadExtraItemStuff()
         pItemPrototype->lowercase_name = pItemPrototype->Name1;
         for (uint32 j = 0; j < pItemPrototype->lowercase_name.length(); ++j)
             pItemPrototype->lowercase_name[j] = static_cast<char>(tolower(pItemPrototype->lowercase_name[j]));
-
-        //load item_pet_food_type from extra table
-        uint32 ft = 0;
-        std::map<uint32, uint32>::iterator iter = foodItems.find(pItemPrototype->ItemId);
-        if (iter != foodItems.end())
-            ft = iter->second;
-        pItemPrototype->FoodType = ft ;
 
         // forced pet entries
         switch(pItemPrototype->ItemId)
@@ -524,7 +502,6 @@ void ObjectMgr::LoadExtraItemStuff()
     }
 
     itr->Destruct();
-    foodItems.clear();
 }
 
 void ObjectMgr::LoadExtraGameObjectStuff()
@@ -561,8 +538,6 @@ void Storage_FillTaskList(TaskList & tl)
     make_task(NpcTextStorage, GossipText, HashMapStorageContainer, "npc_text", gNpcTextFormat);
     make_task(WorldMapInfoStorage, MapInfo, ArrayStorageContainer, "worldmap_info", gWorldMapInfoFormat);
     make_task(ZoneGuardStorage, ZoneGuardEntry, HashMapStorageContainer, "zoneguards", gZoneGuardsFormat);
-    make_task(UnitModelSizeStorage, UnitModelSizeEntry, HashMapStorageContainer, "unit_display_sizes", gUnitModelSizeFormat);
-
     make_task(CreatureTextStorage, CreatureText, HashMapStorageContainer, "npc_script_text", gCreatureTextFormat);
     make_task(GossipMenuOptionStorage, GossipMenuOption, HashMapStorageContainer, "gossip_menu_option", gGossipMenuOptionFormat);
     make_task(WorldStringTableStorage, WorldStringTable, HashMapStorageContainer, "worldstring_tables", gWorldStringTableFormat);
@@ -609,7 +584,6 @@ void Storage_Cleanup()
     NpcTextStorage.Cleanup();
     WorldMapInfoStorage.Cleanup();
     ZoneGuardStorage.Cleanup();
-    UnitModelSizeStorage.Cleanup();
     CreatureTextStorage.Cleanup();
     GossipMenuOptionStorage.Cleanup();
     WorldStringTableStorage.Cleanup();
@@ -666,8 +640,6 @@ bool LoadAdditionalTable(const char* TableName, const char* SecondName, bool fir
         WorldMapInfoStorage.LoadAdditionalData(SecondName, gWorldMapInfoFormat);
     else if (!stricmp(TableName, "zoneguards"))
         ZoneGuardStorage.LoadAdditionalData(SecondName, gZoneGuardsFormat);
-    else if (!stricmp(TableName, "unit_display_sizes"))
-        UnitModelSizeStorage.LoadAdditionalData(SecondName, gUnitModelSizeFormat);
     else if (!stricmp(TableName, "points_of_interest"))
         PointOfInterestStorage.LoadAdditionalData(SecondName, gPointOfInterestFormat);
 
@@ -712,8 +684,6 @@ bool Storage_ReloadTable(const char* TableName)
         WorldMapInfoStorage.Reload();
     else if (!stricmp(TableName, "zoneguards"))
         ZoneGuardStorage.Reload();
-    else if (!stricmp(TableName, "unit_display_sizes"))
-        UnitModelSizeStorage.Reload();
     else if (!stricmp(TableName, "command_overrides"))    // Command Overrides
     {
         CommandTableStorage::getSingleton().Dealloc();
