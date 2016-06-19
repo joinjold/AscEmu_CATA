@@ -809,7 +809,7 @@ bool QuestMgr::OnGameObjectActivate(Player* plr, GameObject* go)
             {
                 int32 id = qst->ReqCreatureOrGOId[k];
                 uint32 count = qst->ReqCreatureOrGOCount[k];
-                if (id == NULL || count == NULL)
+                if (id == 0 || count == 0)
                     continue;
             }
 
@@ -873,7 +873,7 @@ void QuestMgr::_OnPlayerKill(Player* plr, uint32 entry, bool IsGroupKill)
                 {
                         int32 id = qst->ReqCreatureOrGOId[j];
                         uint32 count = qst->ReqCreatureOrGOCount[j];
-                        if (id == NULL || count == NULL)
+                        if (id == 0 || count == 0)
                             continue;
 
                         if (qst->ReqCreatureOrGOId[j] == static_cast<int32>(entry) && qst->m_reqMobType[j] == QUEST_MOB_TYPE_CREATURE && qle->m_mobcount[j] < qst->ReqCreatureOrGOCount[j])
@@ -1015,7 +1015,7 @@ void QuestMgr::OnPlayerItemPickup(Player* plr, Item* item)
             {
                 int32 id = qle->GetQuest()->ReqCreatureOrGOId[k];
                 uint32 count = qle->GetQuest()->ReqCreatureOrGOCount[k];
-                if (id == NULL || count == NULL)
+                if (id == 0 || count == 0)
                     continue;
             }
 

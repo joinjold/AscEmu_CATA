@@ -869,7 +869,7 @@ bool ChatHandler::HandleQuestAddStartCommand(const char* args, WorldSession* m_s
     recout += qname;
     recout += "\n\n";
     SendMultilineMessage(m_session, recout.c_str());
-    sGMLog.writefromsession(m_session, "added starter of quest %u [%s] to NPC %u [%s]", qst->GetQuestId(), qst->GetTitle(), unit->GetEntry(), unit->GetCreatureInfo()->Name);
+    sGMLog.writefromsession(m_session, "added starter of quest %u [%s] to NPC %u", qst->GetQuestId(), qst->GetTitle(), unit->GetEntry());
 
     delete qstrel;
     return true;
@@ -954,7 +954,7 @@ bool ChatHandler::HandleQuestAddFinishCommand(const char* args, WorldSession* m_
     recout += qname;
     recout += "\n\n";
     SendMultilineMessage(m_session, recout.c_str());
-    sGMLog.writefromsession(m_session, "added finisher of quest %u [%s] to NPC %u [%s]", qst->GetQuestId(), qst->GetTitle(), unit->GetEntry(), unit->GetCreatureInfo()->Name);
+    sGMLog.writefromsession(m_session, "added finisher of quest %u [%s] to NPC %u", qst->GetQuestId(), qst->GetTitle(), unit->GetEntry());
 
     delete qstrel;
     return true;
@@ -1051,7 +1051,7 @@ bool ChatHandler::HandleQuestDelStartCommand(const char* args, WorldSession* m_s
     recout += qname;
     recout += "\n\n";
     SendMultilineMessage(m_session, recout.c_str());
-    sGMLog.writefromsession(m_session, "deleted starter of quest %u [%s] to NPC %u [%s]", qst->GetQuestId(), qst->GetTitle(), unit->GetEntry(), unit->GetCreatureInfo()->Name);
+    sGMLog.writefromsession(m_session, "deleted starter of quest %u [%s] to NPC %u", qst->GetQuestId(), qst->GetTitle(), unit->GetEntry());
 
     delete qstrel;
     return true;
@@ -1136,7 +1136,7 @@ bool ChatHandler::HandleQuestDelFinishCommand(const char* args, WorldSession* m_
     recout += qname;
     recout += "\n\n";
     SendMultilineMessage(m_session, recout.c_str());
-    sGMLog.writefromsession(m_session, "deleted finisher of quest %u [%s] to NPC %u [%s]", qst->GetQuestId(), qst->GetTitle(), unit->GetEntry(), unit->GetCreatureInfo()->Name);
+    sGMLog.writefromsession(m_session, "deleted finisher of quest %u [%s] to NPC %u", qst->GetQuestId(), qst->GetTitle(), unit->GetEntry());
 
     delete qstrel;
     return true;
@@ -1469,7 +1469,7 @@ bool ChatHandler::HandleQuestRemoveCommand(const char* args, WorldSession* m_ses
     if (qst)
     {
         recout = RemoveQuestFromPlayer(plr, qst);
-        sGMLog.writefromsession(m_session, "removed quest %u [%s] from player %s%", qst->GetQuestId(), qst->GetTitle(), plr->GetName());
+        sGMLog.writefromsession(m_session, "removed quest %u [%s] from player %s", qst->GetQuestId(), qst->GetTitle(), plr->GetName());
     }
     else
         recout = "Invalid quest selected, unable to remove.\n\n";
