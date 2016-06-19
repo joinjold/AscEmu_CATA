@@ -22,6 +22,7 @@
 #define WOWSERVER_QUEST_H
 
 #include "QuestDefines.hpp"
+#include "Definitions.h"
 
 #define MAX_REQUIRED_QUEST_ITEM 6
 
