@@ -1469,7 +1469,7 @@ bool ChatHandler::HandleQuestRemoveCommand(const char* args, WorldSession* m_ses
     if (qst)
     {
         recout = RemoveQuestFromPlayer(plr, qst);
-        sGMLog.writefromsession(m_session, "removed quest %u [%s] from player %s%", qst->GetQuestId(), qst->GetTitle(), plr->GetName());
+        sGMLog.writefromsession(m_session, "removed quest %u [%s] from player %s%", qst->GetQuestId(), qst->GetTitle().c_str(), plr->GetName());
     }
     else
         recout = "Invalid quest selected, unable to remove.\n\n";
