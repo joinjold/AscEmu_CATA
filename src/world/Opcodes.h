@@ -842,7 +842,7 @@ enum Opcodes
     CMSG_AFK_MONITOR_INFO_REQUEST                   = 0x503,
     SMSG_AFK_MONITOR_INFO_RESPONSE                  = 0x504,
     CMSG_AFK_MONITOR_INFO_CLEAR                     = 0x505,
-    SMSG_CORPSE_NOT_IN_INSTANCE                     = 0x506,
+    SMSG_CORPSE_NOT_IN_INSTANCE                     = 0x02A14,
     SMSG_CAMERA_SHAKE                               = 0x50A,
     SMSG_SOCKET_GEMS_RESULT                         = 0x50B,
     CMSG_SET_CHARACTER_MODEL                        = 0x50C,
@@ -892,7 +892,7 @@ enum Opcodes
     CMSG_TIME_SYNC_RESP                                 = 0x3B0C,
     SMSG_SET_PROFICIENCY                                = 0x6207,   // not sure
     SMSG_ACTION_BUTTONS                                 = 0x38B5,
-    CMSG_SET_SELECTION                                  = 0x0506,
+    CMSG_SET_SELECTION                                  = 0x506,
     SMSG_BINDPOINTUPDATE                                = 0x0527,
     SMSG_PLAYERBOUND                                    = 0x2516,
     CMSG_PLAYED_TIME                                    = 0x0804,
