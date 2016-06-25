@@ -1510,7 +1510,6 @@ bool ChatHandler::HandleFlyCommand(const char* args, WorldSession* m_session)
     {
         WorldPacket fly(SMSG_MOVE_SET_CAN_FLY, 13);
         chr->m_setflycheat = true;
-        
         ObjectGuid guid = chr->GetGUID();
         fly.WriteByteMask(guid[1]);
         fly.WriteByteMask(guid[6]);
@@ -1529,7 +1528,6 @@ bool ChatHandler::HandleFlyCommand(const char* args, WorldSession* m_session)
         fly.WriteByteSeq(guid[7]);
         fly.WriteByteSeq(guid[0]);
         fly.WriteByteSeq(guid[5]);
-
         chr->SendMessageToSet(&fly, true);
         BlueSystemMessage(chr->GetSession(), "Flying mode enabled.");
         if (chr != m_session->GetPlayer())
@@ -1539,7 +1537,6 @@ bool ChatHandler::HandleFlyCommand(const char* args, WorldSession* m_session)
     {
         WorldPacket fly(SMSG_MOVE_UNSET_CAN_FLY, 13);
         chr->m_setflycheat = false;
-        
         ObjectGuid guid = chr->GetGUID();
         fly.WriteByteMask(guid[1]);
         fly.WriteByteMask(guid[4]);
@@ -1558,7 +1555,6 @@ bool ChatHandler::HandleFlyCommand(const char* args, WorldSession* m_session)
         fly.WriteByteSeq(guid[3]);
         fly.WriteByteSeq(guid[5]);
         fly.WriteByteSeq(guid[7]);
-
         chr->SendMessageToSet(&fly, true);
         BlueSystemMessage(chr->GetSession(), "Flying mode disabled.");
         if (chr != m_session->GetPlayer())

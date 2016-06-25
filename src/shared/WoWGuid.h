@@ -40,14 +40,22 @@ public:
     {
         ASSERT(index < sizeof(uint64));
 
+#if ARCEMU_ENDIAN == ARCEMU_LITTLEENDIAN
+        return _data.byte[index];
+#else
         return _data.byte[7 - index];
+#endif
     }
 
     uint8 const& operator[](uint32 index) const
     {
         ASSERT(index < sizeof(uint64));
 
+#if ARCEMU_ENDIAN == ARCEMU_LITTLEENDIAN
+        return _data.byte[index];
+#else
         return _data.byte[7 - index];
+#endif
     }
 
     operator uint64()

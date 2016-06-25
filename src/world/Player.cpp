@@ -1829,13 +1829,12 @@ void Player::smsg_InitialSpells()
 #endif
     }
 
-
     *(uint16*)&data.contents()[pos] = (uint16)itemCount;
 
     GetSession()->SendPacket(&data);
 
-    uint32 v = 0;
-    GetSession()->OutPacket(SMSG_SERVER_BUCK_DATA, 4, &v);
+    //uint32 v = 0;
+    //GetSession()->OutPacket(SMSG_SERVER_BUCK_DATA, 4, &v);
     //Log::getSingleton().outDetail("CHARACTER: Sent Initial Spells");
 }
 
@@ -4551,6 +4550,28 @@ void Player::SetMovement(uint8 pType, uint32 flag)
 void Player::SetSpeeds(uint8 type, float speed)
 {
     WorldPacket data(50);
+    /*
+    if (type != SWIMBACK)
+    {
+        data << GetNewGUID();
+        data << m_speedChangeCounter++;
+        if (type == RUN)
+            data << uint8(1);
+
+        data << float(speed);
+    }
+    else
+    {
+        data << GetNewGUID();
+        data << uint32(0);
+        data << uint8(0);
+        data << uint32(getMSTime());
+        data << GetPosition();
+        data << float(m_position.o);
+        data << uint32(0);
+        data << float(speed);
+    }
+    */
 
     ObjectGuid guid = GetGUID();
 
@@ -4581,7 +4602,7 @@ void Player::SetSpeeds(uint8 type, float speed)
         data.WriteByteSeq(guid[7]);
         data.WriteByteSeq(guid[3]);
         */
-    } break;
+        } break;
 
     case RUN:
     {
@@ -14423,14 +14444,11 @@ bool Player::IsPlayerJumping(MovementInfo const& minfo, uint16 opcode)
         jumping = false;
         return false;
     }
-
     if (!jumping && (opcode == CMSG_MOVE_JUMP || minfo.GetMovementFlags() & MOVEMENTFLAG_FALLING))
     {
         jumping = true;
         return true;
     }
-
-    return false;
 }
 
 void Player::HandleBreathing(MovementInfo & movement_info, WorldSession* pSession)

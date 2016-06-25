@@ -2189,7 +2189,7 @@ void Spell::SendSpellGo()
 
     if (flags & SPELL_GO_FLAGS_EXTRA_MESSAGE)
     {
-        data << (uint8)(ModeratedTargets.size()); //number if misses
+        data << (uint8)(ModeratedTargets.size()); //number of misses
         writeSpellMissedTargets(&data);
     }
     else
@@ -2252,12 +2252,11 @@ void Spell::SendSpellGo()
             traveltime = (sqrtf(dx * dx + dy * dy) / (cosf(missilepitch) * missilespeed)) * 1000;
             */
 
-    if (flags & 0x20000)
+    if (flags & 0x20000) // CAST_FLAG_ADJUST_MISSILE I think
     {
         data << float(m_missilePitch);
         data << uint32(m_missileTravelTime);
     }
-
 
     if (m_targets.m_targetMask & TARGET_FLAG_DEST_LOCATION)
         data << uint8(0);   //some spells require this ? not sure if it is last byte or before that.

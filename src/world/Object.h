@@ -637,6 +637,7 @@ class SERVER_DECL Object : public EventableObject
 		float m_swimSpeed;
 		float m_backSwimSpeed;
 		float m_turnRate;
+        float m_pitchRate;
 		float m_flySpeed;
 		float m_backFlySpeed;
 
@@ -695,7 +696,7 @@ class SERVER_DECL Object : public EventableObject
 				RemoveFromWorld(true);
 			delete this;
 		}
-		/// Play's a sound to players in range.
+		/// Plays a sound to players in range.
 		void PlaySoundToSet(uint32 sound_entry);
 		/// Is the player in a battleground?
 		bool IsInBg();
@@ -740,6 +741,21 @@ class SERVER_DECL Object : public EventableObject
 		LocationVector m_position;
 		LocationVector m_lastMapUpdatePosition;
 		LocationVector m_spawnLocation;
+
+        // modulos a radian orientation to the range of 0..2PI
+        static float NormalizeOrientation(float o)
+        {
+            // fmod only supports positive numbers. Thus we have
+            // to emulate negative numbers
+            if (o < 0)
+            {
+                float mod = o *-1;
+                mod = fmod(mod, 2.0f * static_cast<float>(M_PI));
+                mod = -mod + 2.0f * static_cast<float>(M_PI);
+                return mod;
+            }
+            return fmod(o, 2.0f * static_cast<float>(M_PI));
+        }
 
 		/// Object properties.
 		union
