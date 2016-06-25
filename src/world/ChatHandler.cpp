@@ -77,7 +77,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recv_data)
     WorldPacket* data = NULL;
 
     uint32 type;
-    int32 lang = LANG_UNIVERSAL;
+    int32 lang;
 
     const char* pMisc = NULL;
     const char* pMsg = NULL;
@@ -129,7 +129,12 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recv_data)
             return;
     }
 
-    recv_data >> lang;
+    if (type != CHAT_MSG_EMOTE && type != CHAT_MSG_AFK && type != CHAT_MSG_DND)
+        recv_data >> lang;
+    else
+        lang = LANG_UNIVERSAL;
+
+    Log.Debug("ChatHandler", "player mod language %u and lang is %u \n", GetPlayer()->m_modlanguage, lang);
 
     if (lang >= NUM_LANGUAGES)
         return;
@@ -192,8 +197,28 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recv_data)
     switch (type)
     {
         case CHAT_MSG_SAY:
+        case CHAT_MSG_PARTY:
+        case CHAT_MSG_PARTY_LEADER:
+        case CHAT_MSG_BATTLEGROUND_LEADER:
+        case CHAT_MSG_GUILD:
+        case CHAT_MSG_OFFICER:
+        case CHAT_MSG_RAID:
+        case CHAT_MSG_RAID_LEADER:
+        case CHAT_MSG_RAID_WARNING:
+        case CHAT_MSG_BATTLEGROUND:
+        case CHAT_MSG_AFK:
+        case CHAT_MSG_DND:
             msg = recv_data.ReadString(recv_data.readBits(9));
             break;
+
+        case CHAT_MSG_WHISPER:
+        {
+            uint32 toLength, msgLength;
+            toLength = recv_data.readBits(10);
+            msgLength = recv_data.readBits(9);
+            to = recv_data.ReadString(toLength);
+            msg = recv_data.ReadString(msgLength);
+        }
         default:
             LOG_ERROR("CHAT: unknown msg type %u, lang: %u", type, lang);
     }
@@ -216,7 +241,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recv_data)
         case CHAT_MSG_EMOTE:
         {
             if (sWorld.interfaction_chat && lang > 0)
-                lang = 0;
+                lang = LANG_UNIVERSAL;
 
             if (g_chatFilter->Parse(msg))
             {
@@ -241,7 +266,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recv_data)
         case CHAT_MSG_SAY:
         {
             if (sWorld.interfaction_chat && lang > 0)
-                lang = 0;
+                lang = LANG_UNIVERSAL;
 
             if (sChatHandler.ParseCommands(msg.c_str(), this) > 0)
                 break;
@@ -283,7 +308,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recv_data)
                 break;
 
             if (sWorld.interfaction_chat && lang > 0)
-                lang = 0;
+                lang = LANG_UNIVERSAL;
 
             if (g_chatFilter->Parse(msg) == true)
             {
@@ -374,7 +399,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recv_data)
         case CHAT_MSG_YELL:
         {
             if (sWorld.interfaction_chat && lang > 0)
-                lang = 0;
+                lang = LANG_UNIVERSAL;
 
             if (sChatHandler.ParseCommands(msg.c_str(), this) > 0)
                 break;

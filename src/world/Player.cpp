@@ -1835,7 +1835,7 @@ void Player::smsg_InitialSpells()
     GetSession()->SendPacket(&data);
 
     uint32 v = 0;
-    GetSession()->OutPacket(0x041d, 4, &v);
+    GetSession()->OutPacket(SMSG_SERVER_BUCK_DATA, 4, &v);
     //Log::getSingleton().outDetail("CHARACTER: Sent Initial Spells");
 }
 
@@ -4552,43 +4552,65 @@ void Player::SetSpeeds(uint8 type, float speed)
 {
     WorldPacket data(50);
 
-    if (type != SWIMBACK)
-    {
-        data << GetNewGUID();
-        data << m_speedChangeCounter++;
-        if (type == RUN)
-            data << uint8(1);
-
-        data << float(speed);
-    }
-    else
-    {
-        data << GetNewGUID();
-        data << uint32(0);
-        data << uint8(0);
-        data << uint32(getMSTime());
-        data << GetPosition();
-        data << float(m_position.o);
-        data << uint32(0);
-        data << float(speed);
-    }
+    ObjectGuid guid = GetGUID();
 
     switch (type)
     {
-    case WALK:{
-        data.SetOpcode(SMSG_FORCE_WALK_SPEED_CHANGE);
+    case WALK:
+    {
+        data.SetOpcode(MSG_MOVE_SET_WALK_SPEED);
         m_walkSpeed = speed;
-
-        break; }
+        /*
+        data.WriteByteMask(guid[0]);
+        data.WriteByteMask(guid[4]);
+        data.WriteByteMask(guid[5]);
+        data.WriteByteMask(guid[2]);
+        data.WriteByteMask(guid[3]);
+        data.WriteByteMask(guid[1]);
+        data.WriteByteMask(guid[6]);
+        data.WriteByteMask(guid[7]);
+        data.flushBits();
+        data.WriteByteSeq(guid[6]);
+        data.WriteByteSeq(guid[1]);
+        data.WriteByteSeq(guid[5]);
+        data << float(m_walkSpeed);
+        data.WriteByteSeq(guid[2]);
+        data << uint32(m_speedChangeCounter++);
+        data.WriteByteSeq(guid[4]);
+        data.WriteByteSeq(guid[0]);
+        data.WriteByteSeq(guid[7]);
+        data.WriteByteSeq(guid[3]);
+        */
+    } break;
 
     case RUN:
     {
         if (speed == m_lastRunSpeed)
             return;
 
-        data.SetOpcode(SMSG_FORCE_RUN_SPEED_CHANGE);
+        data.SetOpcode(MSG_MOVE_SET_RUN_SPEED);
         m_runSpeed = speed;
         m_lastRunSpeed = speed;
+
+        data.WriteByteMask(guid[6]);
+        data.WriteByteMask(guid[1]);
+        data.WriteByteMask(guid[5]);
+        data.WriteByteMask(guid[2]);
+        data.WriteByteMask(guid[7]);
+        data.WriteByteMask(guid[0]);
+        data.WriteByteMask(guid[3]);
+        data.WriteByteMask(guid[4]);
+        data.flushBits();
+        data.WriteByteSeq(guid[5]);
+        data.WriteByteSeq(guid[3]);
+        data.WriteByteSeq(guid[1]);
+        data.WriteByteSeq(guid[4]);
+        data << uint32(m_speedChangeCounter++);
+        data << float(m_walkSpeed);
+        data.WriteByteSeq(guid[6]);
+        data.WriteByteSeq(guid[0]);
+        data.WriteByteSeq(guid[7]);
+        data.WriteByteSeq(guid[2]);
     }
     break;
     case RUNBACK:
@@ -4606,9 +4628,29 @@ void Player::SetSpeeds(uint8 type, float speed)
         if (speed == m_lastSwimSpeed)
             return;
 
-        data.SetOpcode(SMSG_FORCE_SWIM_SPEED_CHANGE);
+        data.SetOpcode(MSG_MOVE_SET_SWIM_SPEED);
         m_swimSpeed = speed;
         m_lastSwimSpeed = speed;
+
+        data.WriteByteMask(guid[5]);
+        data.WriteByteMask(guid[4]);
+        data.WriteByteMask(guid[7]);
+        data.WriteByteMask(guid[3]);
+        data.WriteByteMask(guid[2]);
+        data.WriteByteMask(guid[0]);
+        data.WriteByteMask(guid[1]);
+        data.WriteByteMask(guid[6]);
+        data.flushBits();
+        data.WriteByteSeq(guid[0]);
+        data << uint32(m_speedChangeCounter++);
+        data.WriteByteSeq(guid[6]);
+        data.WriteByteSeq(guid[3]);
+        data.WriteByteSeq(guid[5]);
+        data.WriteByteSeq(guid[2]);
+        data << float(m_swimSpeed);
+        data.WriteByteSeq(guid[1]);
+        data.WriteByteSeq(guid[7]);
+        data.WriteByteSeq(guid[4]);
     }
     break;
     case SWIMBACK:
@@ -4626,9 +4668,29 @@ void Player::SetSpeeds(uint8 type, float speed)
         if (speed == m_lastFlySpeed)
             return;
 
-        data.SetOpcode(SMSG_FORCE_FLIGHT_SPEED_CHANGE);
+        data.SetOpcode(MSG_MOVE_SET_FLIGHT_SPEED);
         m_flySpeed = speed;
         m_lastFlySpeed = speed;
+
+        data.WriteByteMask(guid[0]);
+        data.WriteByteMask(guid[5]);
+        data.WriteByteMask(guid[1]);
+        data.WriteByteMask(guid[6]);
+        data.WriteByteMask(guid[3]);
+        data.WriteByteMask(guid[2]);
+        data.WriteByteMask(guid[7]);
+        data.WriteByteMask(guid[4]);
+        data.flushBits();
+        data.WriteByteSeq(guid[0]);
+        data.WriteByteSeq(guid[1]);
+        data.WriteByteSeq(guid[7]);
+        data.WriteByteSeq(guid[5]);
+        data << float(m_flySpeed);
+        data << uint32(m_speedChangeCounter++);
+        data.WriteByteSeq(guid[2]);
+        data.WriteByteSeq(guid[6]);
+        data.WriteByteSeq(guid[3]);
+        data.WriteByteSeq(guid[4]);
     }
     break;
     default:
@@ -14361,11 +14423,14 @@ bool Player::IsPlayerJumping(MovementInfo const& minfo, uint16 opcode)
         jumping = false;
         return false;
     }
+
     if (!jumping && (opcode == CMSG_MOVE_JUMP || minfo.GetMovementFlags() & MOVEMENTFLAG_FALLING))
     {
         jumping = true;
         return true;
     }
+
+    return false;
 }
 
 void Player::HandleBreathing(MovementInfo & movement_info, WorldSession* pSession)

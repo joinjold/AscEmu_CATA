@@ -199,21 +199,6 @@ enum Opcodes
     CMSG_BUY_ITEM_IN_SLOT                           = 0x1A3,
     SMSG_BUY_ITEM                                   = 0x00F26,//4.3.4
     SMSG_BUY_FAILED                                 = 0x1A5,
-    CMSG_TAXICLEARALLNODES                          = 0x1A6,
-    CMSG_TAXIENABLEALLNODES                         = 0x1A7,
-    CMSG_TAXISHOWNODES                              = 0x1A8,
-    SMSG_SHOWTAXINODES                              = 0x1A9,
-    CMSG_TAXINODE_STATUS_QUERY                      = 0x1AA,
-    SMSG_TAXINODE_STATUS                            = 0x1AB,
-    CMSG_TAXIQUERYAVAILABLENODES                    = 0x1AC,
-    CMSG_ACTIVATETAXI                               = 0x1AD,
-    SMSG_ACTIVATETAXIREPLY                          = 0x1AE,
-    SMSG_NEW_TAXI_PATH                              = 0x1AF,
-    CMSG_TRAINER_LIST                               = 0x1B0,
-    SMSG_TRAINER_LIST                               = 0x1B1,
-    CMSG_TRAINER_BUY_SPELL                          = 0x1B2,
-    SMSG_TRAINER_BUY_SUCCEEDED                      = 0x1B3,
-    SMSG_TRAINER_BUY_FAILED                         = 0x1B4,
     CMSG_BINDER_ACTIVATE                            = 0x1B5,
     SMSG_PLAYERBINDERROR                            = 0x1B6,
     CMSG_BANKER_ACTIVATE                            = 0x1B7,
@@ -487,8 +472,6 @@ enum Opcodes
     SMSG_MOVE_SET_FLIGHT_OBSOLETE                   = 0x33E,
     SMSG_MOVE_UNSET_FLIGHT_OBSOLETE                 = 0x33F,
     CMSG_MOVE_FLIGHT_ACK_OBSOLETE                   = 0x340,
-    SMSG_MOVE_SET_CAN_FLY                           = 0x343,
-    SMSG_MOVE_UNSET_CAN_FLY                         = 0x344,
     CMSG_MOVE_SET_CAN_FLY_ACK                       = 0x345,
     CMSG_MOVE_SET_FLY                               = 0x346,
     CMSG_SOCKET_GEMS                                = 0x347,
@@ -540,7 +523,6 @@ enum Opcodes
     SMSG_SPLINE_SET_FLIGHT_BACK_SPEED               = 0x386,
     CMSG_MAELSTROM_INVALIDATE_CACHE                 = 0x387,
     SMSG_FLIGHT_SPLINE_SYNC                         = 0x388,
-    CMSG_SET_TAXI_BENCHMARK_MODE                    = 0x389,
     SMSG_JOINED_BATTLEGROUND_QUEUE                  = 0x38A,
     CMSG_MOVE_CHNG_TRANSPORT                        = 0x38D,
     MSG_PARTY_ASSIGNMENT                            = 0x38E,
@@ -647,7 +629,6 @@ enum Opcodes
     SMSG_SET_PLAYER_DECLINED_NAMES_RESULT           = 0x41A,
     CMSG_QUERY_SERVER_BUCK_DATA                     = 0x41B,
     CMSG_CLEAR_SERVER_BUCK_DATA                     = 0x41C,
-    SMSG_SERVER_BUCK_DATA                           = 0x41D,
     SMSG_REFER_A_FRIEND_FAILURE                     = 0x421,
     SMSG_SPLINE_MOVE_SET_FLYING                     = 0x422,
     SMSG_SPLINE_MOVE_UNSET_FLYING                   = 0x423,
@@ -1117,10 +1098,7 @@ enum Opcodes
     CMSG_FORCE_TURN_RATE_CHANGE_ACK                     = 0x12E0,
     MSG_MOVE_TELEPORT_ACK                               = 0x390C,
     MSG_MOVE_TOGGLE_FALL_LOGGING                        = 0x10C9,
-    MSG_MOVE_SET_RUN_SPEED                              = 0x3DB5,
     MSG_MOVE_SET_RUN_BACK_SPEED                         = 0x71B1,
-    MSG_MOVE_SET_WALK_SPEED                             = 0x1DA4,
-    MSG_MOVE_SET_SWIM_SPEED                             = 0x15A7,
     MSG_MOVE_SET_SWIM_BACK_SPEED                        = 0x5CA6,
     MSG_MOVE_SET_TURN_RATE                              = 0x30A5,
     MSG_MOVE_WORLDPORT_ACK                              = 0x2411,
@@ -1157,6 +1135,11 @@ enum Opcodes
     MSG_MOVE_TOGGLE_LOGGING                             = 0x10C5,
     MSG_MOVE_SET_FLIGHT_SPEED                           = 0x71A6,
     MSG_MOVE_SET_FLIGHT_BACK_SPEED                      = 0x30A2,
+    SMSG_MOVE_SET_CAN_FLY                               = 0x3DA1,
+    SMSG_MOVE_UNSET_CAN_FLY                             = 0x15A2,
+    MSG_MOVE_SET_RUN_SPEED                              = 0x3DB5,
+    MSG_MOVE_SET_WALK_SPEED                             = 0x1DA4,
+    MSG_MOVE_SET_SWIM_SPEED                             = 0x15A7,
 
     // LFG Check packet sending in LfgHandler.cpp
     SMSG_LFG_PLAYER_INFO                                = 0x1370,   // not updated
@@ -1280,6 +1263,24 @@ enum Opcodes
     CMSG_NPC_TEXT_QUERY                                 = 0x4E24,
     SMSG_NPC_TEXT_UPDATE                                = 0x4436,
     SMSG_NPC_WONT_TALK                                  = 0x1182,
+    CMSG_TRAINER_LIST                                   = 0x02336,
+    SMSG_TRAINER_LIST                                   = 0x04414,
+    CMSG_TRAINER_BUY_SPELL                              = 0x04415,
+    SMSG_TRAINER_BUY_SUCCEEDED                          = 0x06A05,
+    SMSG_TRAINER_BUY_FAILED                             = 0x00000,
+
+    //Taxi
+    CMSG_SET_TAXI_BENCHMARK_MODE = 0x04314,
+    CMSG_TAXICLEARALLNODES = 0x00000,
+    CMSG_TAXIENABLEALLNODES = 0x00000,
+    CMSG_TAXISHOWNODES = 0x00000,
+    SMSG_SHOWTAXINODES = 0x02A36,
+    CMSG_TAXINODE_STATUS_QUERY = 0x02F25,
+    SMSG_TAXINODE_STATUS = 0x02936,
+    CMSG_TAXIQUERYAVAILABLENODES = 0x06C06,
+    CMSG_ACTIVATETAXI = 0x06E06,
+    SMSG_ACTIVATETAXIREPLY = 0x06A37,
+    SMSG_NEW_TAXI_PATH = 0x04B35,
 
     //Player
     SMSG_CHAT_PLAYER_NOT_FOUND                          = 0x2526,
@@ -1405,11 +1406,15 @@ enum Opcodes
     MSG_MOVE_SET_FLIGHT_BACK_SPEED_CHEAT                = 0x1380,
 
     //Achievements
-    SMSG_RESPOND_INSPECT_ACHIEVEMENTS = 0x015B0,
-    SMSG_ACHIEVEMENT_EARNED = 0x04405,
-    SMSG_ALL_ACHIEVEMENT_DATA = 0x058B1,
-    SMSG_SERVER_FIRST_ACHIEVEMENT = 0x06424,
-    SMSG_ACHIEVEMENT_DELETED = 0x06A16,
+    SMSG_RESPOND_INSPECT_ACHIEVEMENTS                   = 0x015B0,
+    SMSG_ACHIEVEMENT_EARNED                             = 0x04405,
+    SMSG_ALL_ACHIEVEMENT_DATA                           = 0x058B1,
+    SMSG_SERVER_FIRST_ACHIEVEMENT                       = 0x06424,
+    SMSG_ACHIEVEMENT_DELETED                            = 0x06A16,
+
+
+    // Server
+    SMSG_SERVER_BUCK_DATA                               = 0x141E,
 
     //Unknown packet send by client to server
     CMSG_UNREGISTER_ALL_ADDON_PREFIXES                  = 0x3D54,   // unknown?

@@ -306,6 +306,53 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recv_data)
     /************************************************************************/
     _player->HandleBreathing(movementInfo, this);
 
+    /************************************************************************/
+    /* Transporters                                                         */
+    /************************************************************************/
+
+
+    // Not finished i will rewrit it with new system from Master branch
+    if ((mover->transporter_info.guid != 0) && (movement_info.GetTransportGuid().GetOldGuid() == 0))
+    {
+        /* we left the transporter we were on */
+
+        Transporter *transporter = objmgr.GetTransporter(Arcemu::Util::GUID_LOPART(mover->transporter_info.guid));
+        if (transporter != NULL)
+            transporter->RemovePassenger(mover);
+
+        mover->transporter_info.guid = 0;
+        _player->SpeedCheatReset();
+
+    }
+    else
+    {
+        if (movement_info.GetTransportGuid().GetOldGuid() != 0)
+        {
+
+            if (mover->transporter_info.guid == 0)
+            {
+                //Transporter *transporter = objmgr.GetTransporter(Arcemu::Util::GUID_LOPART(movement_info.GetTransportGuid()));
+                //if (transporter != NULL)
+                //    transporter->AddPassenger(mover);
+
+                /* set variables */
+                //mover->transporter_info.guid = movement_info.GetTransportGuid();
+                //mover->transporter_info.flags = movement_info.GetTransportTime();// Maybe TransportTime gets rewrited 
+                //mover->transporter_info.x = movement_info.GetTransportPos()->x;
+                //mover->transporter_info.y = movement_info.GetTransportPos()->y;
+                //mover->transporter_info.z = movement_info.GetTransportPos()->z;
+
+            }
+            else
+            {
+                /* no changes */
+                //mover->transporter_info.flags = movement_info.GetTransportTime(); // Maybe TransportTime gets rewrited 
+                //mover->transporter_info.x = movement_info.GetTransportPos()->x;
+                //mover->transporter_info.y = movement_info.GetTransportPos()->y;
+                //mover->transporter_info.z = movement_info.GetTransportPos()->z;
+            }
+        }
+    }
 
     /************************************************************************/
     /* Update our Positiin                                                  */

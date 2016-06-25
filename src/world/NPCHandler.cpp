@@ -133,11 +133,19 @@ void WorldSession::SendTrainerList(Creature* pCreature)
         data << pCreature->GetGUID();
         data << pTrainer->TrainerType;
 
+        data << uint32(0x0);	//maybe some speach ID ?
+
+        size_t count_pos = data.wpos();
         data << uint32(0);
+        
+        //data << uint32(pTrainer->Spells.size());
+
+        uint32 count = 0;
         for (std::vector<TrainerSpell>::iterator itr = pTrainer->Spells.begin(); itr != pTrainer->Spells.end(); ++itr)
         {
             pSpell = &(*itr);
             Status = TrainerGetSpellStatus(pSpell);
+
             if (pSpell->pCastRealSpell != NULL)
                 data << pSpell->pCastSpell->Id;
             else if (pSpell->pLearnSpell)
@@ -147,23 +155,23 @@ void WorldSession::SendTrainerList(Creature* pCreature)
 
             data << Status;
             data << pSpell->Cost;
-            data << Spacer;
-            data << uint32(pSpell->IsProfession);
             data << uint8(pSpell->RequiredLevel);
             data << pSpell->RequiredSkillLine;
             data << pSpell->RequiredSkillLineValue;
-            data << pSpell->RequiredSpell;
-            data << Spacer;    //this is like a spell override or something, ex : (id=34568 or id=34547) or (id=36270 or id=34546) or (id=36271 or id=34548)
-            data << Spacer;
+            data << uint32(0);
+            data << uint32(0);
+            data << uint32(0);
+            data << uint32(0);
             ++Count;
         }
 
-        *(uint32*)&data.contents()[12] = Count;
+        data.put<uint32>(count_pos, count);
 
         if (stricmp(pTrainer->UIMessage, "DMSG") == 0)
             data << _player->GetSession()->LocalizedWorldSrv(37);
         else
             data << pTrainer->UIMessage;
+
         SendPacket(&data);
     }
 }
@@ -175,8 +183,9 @@ void WorldSession::HandleTrainerBuySpellOpcode(WorldPacket & recvPacket)
 
     uint64 Guid;
     uint32 TeachingSpellID;
+    uint32 unk403;
 
-    recvPacket >> Guid >> TeachingSpellID;
+    recvPacket >> Guid >> unk403 >> TeachingSpellID;
     Creature* pCreature = _player->GetMapMgr()->GetCreature(GET_LOWGUID_PART(Guid));
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -242,7 +251,7 @@ void WorldSession::HandleTrainerBuySpellOpcode(WorldPacket & recvPacket)
 
     _player->_UpdateSkillFields();
 
-    WorldPacket data(SMSG_TRAINER_BUY_SUCCEEDED, 12);
+    WorldPacket data(SMSG_TRAINER_BUY_SUCCEEDED, 15);
 
     data << uint64(Guid) << uint32(TeachingSpellID);        // GUID of the trainer, ID of the spell we bought
     this->SendPacket(&data);
@@ -250,7 +259,7 @@ void WorldSession::HandleTrainerBuySpellOpcode(WorldPacket & recvPacket)
 
 uint8 WorldSession::TrainerGetSpellStatus(TrainerSpell* pSpell)
 {
-    if (!pSpell->pCastSpell && !pSpell->pLearnSpell)
+    if (!pSpell)
         return TRAINER_STATUS_NOT_LEARNABLE;
 
     if (pSpell->pCastRealSpell && (_player->HasSpell(pSpell->pCastRealSpell->Id) || _player->HasDeletedSpell(pSpell->pCastRealSpell->Id)))
@@ -268,7 +277,7 @@ uint8 WorldSession::TrainerGetSpellStatus(TrainerSpell* pSpell)
         || (pSpell->RequiredSkillLine && _player->_GetSkillLineCurrent(pSpell->RequiredSkillLine, true) < pSpell->RequiredSkillLineValue)
         //|| (pSpell->IsProfession && _player->GetPrimaryProfessionPoints() == 0)     //check level 1 professions if we can learn a new profession
        )
-        return TRAINER_STATUS_NOT_LEARNABLE;
+       return TRAINER_STATUS_NOT_LEARNABLE;
     return TRAINER_STATUS_LEARNABLE;
 }
 
