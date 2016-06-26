@@ -1148,6 +1148,21 @@ struct SpellEntry
         AuraFactoryFunc = NULL;
     }
 
+    bool IsProfession() const
+    {
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        {
+            if (eff[i].Effect == 118) // SPELL_EFFECT_SKILL
+            {
+                uint32 skill = eff[i].EffectMiscValue;
+                // MAYBE I MISSED SOME !!
+                if (skill == SKILL_FISHING || skill == SKILL_COOKING || skill == SKILL_FIRST_AID || skill == SKILL_ALCHEMY || skill == SKILL_ARCHAEOLOGY || skill == SKILL_BLACKSMITHING || skill == SKILL_ENGINERING || skill == SKILL_HERBALISM || skill == SKILL_LEATHERWORKING || skill == SKILL_JEWELCRAFTING)            
+                    return true;
+            }
+        }
+        return false;
+    }
+
     bool HasEffect(uint32 effect)
     {
         for (uint32 i = 0; i < MAX_SPELL_EFFECT_COUNT; ++i)

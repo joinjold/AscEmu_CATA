@@ -537,6 +537,8 @@ bool World::SetInitialWorldSettings()
     MAKE_TASK(ObjectMgr, LoadSpellProcs);
     MAKE_TASK(ObjectMgr, LoadSpellEffectsOverride);
     MAKE_TASK(ObjectMgr, LoadSpellTargetConstraints);
+    MAKE_TASK(ObjectMgr, LoadSpellRequired);
+    MAKE_TASK(ObjectMgr, LoadSkillLineAbilityMap);
     MAKE_TASK(ObjectMgr, LoadDefaultPetSpells);
     MAKE_TASK(ObjectMgr, LoadPetSpellCooldowns);
     MAKE_TASK(ObjectMgr, LoadGuildCharters);

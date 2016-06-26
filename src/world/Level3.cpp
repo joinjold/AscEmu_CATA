@@ -4205,8 +4205,8 @@ bool ChatHandler::HandleAddTrainerSpellCommand(const char* args, WorldSession* m
     if (pCreature == NULL)
         return true;
 
-    uint32 spellid, cost, reqspell, reqlevel, delspell;
-    if (sscanf(args, "%u %u %u %u %u", &spellid, &cost, &reqspell, &reqlevel, &delspell) != 5)
+    uint32 spellid, cost, reqlevel;
+    if (sscanf(args, "%u %u %u", &spellid, &cost, &reqlevel ) != 5)
         return false;
 
     Trainer* pTrainer = pCreature->GetTrainer();
@@ -4230,22 +4230,17 @@ bool ChatHandler::HandleAddTrainerSpellCommand(const char* args, WorldSession* m
     }
 
     TrainerSpell sp;
-    sp.Cost = cost;
-    sp.IsProfession = false;
-    sp.pLearnSpell = pSpell;
-    sp.pCastRealSpell = NULL;
-    sp.pCastSpell = NULL;
-    sp.RequiredLevel = reqlevel;
-    sp.RequiredSpell = reqspell;
-    sp.DeleteSpell = delspell;
+    sp.spellCost = cost;
+    sp.spell = pSpell->Id;
+    sp.reqLevel = reqlevel;
 
     pTrainer->Spells.push_back(sp);
     pTrainer->SpellCount++;
 
     SystemMessage(m_session, "Added spell %u (%s) to trainer.", pSpell->Id, pSpell->Name);
     sGMLog.writefromsession(m_session, "added spell %u to trainer %u", spellid, pCreature->GetEntry());
-    WorldDatabase.Execute("INSERT INTO trainer_spells VALUES(%u, %u, %u, %u, %u, %u, %u, %u, %u, %u)",
-                          pCreature->GetEntry(), (int)0, pSpell->Id, cost, reqspell, (int)0, (int)0, reqlevel, delspell, (int)0);
+    WorldDatabase.Execute("INSERT INTO trainer_spells VALUES(%u, %u, %u, %u, %u ,%u)",
+                          pCreature->GetEntry(), pSpell->Id, cost, uint32(0), uint32(0), reqlevel);
 
     return true;
 }

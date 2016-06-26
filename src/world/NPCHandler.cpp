@@ -133,44 +133,94 @@ void WorldSession::SendTrainerList(Creature* pCreature)
         data << pCreature->GetGUID();
         data << pTrainer->TrainerType;
 
-        data << uint32(0x0);	//maybe some speach ID ?
+        data << uint32(1); // different value for each trainer, also found in CMSG_TRAINER_BUY_SPELL
 
         size_t count_pos = data.wpos();
-        data << uint32(0);
-        
-        //data << uint32(pTrainer->Spells.size());
+        data << uint32(pTrainer->Spells.size());
+
+        bool can_learn_primary_prof = /*GetPlayer()->GetFreePrimaryProfessionPoints() >*/ 0;
 
         uint32 count = 0;
         for (std::vector<TrainerSpell>::iterator itr = pTrainer->Spells.begin(); itr != pTrainer->Spells.end(); ++itr)
         {
             pSpell = &(*itr);
-            Status = TrainerGetSpellStatus(pSpell);
 
-            if (pSpell->pCastRealSpell != NULL)
-                data << pSpell->pCastSpell->Id;
-            else if (pSpell->pLearnSpell)
-                data << pSpell->pLearnSpell->Id;
-            else
+            bool valid = true;
+            bool primary_prof_first_rank = false;
+            for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+            {
+                if (!pSpell->learnedSpell[i])
+                    continue;
+                
+                if (!_player->IsSpellFitByClassAndRace(pSpell->learnedSpell[i]))
+                {
+                    valid = false;
+                    break;
+                }
+                
+                //SpellEntry const* learnedSpellInfo = dbcSpell.LookupEntry(pSpell->learnedSpell[i]);
+                //if (learnedSpellInfo && learnedSpellInfo->IsPrimaryProfessionFirstRank())
+                    primary_prof_first_rank = true;
+            }
+            if (!valid)
                 continue;
 
-            data << Status;
-            data << pSpell->Cost;
-            data << uint8(pSpell->RequiredLevel);
-            data << pSpell->RequiredSkillLine;
-            data << pSpell->RequiredSkillLineValue;
-            data << uint32(0);
-            data << uint32(0);
-            data << uint32(0);
-            data << uint32(0);
-            ++Count;
-        }
+            TrainerSpellState state = TrainerGetSpellStatus(pSpell);
 
-        data.put<uint32>(count_pos, count);
+            data << uint32(pSpell->spell);                      // learned spell (or cast-spell in profession case)
+            data << uint8(state);
+            data << uint32(floor(pSpell->spellCost));
+
+            data << uint8(pSpell->reqLevel);
+            data << uint32(pSpell->reqSkill);
+            data << uint32(pSpell->reqSkillValue);
+
+            //prev + req or req + 0
+            uint8 maxReq = 0;
+            for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+            {
+                if (!pSpell->learnedSpell[i])
+                    continue;
+
+                //if (uint32 prevSpellId = sSpellMgr->GetPrevSpellInChain(pSpell->learnedSpell[i]))
+                {
+                    data << uint32(0); // prevSpellId
+                    ++maxReq;
+                }
+
+                if (maxReq == 2)
+                    break;
+
+                SpellsRequiringSpellMapBounds spellsRequired = objmgr.GetSpellsRequiredForSpellBounds(pSpell->learnedSpell[i]);
+                for (SpellsRequiringSpellMap::const_iterator itr2 = spellsRequired.first; itr2 != spellsRequired.second && maxReq < 3; ++itr2)
+                {
+                    data << uint32(itr2->second);
+                    ++maxReq;
+                }
+
+                if (maxReq == 2)
+                    break;
+            }
+            while (maxReq < 2)
+            {
+                data << uint32(0);
+                ++maxReq;
+            }
+
+            data << uint32(primary_prof_first_rank && can_learn_primary_prof ? 1 : 0);
+            // primary prof. learn confirmation dialog
+            data << uint32(primary_prof_first_rank ? 1 : 0);    // must be equal prev. field to have learn button in enabled state
+
+            
+            ++count;
+        }
 
         if (stricmp(pTrainer->UIMessage, "DMSG") == 0)
             data << _player->GetSession()->LocalizedWorldSrv(37);
         else
             data << pTrainer->UIMessage;
+
+        data.put<uint32>(count_pos, count);
 
         SendPacket(&data);
     }
@@ -183,9 +233,9 @@ void WorldSession::HandleTrainerBuySpellOpcode(WorldPacket & recvPacket)
 
     uint64 Guid;
     uint32 TeachingSpellID;
-    uint32 unk403;
+    uint32 TrainerId;
 
-    recvPacket >> Guid >> unk403 >> TeachingSpellID;
+    recvPacket >> Guid >> TrainerId >> TeachingSpellID;
     Creature* pCreature = _player->GetMapMgr()->GetCreature(GET_LOWGUID_PART(Guid));
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -200,8 +250,7 @@ void WorldSession::HandleTrainerBuySpellOpcode(WorldPacket & recvPacket)
     TrainerSpell* pSpell = NULL;
     for (std::vector<TrainerSpell>::iterator itr = pTrainer->Spells.begin(); itr != pTrainer->Spells.end(); ++itr)
     {
-        if ((itr->pCastSpell && itr->pCastSpell->Id == TeachingSpellID) ||
-            (itr->pLearnSpell && itr->pLearnSpell->Id == TeachingSpellID))
+        if (itr->spell == TeachingSpellID)
         {
             pSpell = &(*itr);
         }
@@ -217,16 +266,16 @@ void WorldSession::HandleTrainerBuySpellOpcode(WorldPacket & recvPacket)
     }
 
     // We can't learn it
-    if (TrainerGetSpellStatus(pSpell) > 0)
+    if (TrainerGetSpellStatus(pSpell) == TRAINER_SPELL_RED || TRAINER_SPELL_GRAY)
         return;
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // Teaching
-    _player->ModGold(-(int32)pSpell->Cost);
+    _player->ModGold(-(int32)pSpell->spellCost);
 
-    if (pSpell->pCastSpell)
+    if (pSpell->IsCastable())
     {
-        _player->CastSpell(_player, pSpell->pCastSpell->Id, true);
+        _player->CastSpell(_player, pSpell->spell, true);
     }
     else
     {
@@ -235,9 +284,9 @@ void WorldSession::HandleTrainerBuySpellOpcode(WorldPacket & recvPacket)
         _player->SendPlaySpellVisual(_player->GetGUID(), 0x16A);
 
         // add the spell itself
-        _player->addSpell(pSpell->pLearnSpell->Id);
+        _player->addSpell(pSpell->spell);
     }
-
+    /*
     if (pSpell->DeleteSpell)
     {
         // Remove old spell.
@@ -248,37 +297,76 @@ void WorldSession::HandleTrainerBuySpellOpcode(WorldPacket & recvPacket)
         else
             _player->removeSpell(pSpell->DeleteSpell, true, false, 0);
     }
-
+    */
     _player->_UpdateSkillFields();
 
-    WorldPacket data(SMSG_TRAINER_BUY_SUCCEEDED, 15);
+    WorldPacket data(SMSG_TRAINER_BUY_SUCCEEDED, 12);
 
     data << uint64(Guid) << uint32(TeachingSpellID);        // GUID of the trainer, ID of the spell we bought
     this->SendPacket(&data);
 }
 
-uint8 WorldSession::TrainerGetSpellStatus(TrainerSpell* pSpell)
+TrainerSpellState WorldSession::TrainerGetSpellStatus(TrainerSpell* pSpell)
 {
     if (!pSpell)
-        return TRAINER_STATUS_NOT_LEARNABLE;
+        return TRAINER_SPELL_RED;
 
-    if (pSpell->pCastRealSpell && (_player->HasSpell(pSpell->pCastRealSpell->Id) || _player->HasDeletedSpell(pSpell->pCastRealSpell->Id)))
-        return TRAINER_STATUS_ALREADY_HAVE;
+    bool hasSpell = true;
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
+        if (!pSpell->learnedSpell[i])
+            continue;
 
-    if (pSpell->pLearnSpell && (_player->HasSpell(pSpell->pLearnSpell->Id) || _player->HasDeletedSpell(pSpell->pLearnSpell->Id)))
-        return TRAINER_STATUS_ALREADY_HAVE;
+        if (!_player->HasSpell(pSpell->learnedSpell[i]))
+        {
+            hasSpell = false;
+            break;
+        }
+    }
+    // known spell
+    if (hasSpell)
+        return TRAINER_SPELL_GRAY;
 
+    // check skill requirement
+    if (pSpell->reqSkill && _player->_GetSkillLineCurrent(pSpell->reqSkill, true) < pSpell->reqSkillValue)
+        return TRAINER_SPELL_RED;
+
+    // check level requirement
+    if (_player->getLevel() < pSpell->reqLevel)
+        return TRAINER_SPELL_RED;
+
+    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+    {
+        if (!pSpell->learnedSpell[i])
+            continue;
+
+        // check race/class requirement     
+        if (!_player->IsSpellFitByClassAndRace(pSpell->learnedSpell[i]))
+            return TRAINER_SPELL_RED;
+
+        /*
+        if (uint32 prevSpell = GetPrevSpellInChain(pSpell->learnedSpell[i]))
+        {
+            // check prev.rank requirement
+            if (prevSpell && !_player->HasSpell(prevSpell))
+                return TRAINER_STATUS_NOT_LEARNABLE;
+        }
+        */
+
+        SpellsRequiringSpellMapBounds spellsRequired = objmgr.GetSpellsRequiredForSpellBounds(pSpell->learnedSpell[i]);
+        for (SpellsRequiringSpellMap::const_iterator itr = spellsRequired.first; itr != spellsRequired.second; ++itr)
+        {
+            // check additional spell requirement
+            if (!_player->HasSpell(itr->second))
+                return TRAINER_SPELL_RED;
+        }
+    }
+
+    /*
     if (pSpell->DeleteSpell && _player->HasDeletedSpell(pSpell->DeleteSpell))
-        return TRAINER_STATUS_ALREADY_HAVE;
+        return TRAINER_STATUS_ALREADY_HAVE;*/
 
-    if ((pSpell->RequiredLevel && _player->getLevel() < pSpell->RequiredLevel)
-        || (pSpell->RequiredSpell && !_player->HasSpell(pSpell->RequiredSpell))
-        || (pSpell->Cost && !_player->HasGold(pSpell->Cost))
-        || (pSpell->RequiredSkillLine && _player->_GetSkillLineCurrent(pSpell->RequiredSkillLine, true) < pSpell->RequiredSkillLineValue)
-        //|| (pSpell->IsProfession && _player->GetPrimaryProfessionPoints() == 0)     //check level 1 professions if we can learn a new profession
-       )
-       return TRAINER_STATUS_NOT_LEARNABLE;
-    return TRAINER_STATUS_LEARNABLE;
+    return TRAINER_SPELL_GREEN;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////

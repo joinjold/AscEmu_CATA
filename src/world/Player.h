@@ -727,6 +727,7 @@ class SERVER_DECL Player : public Unit
         bool removeSpell(uint32 SpellID, bool MoveToDeleted, bool SupercededSpell, uint32 SupercededSpellID);
         bool removeDeletedSpell(uint32 SpellID);
         void SendPreventSchoolCast(uint32 SpellSchool, uint32 unTimeMs);
+        bool IsSpellFitByClassAndRace(uint32 spell_id);
 
         /// PLEASE DO NOT INLINE!
         void AddOnStrikeSpell(SpellEntry* sp, uint32 delay)
