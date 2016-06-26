@@ -138,7 +138,9 @@ void WorldSession::SendTrainerList(Creature* pCreature)
         size_t count_pos = data.wpos();
         data << uint32(pTrainer->Spells.size());
 
-        bool can_learn_primary_prof = /*GetPlayer()->GetFreePrimaryProfessionPoints() >*/ 0;
+        uint32 value = GetPlayer()->GetFreePrimaryProfessionPoints();
+
+        bool can_learn_primary_prof = GetPlayer()->GetFreePrimaryProfessionPoints() < 2;
 
         uint32 count = 0;
         for (std::vector<TrainerSpell>::iterator itr = pTrainer->Spells.begin(); itr != pTrainer->Spells.end(); ++itr)
@@ -158,8 +160,8 @@ void WorldSession::SendTrainerList(Creature* pCreature)
                     break;
                 }
                 
-                //SpellEntry const* learnedSpellInfo = dbcSpell.LookupEntry(pSpell->learnedSpell[i]);
-                //if (learnedSpellInfo && learnedSpellInfo->IsPrimaryProfessionFirstRank())
+                SpellEntry* learnedSpellInfo = dbcSpell.LookupEntry(pSpell->learnedSpell[i]);
+                if (learnedSpellInfo && _player->IsPrimaryProfession(learnedSpellInfo))
                     primary_prof_first_rank = true;
             }
             if (!valid)
@@ -182,11 +184,9 @@ void WorldSession::SendTrainerList(Creature* pCreature)
                 if (!pSpell->learnedSpell[i])
                     continue;
 
-                //if (uint32 prevSpellId = sSpellMgr->GetPrevSpellInChain(pSpell->learnedSpell[i]))
-                {
-                    data << uint32(0); // prevSpellId
-                    ++maxReq;
-                }
+
+                data << uint32(0); // prevSpellId
+                ++maxReq;
 
                 if (maxReq == 2)
                     break;
@@ -207,10 +207,13 @@ void WorldSession::SendTrainerList(Creature* pCreature)
                 ++maxReq;
             }
 
-            data << uint32(primary_prof_first_rank && can_learn_primary_prof ? 1 : 0);
+            if (_player->IsPrimaryProfession(dbcSpell.LookupEntry(pSpell->spell)))
+                data << uint32(primary_prof_first_rank && can_learn_primary_prof ? 1 : 0);
+            else
+                data << uint32(1);
+
             // primary prof. learn confirmation dialog
             data << uint32(primary_prof_first_rank ? 1 : 0);    // must be equal prev. field to have learn button in enabled state
-
             
             ++count;
         }

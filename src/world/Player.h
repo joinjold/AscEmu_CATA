@@ -728,6 +728,28 @@ class SERVER_DECL Player : public Unit
         bool removeDeletedSpell(uint32 SpellID);
         void SendPreventSchoolCast(uint32 SpellSchool, uint32 unTimeMs);
         bool IsSpellFitByClassAndRace(uint32 spell_id);
+        uint32 GetFreePrimaryProfessionPoints() const { return GetUInt32Value(PLAYER_CHARACTER_POINTS); }
+
+        bool IsPrimaryProfession(SpellEntry* sp) const
+        {
+            for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+            {
+                if (sp->eff[i].Effect == 118)   //SPELL_EFFECT_SKILL
+                {
+                    uint32 skill = sp->eff[i].EffectMiscValue;
+
+                    if (IsPrimaryProfessionSkill(skill))
+                        return true;
+                }
+            }
+            return false;
+        }
+
+        bool IsPrimaryProfessionSkill(uint32 skill) const
+        {
+            skilllineentry* pSkill = dbcSkillLine.LookupEntry(skill);
+            return pSkill && pSkill->type == 11;    //SKILL_TYPE_PROFESSION
+        }
 
         /// PLEASE DO NOT INLINE!
         void AddOnStrikeSpell(SpellEntry* sp, uint32 delay)
