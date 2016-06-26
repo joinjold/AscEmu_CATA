@@ -33,6 +33,7 @@ class EventableObject;
 #include "WoWGuid.h"
 #include "../shared/LocationVector.h"
 #include "DBC/DBCStructures.hpp"
+#include "DBC/DBCStores.h"
 #include "../shared/StackBuffer.h"
 
 struct SpellEntry;

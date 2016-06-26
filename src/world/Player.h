@@ -30,6 +30,7 @@
 #include "ItemPrototype.h"
 #include "AchievementMgr.h"
 #include "Unit.h"
+#include "DBC/DBCStores.h"
 
 class QuestLogEntry;
 struct BGScore;
@@ -51,7 +52,6 @@ class LfgMatch;
 struct LevelInfo;
 class SpeedCheatDetector;
 struct GuildMember;
-struct skilllineentry;
 class QueryBuffer;
 class Quest;
 struct SpellShapeshiftFormEntry;
