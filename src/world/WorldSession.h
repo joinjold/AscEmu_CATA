@@ -29,6 +29,9 @@
 #include "FastQueue.h"
 #include "Unit.h"
 #include <stddef.h>
+#include "StackBuffer.h"
+#include "WUtil.h"
+
 
 class Player;
 class WorldPacket;

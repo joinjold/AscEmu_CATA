@@ -284,7 +284,7 @@ enum MovementFlags2
     MOVEFLAG2_INTERP_MASK = MOVEFLAG2_INTERP_MOVEMENT | MOVEFLAG2_INTERP_TURNING | MOVEFLAG2_INTERP_PITCHING
 };
 
-class MovementInfo
+class SERVER_DECL MovementInfo
 {
 public:
     MovementInfo() : moveFlags(0), moveFlags2(0), time(0),
