@@ -219,7 +219,6 @@ enum Opcodes
     SMSG_QUERY_TIME_RESPONSE                        = 0x1CF,
     SMSG_LOG_XPGAIN                                 = 0x1D0,
     SMSG_AURACASTLOG_OBSOLETE                       = 0x1D1,
-    CMSG_RECLAIM_CORPSE                             = 0x1D2,
     CMSG_WRAP_ITEM                                  = 0x1D3,
     MSG_MINIMAP_PING                                = 0x1D5,
     SMSG_RESISTLOG                                  = 0x1D6,
@@ -248,14 +247,11 @@ enum Opcodes
     CMSG_UNLEARN_TALENTS                            = 0x213,
     SMSG_GAMEOBJECT_SPAWN_ANIM_OBSOLETE             = 0x214,
     SMSG_GAMEOBJECT_DESPAWN_ANIM                    = 0x215,
-    MSG_CORPSE_QUERY                                = 0x216,
-    CMSG_SPIRIT_HEALER_ACTIVATE                     = 0x21C,
     CMSG_SET_STAT_CHEAT                             = 0x21D,
     SMSG_SET_REST_START_OBSOLETE                    = 0x21E,
     CMSG_SKILL_BUY_STEP                             = 0x21F,
     CMSG_SKILL_BUY_RANK                             = 0x220,
     CMSG_XP_CHEAT                                   = 0x221,
-    SMSG_SPIRIT_HEALER_CONFIRM                      = 0x222,
     CMSG_CHARACTER_POINT_CHEAT                      = 0x223,
     SMSG_GOSSIP_POI                                 = 0x224,
     CMSG_CHAT_IGNORED                               = 0x225,
@@ -305,7 +301,6 @@ enum Opcodes
     CMSG_AUCTION_LIST_BIDDER_ITEMS                  = 0x264,
     SMSG_AUCTION_BIDDER_LIST_RESULT                 = 0x265,
     CMSG_SET_AMMO                                   = 0x268,
-    SMSG_CORPSE_RECLAIM_DELAY                       = 0x269,
     CMSG_PET_CANCEL_AURA                            = 0x26B,
     CMSG_PLAYER_AI_CHEAT                            = 0x26C,
     MSG_LIST_STABLED_PETS                           = 0x26F,
@@ -502,7 +497,6 @@ enum Opcodes
     CMSG_CANCEL_MOUNT_AURA                          = 0x375,
     SMSG_ARENA_ERROR                                = 0x376,
     MSG_INSPECT_ARENA_TEAMS                         = 0x377,
-    SMSG_DEATH_RELEASE_LOC                          = 0x378,
     CMSG_CANCEL_TEMP_ENCHANTMENT                    = 0x379,
     SMSG_FORCED_DEATH_UPDATE                        = 0x37A,
     CMSG_CHEAT_SET_HONOR_CURRENCY                   = 0x37B,
@@ -725,7 +719,6 @@ enum Opcodes
     SMSG_MODIFY_COOLDOWN                            = 0x491,
     SMSG_PET_UPDATE_COMBO_POINTS                    = 0x492,
     CMSG_ENABLETAXI                                 = 0x493,
-    SMSG_PRE_RESURRECT                              = 0x494,
     CMSG_FLOOD_GRACE_CHEAT                          = 0x497,
     CMSG_CHANGE_SEATS_ON_CONTROLLED_VEHICLE         = 0x49B,
     CMSG_HEARTH_AND_RESURRECT                       = 0x49C,
@@ -942,6 +935,14 @@ enum Opcodes
     CMSG_WORLD_TELEPORT                                 = 0x24B2,
     CMSG_TELEPORT_TO_UNIT                               = 0x4206,
     CMSG_SET_ACTIVE_MOVER                               = 0x3314,
+    CMSG_RECLAIM_CORPSE                                 = 0x4036,
+    MSG_CORPSE_QUERY                                    = 0x4336, // 15595
+    CMSG_SPIRIT_HEALER_ACTIVATE                         = 0x2E26, // 15595
+    SMSG_SPIRIT_HEALER_CONFIRM                          = 0x4917, // 15595
+    SMSG_CORPSE_RECLAIM_DELAY                           = 0x0D34, // 15595
+    SMSG_DEATH_RELEASE_LOC                              = 0x2F07, // 15595
+    SMSG_PRE_RESURRECT                                  = 0x6C36, // 15595
+    CMSG_RETURN_TO_GRAVEYARD                            = 0x301E, // 15595
 
     //GM
     CMSG_GM_NUKE_CHARACTER                              = 0x507,   // unchecked

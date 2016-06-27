@@ -14449,6 +14449,8 @@ bool Player::IsPlayerJumping(MovementInfo const& minfo, uint16 opcode)
         jumping = true;
         return true;
     }
+
+    return false;
 }
 
 void Player::HandleBreathing(MovementInfo & movement_info, WorldSession* pSession)

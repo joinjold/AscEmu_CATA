@@ -798,7 +798,7 @@ bool QuestMgr::OnGameObjectActivate(Player* plr, GameObject* go)
     uint32 entry = go->GetEntry();
     Quest const* qst;
 
-    for (i = 0; i < 25; ++i)
+    for (i = 0; i < MAX_QUEST_LOG_SIZE; ++i)
     {
         qle = plr->GetQuestLogInSlot(i);
         if (qle != NULL)
@@ -863,7 +863,7 @@ void QuestMgr::_OnPlayerKill(Player* plr, uint32 entry, bool IsGroupKill)
 
     if (plr->HasQuestMob(entry))
     {
-        for (i = 0; i < 25; ++i)
+        for (i = 0; i < MAX_QUEST_LOG_SIZE; ++i)
         {
             qle = plr->GetQuestLogInSlot(i);
             if (qle != NULL)
@@ -914,7 +914,7 @@ void QuestMgr::_OnPlayerKill(Player* plr, uint32 entry, bool IsGroupKill)
                         gplr = (*gitr)->m_loggedInPlayer;
                         if (gplr && gplr != plr && plr->isInRange(gplr, 300) && gplr->HasQuestMob(entry)) // don't double kills also don't give kills to party members at another side of the world
                         {
-                            for (i = 0; i < 25; ++i)
+                            for (i = 0; i < MAX_QUEST_LOG_SIZE; ++i)
                             {
                                 qle = gplr->GetQuestLogInSlot(i);
                                 if (qle != NULL)
@@ -960,7 +960,7 @@ void QuestMgr::OnPlayerCast(Player* plr, uint32 spellid, uint64 & victimguid)
     uint32 i, j;
     uint32 entry = (victim) ? victim->GetEntry() : 0;
     QuestLogEntry* qle;
-    for (i = 0; i < 25; ++i)
+    for (i = 0; i < MAX_QUEST_LOG_SIZE; ++i)
     {
         if ((qle = plr->GetQuestLogInSlot(i)) != 0)
         {
@@ -1007,7 +1007,7 @@ void QuestMgr::OnPlayerItemPickup(Player* plr, Item* item)
     uint32 pcount;
     uint32 entry = item->GetEntry();
     QuestLogEntry* qle;
-    for (i = 0; i < 25; ++i)
+    for (i = 0; i < MAX_QUEST_LOG_SIZE; ++i)
     {
         if ((qle = plr->GetQuestLogInSlot(i)) != 0)
         {
@@ -1045,7 +1045,7 @@ void QuestMgr::OnPlayerExploreArea(Player* plr, uint32 AreaID)
 {
     uint32 i, j;
     QuestLogEntry* qle;
-    for (i = 0; i < 25; ++i)
+    for (i = 0; i < MAX_QUEST_LOG_SIZE; ++i)
     {
         if ((qle = plr->GetQuestLogInSlot(i)) != 0)
         {
@@ -1074,7 +1074,7 @@ void QuestMgr::AreaExplored(Player* plr, uint32 QuestID)
 {
     uint32 i, j;
     QuestLogEntry* qle;
-    for (i = 0; i < 25; ++i)
+    for (i = 0; i < MAX_QUEST_LOG_SIZE; ++i)
     {
         if ((qle = plr->GetQuestLogInSlot(i)) != 0)
         {
@@ -2264,7 +2264,7 @@ void QuestMgr::OnPlayerEmote(Player* plr, uint32 emoteid, uint64 & victimguid)
     uint32 i, j;
     uint32 entry = (victim) ? victim->GetEntry() : 0;
     QuestLogEntry* qle;
-    for (i = 0; i < 25; ++i)
+    for (i = 0; i < MAX_QUEST_LOG_SIZE; ++i)
     {
         if ((qle = plr->GetQuestLogInSlot(i)) != 0)
         {

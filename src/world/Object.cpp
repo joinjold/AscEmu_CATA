@@ -337,6 +337,8 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags, uint32 flags2,
 
     if (flags & UPDATEFLAG_LIVING)  // UPDATEFLAG_LIVING
     {
+        Unit* self = static_cast<Unit*>(this);
+
         if ((pThis != NULL) && pThis->isRooted())
             flags2 |= MOVEMENTFLAG_ROOT; // MOVEFLAG_ROOTED
         else if ((uThis != NULL) && uThis->isRooted())
@@ -369,8 +371,8 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags, uint32 flags2,
         data->writeBit(false); // isSplineEnabled && GetTypeId() == TYPEID_PLAYER
         data->writeBit(!hasPitch);
         data->writeBit(isSplineEnabled);
-        data->writeBit(haveFallData);
-        data->writeBit(!hasElevation);
+        data->writeBit(self->movement_info.GetStatusInfo().hasFallData);
+        data->writeBit(!self->movement_info.GetStatusInfo().hasSplineElevation);
         data->writeBit(plrGuid[5]);
         data->writeBit(transporter_info.guid); // hasTransport | do we need pThis->?
         //data->writeBit(flags2 & MOVEMENTFLAG_TRANSPORT); // MOVEFLAG_TRANSPORT
@@ -401,8 +403,8 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags, uint32 flags2,
         }
 
         data->writeBit(plrGuid[6]);
-        if (haveFallData)
-            data->writeBit(hasFallDirection);
+        if (self->movement_info.GetStatusInfo().hasFallData)
+            data->writeBit(self->movement_info.GetStatusInfo().hasFallDirection);
 
         data->writeBit(plrGuid[0]);
         data->writeBit(plrGuid[1]);
@@ -465,6 +467,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags, uint32 flags2,
 
     if (flags & UPDATEFLAG_LIVING) // UPDATEFLAG_HAS_LIVING
     {
+        Unit* self = static_cast<Unit*>(this);
         ObjectGuid plrGuid = GetGUID();
 
         data->WriteByteSeq(plrGuid[4]);
@@ -475,13 +478,13 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags, uint32 flags2,
         {
             if (hasFallDirection)
             {
-                *data << (float)0;   // cosAngle
-                *data << (float)0;   // xyspeed
-                *data << (float)1.0; // sinAngle
+                *data << (float)self->movement_info.GetJumpInfo().cosAngle; 
+                *data << (float)self->movement_info.GetJumpInfo().xyspeed;
+                *data << (float)self->movement_info.GetJumpInfo().cosAngle;
             }
 
-            *data << (uint32)0; // fall time - uint32 or float
-            *data << (float)0; // velocity
+            *data << (uint32)self->movement_info.GetFallTime();
+            *data << (float)self->movement_info.GetJumpInfo().velocity;
         }
 
         *data << m_backSwimSpeed;

@@ -32,7 +32,6 @@
 #include "StackBuffer.h"
 #include "WUtil.h"
 
-
 class Player;
 class WorldPacket;
 class WorldSocket;
@@ -730,6 +729,7 @@ class SERVER_DECL WorldSession
         void HandleCalendarEventRemoveInvite(WorldPacket& recv_data);
         void HandleCalendarEventStatus(WorldPacket& recv_data);
         void HandleCalendarEventModeratorStatus(WorldPacket& recv_data);
+        void HandleReturnToGraveyardOpcode(WorldPacket& recv_data);
 
         // 4.3.4
         void HandleReadyForAccountDataTimesOpcode(WorldPacket & recv_data);

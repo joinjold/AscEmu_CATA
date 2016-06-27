@@ -272,8 +272,7 @@ void WorldSocket::_HandleAuthSession(WorldPacket* recvPacket)
         *recvPacket >> AuthDigest[7];
         *recvPacket >> AuthDigest[16];
         *recvPacket >> AuthDigest[3];
-        //*recvPacket >> mClientBuild;
-        mClientBuild = recvPacket->read<uint16>();
+        *recvPacket >> mClientBuild;
         *recvPacket >> AuthDigest[8];
         recvPacket->read<uint32>();
         recvPacket->read<uint8>();
@@ -288,15 +287,8 @@ void WorldSocket::_HandleAuthSession(WorldPacket* recvPacket)
         *recvPacket >> AuthDigest[14];
         *recvPacket >> AuthDigest[13];
 
-
-        //size_t pos = recvPacket->rpos(); // so what the fuck
-
         *recvPacket >> addonSize;
-
-        recvPacket->read_skip(addonSize); // skip this
-
-        /*for(uint32 i = 0; i < addonSize; i++)
-        recvPacket->read<uint8>();*/
+        recvPacket->read_skip(addonSize);
 
         recvPacket->readBit();
         uint32 accountNameLength = recvPacket->readBits(12);
@@ -369,8 +361,8 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
     //checking if player is already connected
     //disconnect current player and login this one(blizzlike)
 
-    //if(recvData.rpos() != recvData.wpos())
-    recvData.read((uint8*)lang.data(), 4);
+    if (recvData.rpos() != recvData.wpos())
+        recvData.read((uint8*)lang.data(), 4);
 
     WorldSession* session = sWorld.FindSession(AccountID);
     if (session)
@@ -429,8 +421,8 @@ void WorldSocket::InformationRetreiveCallback(WorldPacket & recvData, uint32 req
     pSession->m_lastPing = (uint32)UNIXTIME;
     pSession->language = sLocalizationMgr.GetLanguageId(lang);
 
-    //if(recvData.rpos() != recvData.wpos())
-    //recvData >> pSession->m_muted;
+    if (recvData.rpos() != recvData.wpos())
+        recvData >> pSession->m_muted;
 
     for (i = 0; i < 8; ++i)
         pSession->SetAccountData(i, NULL, true, 0);
@@ -528,7 +520,7 @@ void WorldSocket::Authenticate()
     cdata << uint32(15595);
     SendPacket(&cdata);
 
-    //sAddonMgr.SendAddonInfoPacket(pAuthenticationPacket, static_cast< uint32 >(pAuthenticationPacket->rpos()), mSession);
+    sAddonMgr.SendAddonInfoPacket(pAuthenticationPacket, static_cast< uint32 >(pAuthenticationPacket->rpos()), mSession);
     mSession->_latency = _latency;
 
     delete pAuthenticationPacket;
