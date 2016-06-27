@@ -908,11 +908,13 @@ void WorldSession::HandleBuyBackOpcode(WorldPacket& recv_data)
             it->DeleteMe();
         }
 
-        WorldPacket data(16);
+        WorldPacket data((8 + 4 + 4 + 4));
         data.Initialize(SMSG_BUY_ITEM);
+
         data << uint64(guid);
-        data << getMSTime(); //VLack: seen is Aspire code
-        data << uint32(itemid) << uint32(amount);
+        data << uint32(stuff + 1);                   // numbered from 1 at client
+        data << int32(amount);
+        data << uint32(amount);
         SendPacket(&data);
     }
 }
@@ -1204,9 +1206,10 @@ void WorldSession::HandleBuyItemInSlotOpcode(WorldPacket& recv_data)   // drag &
     _player->SendItemPushResult(false, true, false, (pItem == oldItem) ? false : true, bagslot, slot, amount * ci.amount, pItem->GetEntry(), pItem->GetItemRandomSuffixFactor(), pItem->GetItemRandomPropertyId(), pItem->GetStackCount());
 
     WorldPacket data(SMSG_BUY_ITEM, 22);
+
     data << uint64(srcguid);
-    data << getMSTime();
-    data << uint32(itemid);
+    data << uint32(slot + 1);                   // numbered from 1 at client
+    data << int32(amount);
     data << uint32(amount);
 
     SendPacket(&data);
@@ -1230,47 +1233,45 @@ void WorldSession::HandleBuyItemOpcode(WorldPacket& recv_data)   // right-click 
     LOG_DETAIL("WORLD: Received CMSG_BUY_ITEM");
 
     WorldPacket data(45);
-    uint64 srcguid = 0;
-    uint32 itemid = 0;
-    int32 slot = 0;
-    uint8 amount = 0;
-    //    int8 playerslot = 0;
-    //    int8 bagslot = 0;
+    uint64 vendorguid, bagGuid;
+    uint32 item, slot, count;
+    uint8 itemType; // 1 = item, 2 = currency
+    uint8 bagSlot;
     Item* add = NULL;
     uint8 error = 0;
     SlotResult slotresult;
     AddItemResult result;
 
-    recv_data >> srcguid >> itemid;
-    recv_data >> slot >> amount;
+    recv_data >> vendorguid >> itemType >> item >> slot >> count >> bagGuid >> bagSlot;
 
+    if (slot > 0)
+        --slot;
+    else
+        return; // cheating
 
-    Creature* unit = _player->GetMapMgr()->GetCreature(GET_LOWGUID_PART(srcguid));
+    Creature* unit = _player->GetMapMgr()->GetCreature(GET_LOWGUID_PART(vendorguid));
     if (unit == NULL || !unit->HasItems())
         return;
 
-    ItemExtendedCostEntry* ex = unit->GetItemExtendedCostByItemId(itemid);
+    ItemExtendedCostEntry* ex = unit->GetItemExtendedCostByItemId(item);
 
-    if (amount < 1)
-        amount = 1;
+    CreatureItem CrItem;
+    unit->GetSellItemByItemId(item, CrItem);
 
-    CreatureItem item;
-    unit->GetSellItemByItemId(itemid, item);
-
-    if (item.itemid == 0)
+    if (CrItem.itemid == 0)
     {
         // vendor does not sell this item.. bitch about cheaters?
         _player->GetItemInterface()->BuildInventoryChangeError(0, 0, INV_ERR_DONT_OWN_THAT_ITEM);
         return;
     }
 
-    if (item.max_amount > 0 && item.available_amount < amount)
+    if (CrItem.max_amount > 0 && CrItem.available_amount < count)
     {
         _player->GetItemInterface()->BuildInventoryChangeError(0, 0, INV_ERR_ITEM_IS_CURRENTLY_SOLD_OUT);
         return;
     }
 
-    ItemPrototype* it = ItemPrototypeStorage.LookupEntry(itemid);
+    ItemPrototype* it = ItemPrototypeStorage.LookupEntry(item);
     if (!it)
     {
         _player->GetItemInterface()->BuildInventoryChangeError(0, 0, INV_ERR_DONT_OWN_THAT_ITEM);
@@ -1278,26 +1279,26 @@ void WorldSession::HandleBuyItemOpcode(WorldPacket& recv_data)   // right-click 
     }
 
     uint32 itemMaxStack = (_player->ItemStackCheat) ? 0x7fffffff : it->MaxCount;
-    if (itemMaxStack > 0 && amount * item.amount > itemMaxStack)
+    if (itemMaxStack > 0 && count * CrItem.amount > itemMaxStack)
     {
         _player->GetItemInterface()->BuildInventoryChangeError(0, 0, INV_ERR_ITEM_CANT_STACK);
         return;
     }
 
-    if ((error = _player->GetItemInterface()->CanReceiveItem(it, amount * item.amount)) != 0)
+    if ((error = _player->GetItemInterface()->CanReceiveItem(it, count * CrItem.amount)) != 0)
     {
         _player->GetItemInterface()->BuildInventoryChangeError(NULL, NULL, error);
         return;
     }
 
-    if ((error = _player->GetItemInterface()->CanAffordItem(it, amount, unit)) != 0)
+    if ((error = _player->GetItemInterface()->CanAffordItem(it, count, unit)) != 0)
     {
         _player->GetItemInterface()->BuildInventoryChangeError(NULL, NULL, error);
         return;
     }
 
     // Find free slot and break if inv full
-    add = _player->GetItemInterface()->FindItemLessMax(itemid, amount * item.amount, false);
+    add = _player->GetItemInterface()->FindItemLessMax(item, count * CrItem.amount, false);
     if (!add)
     {
         slotresult = _player->GetItemInterface()->FindFreeInventorySlot(it);
@@ -1311,7 +1312,7 @@ void WorldSession::HandleBuyItemOpcode(WorldPacket& recv_data)   // right-click 
 
     if (!add)
     {
-        Item* itm = objmgr.CreateItem(item.itemid, _player);
+        Item* itm = objmgr.CreateItem(CrItem.itemid, _player);
         if (!itm)
         {
             _player->GetItemInterface()->BuildInventoryChangeError(0, 0, INV_ERR_DONT_OWN_THAT_ITEM);
@@ -1319,7 +1320,7 @@ void WorldSession::HandleBuyItemOpcode(WorldPacket& recv_data)   // right-click 
         }
 
         itm->m_isDirty = true;
-        itm->SetStackCount(amount * item.amount);
+        itm->SetStackCount(count * CrItem.amount);
 
         if (slotresult.ContainerSlot == ITEM_NO_SLOT_AVAILABLE)
         {
@@ -1334,7 +1335,7 @@ void WorldSession::HandleBuyItemOpcode(WorldPacket& recv_data)   // right-click 
                 {
                     itm->GetOwner()->GetItemInterface()->AddRefundable(itm->GetGUID(), ex->costid);
                 }
-                _player->SendItemPushResult(false, true, false, true, static_cast<uint8>(INVENTORY_SLOT_NOT_SET), slotresult.Result, amount * item.amount, itm->GetEntry(), itm->GetItemRandomSuffixFactor(), itm->GetItemRandomPropertyId(), itm->GetStackCount());
+                _player->SendItemPushResult(false, true, false, true, static_cast<uint8>(INVENTORY_SLOT_NOT_SET), slotresult.Result, count * CrItem.amount, itm->GetEntry(), itm->GetItemRandomSuffixFactor(), itm->GetItemRandomPropertyId(), itm->GetStackCount());
             }
         }
         else
@@ -1356,27 +1357,27 @@ void WorldSession::HandleBuyItemOpcode(WorldPacket& recv_data)   // right-click 
     }
     else
     {
-        add->ModStackCount(amount * item.amount);
+        add->ModStackCount(count * CrItem.amount);
         add->m_isDirty = true;
-        _player->SendItemPushResult(false, true, false, false, (uint8)_player->GetItemInterface()->GetBagSlotByGuid(add->GetGUID()), 1, amount * item.amount, add->GetEntry(), add->GetItemRandomSuffixFactor(), add->GetItemRandomPropertyId(), add->GetStackCount());
+        _player->SendItemPushResult(false, true, false, false, (uint8)_player->GetItemInterface()->GetBagSlotByGuid(add->GetGUID()), 1, count * CrItem.amount, add->GetEntry(), add->GetItemRandomSuffixFactor(), add->GetItemRandomPropertyId(), add->GetStackCount());
     }
 
 
 
-    _player->GetItemInterface()->BuyItem(it, amount, unit);
+    _player->GetItemInterface()->BuyItem(it, count, unit);
 
-    data.Initialize(SMSG_BUY_ITEM);
+    data.Initialize(SMSG_BUY_ITEM, (8 + 4 + 4 + 4));
 
-    data << uint64(srcguid);
-    data << getMSTime();
-    data << uint32(itemid);
-    data << uint32(amount * item.amount);
+    data << uint64(vendorguid);
+    data << uint32(slot + 1);                   // numbered from 1 at client
+    data << int32(CrItem.max_amount > 0 ? CrItem.available_amount : 0xFFFFFFFF);
+    data << uint32(count);
 
     SendPacket(&data);
 
-    if (item.max_amount)
+    if (CrItem.max_amount)
     {
-        unit->ModAvItemAmount(item.itemid, item.amount * amount);
+        unit->ModAvItemAmount(CrItem.itemid, CrItem.amount * count);
 
         // there is probably a proper opcode for this. - burlex
         SendInventoryList(unit);
@@ -1429,14 +1430,16 @@ void WorldSession::SendInventoryList(Creature* unit)
         return;
     }
 
-    WorldPacket data(((unit->GetSellItemCount() * 28) + 9));       // allocate
+    uint32 counter = 0;
 
-    data.SetOpcode(SMSG_LIST_INVENTORY);
-    data << unit->GetGUID();
-    data << uint8(0);   // placeholder for item count
+    WorldPacket data(((unit->GetSellItemCount()) + 12));       // allocate
+
+    ByteBuffer itemsData(32 * unit->GetSellItemCount());
+    std::vector<bool> enablers;
+    enablers.reserve(2 * unit->GetSellItemCount());
 
     ItemPrototype* curItem = NULL;
-    uint32 counter = 0;
+    
 
     for (std::vector<CreatureItem>::iterator itr = unit->GetSellItemBegin(); itr != unit->GetSellItemEnd(); ++itr)
     {
@@ -1460,19 +1463,24 @@ void WorldSession::SendInventoryList(Creature* unit)
                 if ((itr->extended_cost == NULL) || curItem->HasFlag2(ITEM_FLAG2_EXT_COST_REQUIRES_GOLD))
                     price = GetBuyPriceForItem(curItem, 1, _player, unit);
 
-                data << uint32(counter + 1);    // we start from 0 but client starts from 1
-                data << uint32(curItem->ItemId);
-                data << uint32(curItem->DisplayInfoID);
-                data << uint32(av_am);
-                data << uint32(price);
-                data << uint32(curItem->MaxDurability);
-                data << uint32(itr->amount);
+                itemsData << uint32(counter + 1);        // client expects counting to start at 1
+                itemsData << uint32(curItem->MaxDurability);
 
-
-                if (itr->extended_cost != NULL)
-                    data << uint32(itr->extended_cost->costid);
+                if (itr->extended_cost != 0)
+                {
+                    enablers.push_back(0);
+                    itemsData << uint32(itr->extended_cost->costid);
+                }
                 else
-                    data << uint32(0);
+                    enablers.push_back(1);
+                enablers.push_back(1);                 // unk bit
+
+                itemsData << uint32(curItem->ItemId);
+                itemsData << uint32(1);     // 1 is items, 2 is currency
+                itemsData << uint32(price);
+                itemsData << uint32(curItem->DisplayInfoID);
+                itemsData << int32(av_am);
+                itemsData << uint32(itr->amount);
 
                 ++counter;
                 if (counter >= MAX_CREATURE_INV_ITEMS) break;  // cebernic: in 2.4.3, client can't take more than 15 pages,it making crash for us:(
@@ -1480,7 +1488,39 @@ void WorldSession::SendInventoryList(Creature* unit)
         }
     }
 
-    const_cast<uint8*>(data.contents())[8] = (uint8)counter;    // set count
+    ObjectGuid guid = unit->GetGUID();
+
+    data.SetOpcode(SMSG_LIST_INVENTORY);
+    data.writeBit(guid[1]);
+    data.writeBit(guid[0]);
+
+    data.writeBits(counter, 21); // item count
+
+    data.writeBit(guid[3]);
+    data.writeBit(guid[6]);
+    data.writeBit(guid[5]);
+    data.writeBit(guid[2]);
+    data.writeBit(guid[7]);
+
+    for (std::vector<bool>::const_iterator itr = enablers.begin(); itr != enablers.end(); ++itr)
+        data.writeBit(*itr);
+
+    data.writeBit(guid[4]);
+
+    data.flushBits();
+    data.append(itemsData);
+
+    data.WriteByteSeq(guid[5]);
+    data.WriteByteSeq(guid[4]);
+    data.WriteByteSeq(guid[1]);
+    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[6]);
+
+    data << uint8(counter == 0); // unk byte, item count 0: 1, item count != 0: 0 or some "random" value below 300
+
+    data.WriteByteSeq(guid[2]);
+    data.WriteByteSeq(guid[3]);
+    data.WriteByteSeq(guid[7]);
 
     SendPacket(&data);
     LOG_DETAIL("WORLD: Sent SMSG_LIST_INVENTORY");

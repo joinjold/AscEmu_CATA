@@ -193,12 +193,6 @@ enum Opcodes
     CMSG_PET_RENAME                                 = 0x177,
     SMSG_PET_NAME_INVALID                           = 0x178,
     SMSG_PET_MODE                                   = 0x17A,
-    CMSG_SELL_ITEM                                  = 0x04E15,//4.3.4
-    SMSG_SELL_ITEM                                  = 0x06105,//4.3.4
-    CMSG_BUY_ITEM                                   = 0x00736,//4.3.4
-    CMSG_BUY_ITEM_IN_SLOT                           = 0x1A3,
-    SMSG_BUY_ITEM                                   = 0x00F26,//4.3.4
-    SMSG_BUY_FAILED                                 = 0x1A5,
     CMSG_BINDER_ACTIVATE                            = 0x1B5,
     SMSG_PLAYERBINDERROR                            = 0x1B6,
     CMSG_BANKER_ACTIVATE                            = 0x1B7,
@@ -345,7 +339,6 @@ enum Opcodes
     SMSG_AUCTION_REMOVED_NOTIFICATION               = 0x28D,
     CMSG_GROUP_RAID_CONVERT                         = 0x28E,
     CMSG_GROUP_ASSISTANT_LEADER                     = 0x28F,
-    CMSG_BUYBACK_ITEM                               = 0x290,
     SMSG_SERVER_MESSAGE                             = 0x291,
     CMSG_MEETINGSTONE_JOIN                          = 0x292,
     SMSG_LFG_OFFER_CONTINUE                         = 0x293,
@@ -358,7 +351,6 @@ enum Opcodes
     SMSG_CANCEL_AUTO_REPEAT                         = 0x29C,
     SMSG_SET_FORCED_REACTIONS                       = 0x2A5,
     SMSG_GAMEOBJECT_RESET_STATE                     = 0x2A7,
-    CMSG_REPAIR_ITEM                                = 0x2A8,
     SMSG_SUMMON_REQUEST                             = 0x2AB,
     CMSG_SUMMON_RESPONSE                            = 0x2AC,
     MSG_MOVE_TOGGLE_GRAVITY_CHEAT                   = 0x2AD,
@@ -1268,19 +1260,27 @@ enum Opcodes
     CMSG_TRAINER_BUY_SPELL                              = 0x04415,
     SMSG_TRAINER_BUY_SUCCEEDED                          = 0x06A05,
     SMSG_TRAINER_BUY_FAILED                             = 0x00000,
+    CMSG_SELL_ITEM                                      = 0x04E15,   // 4.3.4
+    SMSG_SELL_ITEM                                      = 0x06105,   // 4.3.4
+    CMSG_BUY_ITEM                                       = 0x00736,   // 4.3.4
+    CMSG_BUY_ITEM_IN_SLOT                               = 0x00000,   // old
+    SMSG_BUY_ITEM                                       = 0x00F26,   // 4.3.4
+    CMSG_REPAIR_ITEM                                    = 0x2917,    // 4.3.4
+    SMSG_BUY_FAILED                                     = 0x6435,    // 4.3.4
+    CMSG_BUYBACK_ITEM                                   = 0x6C17,    // 4.3.4
 
     //Taxi
-    CMSG_SET_TAXI_BENCHMARK_MODE = 0x04314,
-    CMSG_TAXICLEARALLNODES = 0x00000,
-    CMSG_TAXIENABLEALLNODES = 0x00000,
-    CMSG_TAXISHOWNODES = 0x00000,
-    SMSG_SHOWTAXINODES = 0x02A36,
-    CMSG_TAXINODE_STATUS_QUERY = 0x02F25,
-    SMSG_TAXINODE_STATUS = 0x02936,
-    CMSG_TAXIQUERYAVAILABLENODES = 0x06C06,
-    CMSG_ACTIVATETAXI = 0x06E06,
-    SMSG_ACTIVATETAXIREPLY = 0x06A37,
-    SMSG_NEW_TAXI_PATH = 0x04B35,
+    CMSG_SET_TAXI_BENCHMARK_MODE                        = 0x04314,
+    CMSG_TAXICLEARALLNODES                              = 0x00000,
+    CMSG_TAXIENABLEALLNODES                             = 0x00000,
+    CMSG_TAXISHOWNODES                                  = 0x00000,
+    SMSG_SHOWTAXINODES                                  = 0x02A36,
+    CMSG_TAXINODE_STATUS_QUERY                          = 0x02F25,
+    SMSG_TAXINODE_STATUS                                = 0x02936,
+    CMSG_TAXIQUERYAVAILABLENODES                        = 0x06C06,
+    CMSG_ACTIVATETAXI                                   = 0x06E06,
+    SMSG_ACTIVATETAXIREPLY                              = 0x06A37,
+    SMSG_NEW_TAXI_PATH                                  = 0x04B35,
 
     //Player
     SMSG_CHAT_PLAYER_NOT_FOUND                          = 0x2526,
