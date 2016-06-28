@@ -63,6 +63,8 @@ struct VendorRestrictionEntry;
 struct Trainer;
 class Aura;
 
+#define TAXIMASK_SIZE		86
+
 #pragma pack(push,1)
 struct ActionButton
 {

@@ -4550,29 +4550,6 @@ void Player::SetMovement(uint8 pType, uint32 flag)
 void Player::SetSpeeds(uint8 type, float speed)
 {
     WorldPacket data(50);
-    /*
-    if (type != SWIMBACK)
-    {
-        data << GetNewGUID();
-        data << m_speedChangeCounter++;
-        if (type == RUN)
-            data << uint8(1);
-
-        data << float(speed);
-    }
-    else
-    {
-        data << GetNewGUID();
-        data << uint32(0);
-        data << uint8(0);
-        data << uint32(getMSTime());
-        data << GetPosition();
-        data << float(m_position.o);
-        data << uint32(0);
-        data << float(speed);
-    }
-    */
-
     ObjectGuid guid = GetGUID();
 
     switch (type)
@@ -4581,15 +4558,14 @@ void Player::SetSpeeds(uint8 type, float speed)
     {
         data.SetOpcode(MSG_MOVE_SET_WALK_SPEED);
         m_walkSpeed = speed;
-        /*
-        data.WriteByteMask(guid[0]);
-        data.WriteByteMask(guid[4]);
-        data.WriteByteMask(guid[5]);
-        data.WriteByteMask(guid[2]);
-        data.WriteByteMask(guid[3]);
-        data.WriteByteMask(guid[1]);
-        data.WriteByteMask(guid[6]);
-        data.WriteByteMask(guid[7]);
+        data.writeBit(guid[0]);
+        data.writeBit(guid[4]);
+        data.writeBit(guid[5]);
+        data.writeBit(guid[2]);
+        data.writeBit(guid[3]);
+        data.writeBit(guid[1]);
+        data.writeBit(guid[6]);
+        data.writeBit(guid[7]);
         data.flushBits();
         data.WriteByteSeq(guid[6]);
         data.WriteByteSeq(guid[1]);
@@ -4600,8 +4576,7 @@ void Player::SetSpeeds(uint8 type, float speed)
         data.WriteByteSeq(guid[4]);
         data.WriteByteSeq(guid[0]);
         data.WriteByteSeq(guid[7]);
-        data.WriteByteSeq(guid[3]);
-        */
+        data.WriteByteSeq(guid[3]);        
         } break;
 
     case RUN:
@@ -4613,21 +4588,21 @@ void Player::SetSpeeds(uint8 type, float speed)
         m_runSpeed = speed;
         m_lastRunSpeed = speed;
 
-        data.WriteByteMask(guid[6]);
-        data.WriteByteMask(guid[1]);
-        data.WriteByteMask(guid[5]);
-        data.WriteByteMask(guid[2]);
-        data.WriteByteMask(guid[7]);
-        data.WriteByteMask(guid[0]);
-        data.WriteByteMask(guid[3]);
-        data.WriteByteMask(guid[4]);
+        data.writeBit(guid[6]);
+        data.writeBit(guid[1]);
+        data.writeBit(guid[5]);
+        data.writeBit(guid[2]);
+        data.writeBit(guid[7]);
+        data.writeBit(guid[0]);
+        data.writeBit(guid[3]);
+        data.writeBit(guid[4]);
         data.flushBits();
         data.WriteByteSeq(guid[5]);
         data.WriteByteSeq(guid[3]);
         data.WriteByteSeq(guid[1]);
         data.WriteByteSeq(guid[4]);
         data << uint32(m_speedChangeCounter++);
-        data << float(m_walkSpeed);
+        data << float(m_runSpeed);
         data.WriteByteSeq(guid[6]);
         data.WriteByteSeq(guid[0]);
         data.WriteByteSeq(guid[7]);
@@ -4653,14 +4628,14 @@ void Player::SetSpeeds(uint8 type, float speed)
         m_swimSpeed = speed;
         m_lastSwimSpeed = speed;
 
-        data.WriteByteMask(guid[5]);
-        data.WriteByteMask(guid[4]);
-        data.WriteByteMask(guid[7]);
-        data.WriteByteMask(guid[3]);
-        data.WriteByteMask(guid[2]);
-        data.WriteByteMask(guid[0]);
-        data.WriteByteMask(guid[1]);
-        data.WriteByteMask(guid[6]);
+        data.writeBit(guid[5]);
+        data.writeBit(guid[4]);
+        data.writeBit(guid[7]);
+        data.writeBit(guid[3]);
+        data.writeBit(guid[2]);
+        data.writeBit(guid[0]);
+        data.writeBit(guid[1]);
+        data.writeBit(guid[6]);
         data.flushBits();
         data.WriteByteSeq(guid[0]);
         data << uint32(m_speedChangeCounter++);
@@ -4693,14 +4668,14 @@ void Player::SetSpeeds(uint8 type, float speed)
         m_flySpeed = speed;
         m_lastFlySpeed = speed;
 
-        data.WriteByteMask(guid[0]);
-        data.WriteByteMask(guid[5]);
-        data.WriteByteMask(guid[1]);
-        data.WriteByteMask(guid[6]);
-        data.WriteByteMask(guid[3]);
-        data.WriteByteMask(guid[2]);
-        data.WriteByteMask(guid[7]);
-        data.WriteByteMask(guid[4]);
+        data.writeBit(guid[0]);
+        data.writeBit(guid[5]);
+        data.writeBit(guid[1]);
+        data.writeBit(guid[6]);
+        data.writeBit(guid[3]);
+        data.writeBit(guid[2]);
+        data.writeBit(guid[7]);
+        data.writeBit(guid[4]);
         data.flushBits();
         data.WriteByteSeq(guid[0]);
         data.WriteByteSeq(guid[1]);
@@ -7098,26 +7073,23 @@ void Player::TaxiStart(TaxiPath* path, uint32 modelid, uint32 start_node)
     if (start_node > endn || (endn - start_node) > 200)
         return;
 
-    /*WorldPacket data(SMSG_MONSTER_MOVE, 38 + ((endn - start_node) * 12));
-    data << GetNewGUID();
-    data << uint8(0); //VLack: it seems we have a 1 byte stuff after the new GUID
-    data << firstNode->x << firstNode->y << firstNode->z;
-    data << m_taxi_ride_time;
-    data << uint8(0);
-    //    data << uint32(0x00000300);
-    data << uint32(0x00003000);
-    data << uint32(traveltime);
+    WorldPacket data(SMSG_MONSTER_MOVE, 38 + ( (endn - start_node) * 12 ) );
+	data << GetNewGUID();
+	data << uint8(0);
+	data << firstNode->x << firstNode->y << firstNode->z;
+	data << m_taxi_ride_time;
+	data << uint8( 0 );
+    data << uint32(0x0C008400);
+	data << uint32( traveltime );
 
-    if (!cn)
-        m_taxi_ride_time -= add_time;
-
-    data << uint32(endn - start_node);
-    //    uint32 timer = 0, nodecount = 0;
-    //    TaxiPathNode *lastnode = NULL;
+	if(!cn)
+		m_taxi_ride_time -= add_time;
+	
+	data << uint32( endn - start_node );
 
     for (uint32 i = start_node; i < endn; i++)
     {
-        TaxiPathNode* pn = path->GetPathNode(i);
+        TaxiPathNode *pn = path->GetPathNode(i);
         if (!pn)
         {
             JumpToEndTaxiNode(path);
@@ -7127,7 +7099,7 @@ void Player::TaxiStart(TaxiPath* path, uint32 modelid, uint32 start_node)
         data << pn->x << pn->y << pn->z;
     }
 
-    SendMessageToSet(&data, true);*/
+    SendMessageToSet(&data, true);
 
     sEventMgr.AddEvent(this, &Player::EventTaxiInterpolate,
                        EVENT_PLAYER_TAXI_INTERPOLATE, 900, 0, EVENT_FLAG_DO_NOT_EXECUTE_IN_WORLD_CONTEXT);

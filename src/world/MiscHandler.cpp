@@ -1092,9 +1092,6 @@ void WorldSession::HandleCorpseReclaimOpcode(WorldPacket& recv_data)
     uint64 guid;
     recv_data >> guid;
 
-    if (guid == 0)
-        return;
-
     Corpse* pCorpse = objmgr.GetCorpse((uint32)guid);
     if (pCorpse == NULL)	return;
 

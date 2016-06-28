@@ -170,9 +170,6 @@ enum Opcodes
     CMSG_GETDEATHBINDZONE                           = 0x156,
     SMSG_BINDZONEREPLY                              = 0x157,
     SMSG_CLIENT_CONTROL_UPDATE                      = 0x159,
-    CMSG_REPOP_REQUEST                              = 0x15A,
-    SMSG_RESURRECT_REQUEST                          = 0x15B,
-    CMSG_RESURRECT_RESPONSE                         = 0x15C,
     SMSG_ITEM_PUSH_RESULT                           = 0x166,
     SMSG_DUEL_REQUESTED                             = 0x167,
     SMSG_DUEL_OUTOFBOUNDS                           = 0x168,
@@ -199,19 +196,6 @@ enum Opcodes
     SMSG_SHOW_BANK                                  = 0x1B8,
     CMSG_BUY_BANK_SLOT                              = 0x1B9,
     SMSG_BUY_BANK_SLOT_RESULT                       = 0x1BA,
-    CMSG_PETITION_SHOWLIST                          = 0x1BB,
-    SMSG_PETITION_SHOWLIST                          = 0x1BC,
-    CMSG_PETITION_BUY                               = 0x1BD,
-    CMSG_PETITION_SHOW_SIGNATURES                   = 0x1BE,
-    SMSG_PETITION_SHOW_SIGNATURES                   = 0x1BF,
-    CMSG_PETITION_SIGN                              = 0x1C0,
-    SMSG_PETITION_SIGN_RESULTS                      = 0x1C1,
-    MSG_PETITION_DECLINE                            = 0x1C2,
-    CMSG_OFFER_PETITION                             = 0x1C3,
-    CMSG_TURN_IN_PETITION                           = 0x1C4,
-    SMSG_TURN_IN_PETITION_RESULTS                   = 0x1C5,
-    CMSG_PETITION_QUERY                             = 0x1C6,
-    SMSG_PETITION_QUERY_RESPONSE                    = 0x1C7,
     SMSG_FISH_NOT_HOOKED                            = 0x1C8,
     SMSG_FISH_ESCAPED                               = 0x1C9,
     CMSG_BUG                                        = 0x1CA,
@@ -231,7 +215,6 @@ enum Opcodes
     SMSG_INVALID_PROMOTION_CODE                     = 0x1E7,
     SMSG_ITEM_ENCHANT_TIME_UPDATE                   = 0x1EB,
     MSG_SAVE_GUILD_EMBLEM                           = 0x1F1,
-    MSG_TABARDVENDOR_ACTIVATE                       = 0x1F2,
     SMSG_PARTYKILLLOG                               = 0x1F5,
     SMSG_PLAY_SPELL_IMPACT                          = 0x1F7,
     SMSG_EXPLORATION_EXPERIENCE                     = 0x1F8,
@@ -262,22 +245,12 @@ enum Opcodes
     CMSG_GUILD_SET_PUBLIC_NOTE                      = 0x234,
     CMSG_GUILD_SET_OFFICER_NOTE                     = 0x235,
     CMSG_CLEAR_EXPLORATION                          = 0x237,
-    CMSG_SEND_MAIL                                  = 0x238,
-    SMSG_SEND_MAIL_RESULT                           = 0x239,
-    CMSG_GET_MAIL_LIST                              = 0x23A,
-    SMSG_MAIL_LIST_RESULT                           = 0x23B,
     SMSG_BATTLEFIELD_WIN_OBSOLETE                   = 0x23F,
     SMSG_BATTLEFIELD_LOSE_OBSOLETE                  = 0x240,
     CMSG_TAXICLEARNODE                              = 0x241,
     CMSG_TAXIENABLENODE                             = 0x242,
     CMSG_ITEM_TEXT_QUERY                            = 0x243,
     SMSG_ITEM_TEXT_QUERY_RESPONSE                   = 0x244,
-    CMSG_MAIL_TAKE_MONEY                            = 0x245,
-    CMSG_MAIL_TAKE_ITEM                             = 0x246,
-    CMSG_MAIL_MARK_AS_READ                          = 0x247,
-    CMSG_MAIL_RETURN_TO_SENDER                      = 0x248,
-    CMSG_MAIL_DELETE                                = 0x249,
-    CMSG_MAIL_CREATE_TEXT_ITEM                      = 0x24A,
     SMSG_DEBUGAURAPROC                              = 0x24D,
     SMSG_PERIODICAURALOG                            = 0x24E,
     SMSG_RESURRECT_FAILED                           = 0x252,
@@ -323,7 +296,6 @@ enum Opcodes
     CMSG_RESET_FACTION_CHEAT                        = 0x281,
     CMSG_AUTOSTORE_BANK_ITEM                        = 0x282,
     CMSG_AUTOBANK_ITEM                              = 0x283,
-    SMSG_RECEIVED_MAIL                              = 0x285,
     SMSG_RAID_GROUP_ONLY                            = 0x286,
     CMSG_SET_DURABILITY_CHEAT                       = 0x287,
     CMSG_SET_PVP_RANK_CHEAT                         = 0x288,
@@ -366,14 +338,11 @@ enum Opcodes
     SMSG_DURABILITY_DAMAGE_DEATH                    = 0x2BD,
     CMSG_SET_EXPLORATION                            = 0x2BE,
     UMSG_DELETE_GUILD_CHARTER                       = 0x2C0,
-    MSG_PETITION_RENAME                             = 0x2C1,
     SMSG_INIT_WORLD_STATES                          = 0x2C2,
     SMSG_UPDATE_WORLD_STATE                         = 0x2C3,
     CMSG_ITEM_NAME_QUERY                            = 0x2C4,
     SMSG_ITEM_NAME_QUERY_RESPONSE                   = 0x2C5,
     SMSG_PET_ACTION_FEEDBACK                        = 0x2C6,
-    CMSG_CHAR_RENAME                                = 0x2C7,
-    SMSG_CHAR_RENAME                                = 0x2C8,
     SMSG_UPDATE_LAST_INSTANCE_CREATED               = 0x2CB,
     SMSG_RAID_INSTANCE_INFO                         = 0x2CC,
     CMSG_MOVE_FEATHER_FALL_ACK                      = 0x2CF,
@@ -561,7 +530,6 @@ enum Opcodes
     MSG_RAID_READY_CHECK_FINISHED                   = 0x3C6,
     CMSG_COMPLAIN                                   = 0x3C7,
     SMSG_COMPLAIN_RESULT                            = 0x3C8,
-    SMSG_FEATURE_SYSTEM_STATUS                      = 0x3C9,
     CMSG_TARGET_CAST                                = 0x3D0,
     CMSG_TARGET_SCRIPT_CAST                         = 0x3D1,
     CMSG_DEBUG_LIST_TARGETS                         = 0x3D8,
@@ -665,7 +633,6 @@ enum Opcodes
     SMSG_DANCE_QUERY_RESPONSE                       = 0x452,
     SMSG_INVALIDATE_DANCE                           = 0x453,
     CMSG_DELETE_DANCE                               = 0x454,
-    SMSG_LEARNED_DANCE_MOVES                        = 0x455,
     CMSG_LEARN_DANCE_MOVE                           = 0x456,
     CMSG_UNLEARN_DANCE_MOVE                         = 0x457,
     CMSG_SET_RUNE_COUNT                             = 0x458,
@@ -943,6 +910,9 @@ enum Opcodes
     SMSG_DEATH_RELEASE_LOC                              = 0x2F07, // 15595
     SMSG_PRE_RESURRECT                                  = 0x6C36, // 15595
     CMSG_RETURN_TO_GRAVEYARD                            = 0x301E, // 15595
+    CMSG_REPOP_REQUEST                                  = 0x6235,
+    SMSG_RESURRECT_REQUEST                              = 0x2905,
+    CMSG_RESURRECT_RESPONSE                             = 0x6827,
 
     //GM
     CMSG_GM_NUKE_CHARACTER                              = 0x507,   // unchecked
@@ -1150,6 +1120,23 @@ enum Opcodes
     SMSG_AURA_UPDATE_ALL                                = 0x6916,
     SMSG_AURA_UPDATE                                    = 0x4707,
 
+    //Guild / Tabard
+    MSG_TABARDVENDOR_ACTIVATE                           = 0x6926,
+    CMSG_PETITION_BUY                                   = 0x4E05,
+    CMSG_PETITION_QUERY                                 = 0x4424,
+    CMSG_PETITION_SHOWLIST                              = 0x4617,
+    CMSG_PETITION_SHOW_SIGNATURES                       = 0x4F15,
+    CMSG_PETITION_SIGN                                  = 0x0E04,
+    SMSG_PETITION_SHOWLIST                              = 0x6405,
+    SMSG_PETITION_SHOW_SIGNATURES                       = 0x0716,
+    SMSG_PETITION_SIGN_RESULTS                          = 0x6217,
+    MSG_PETITION_DECLINE                                = 0x4905,
+    CMSG_OFFER_PETITION                                 = 0x4817,
+    CMSG_TURN_IN_PETITION                               = 0x0B27,
+    SMSG_TURN_IN_PETITION_RESULTS                       = 0x0F07,
+    SMSG_PETITION_QUERY_RESPONSE                        = 0x4B37,
+    MSG_PETITION_RENAME                                 = 0x4005,
+
     // Instances/Raid/Battlegrounds
     CMSG_REQUEST_RAID_INFO                              = 0x2F26,
     CMSG_BATTLEFIELD_LIST                               = 0x3814,   // not updated
@@ -1175,6 +1162,17 @@ enum Opcodes
 
     //Mails
     MSG_QUERY_NEXT_MAIL_TIME                            = 0x0F04,   // not updated
+    CMSG_SEND_MAIL                                      = 0x0523,
+    SMSG_SEND_MAIL_RESULT                               = 0x4927,
+    CMSG_GET_MAIL_LIST                                  = 0x4D37,
+    SMSG_MAIL_LIST_RESULT                               = 0x4217,
+    SMSG_RECEIVED_MAIL                                  = 0x2924,
+    CMSG_MAIL_TAKE_MONEY                                = 0x4034,
+    CMSG_MAIL_TAKE_ITEM                                 = 0x2B06,
+    CMSG_MAIL_MARK_AS_READ                              = 0x0C07,
+    CMSG_MAIL_RETURN_TO_SENDER                          = 0x0816,
+    CMSG_MAIL_DELETE                                    = 0x6104,
+    CMSG_MAIL_CREATE_TEXT_ITEM                          = 0x0B14,
 
     // Spells
     SMSG_POWER_UPDATE                                   = 0x4A07,
@@ -1264,7 +1262,6 @@ enum Opcodes
     CMSG_SELL_ITEM                                      = 0x04E15,   // 4.3.4
     SMSG_SELL_ITEM                                      = 0x06105,   // 4.3.4
     CMSG_BUY_ITEM                                       = 0x00736,   // 4.3.4
-    CMSG_BUY_ITEM_IN_SLOT                               = 0x00000,   // old
     SMSG_BUY_ITEM                                       = 0x00F26,   // 4.3.4
     CMSG_REPAIR_ITEM                                    = 0x2917,    // 4.3.4
     SMSG_BUY_FAILED                                     = 0x6435,    // 4.3.4
@@ -1319,14 +1316,17 @@ enum Opcodes
     SMSG_INSPECT_TALENT                                 = 0x04014,
     CMSG_PET_LEARN_TALENT                               = 0x00000,
     SMSG_TALENTS_INVOLUNTARILY_RESET                    = 0x02C27,
-
-
     CMSG_WORLD_STATE_UI_TIMER_UPDATE                    = 0x4605,
     SMSG_WORLD_STATE_UI_TIMER_UPDATE                    = 0x4A14,
     SMSG_PAUSE_MIRROR_TIMER                             = 0x4015,
     SMSG_START_MIRROR_TIMER                             = 0x6824,
     SMSG_START_TIMER                                    = 0x59A5,   // not implemented
     SMSG_STOP_MIRROR_TIMER                              = 0x0B06,
+
+    CMSG_CHAR_RENAME = 0x2327, // 15595
+    SMSG_CHAR_RENAME = 0x2024, // 15595
+    SMSG_FEATURE_SYSTEM_STATUS = 0x3DB7, // 15595
+    SMSG_LEARNED_DANCE_MOVES = 0x0E05, // 15595
 
     //Item
     CMSG_AUTOEQUIP_GROUND_ITEM                          = 0x1107,   // unchecked

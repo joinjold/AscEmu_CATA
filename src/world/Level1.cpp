@@ -520,7 +520,7 @@ bool ChatHandler::HandleTaxiCheatCommand(const char* args, WorldSession* m_sessi
     }
     else
         return false;
-    for (uint8 i = 0; i < 12; i++)
+    for (uint8 i = 0; i < 8; i++)
     {
         if (stricmp(args, "on") == 0)
         {

@@ -174,27 +174,6 @@ void CapitalizeString(std::string& arg)
 
 void WorldSession::CharacterEnumProc(QueryResult* result)
 {
-    struct player_item
-    {
-        uint32 displayid;
-        uint8 invtype;
-        uint32 enchantment; // added in 2.4
-    };
-
-    uint32 start_time = getMSTime();
-
-    player_item items[INVENTORY_SLOT_BAG_END];
-    int8 slot;
-    int8 containerslot;
-    uint32 i;
-    ItemPrototype* proto;
-    QueryResult* res;
-    uint32 num = 0;
-    uint8 race;
-    uint32 MaxAvailCharLevel = 0;
-    has_dk = false;
-    _side = -1; // side should be set on every enumeration for safety
-
     uint32 packetSize = 0;
 
     if (result)
@@ -210,98 +189,90 @@ void WorldSession::CharacterEnumProc(QueryResult* result)
     data.writeBit(1);
     data.writeBits(result ? result->GetRowCount() : 0, 17);
 
+
     if (result)
     {
-        //uint64 guid;
-        uint8 Class;
-        uint32 playerBytes2;
-        //uint32 flags;
-        //uint32 banned;
-        //uint32 ForceRename;
-        Field* fields;
-
-        std::string name;
-        uint32 playerBytes;
-        uint8 gender;
-        uint8 level;
-        uint32 zone; // zoneId
-        uint32 mapId;
-        float x;
-        float y;
-        float z;
-        uint32 guildId;
-        uint32 playerFlags;
-        uint32 atLoginFlags;
-        uint8 skin, face, hairStyle, hairColor, facialHair;
-
         do
         {
-            //uint8 guid[8];
+            struct player_item
+            {
+                uint32 displayid;
+                uint8 invtype;
+                uint32 enchantment; // added in 2.4
+            };
+
+            player_item items[INVENTORY_SLOT_BAG_END];
+            int8 slot;
+            int8 containerslot;
+            uint32 i;
+            ItemPrototype* proto;
+            QueryResult* res;
+            CreatureInfo* petInfo = NULL;
+            uint32 num = 0;
+            uint32 MaxAvailCharLevel = 0;
+            Field* fields;
+            _side = -1;
+            has_dk = false;
+
             fields = result->Fetch();
-            uint64 guid;
-            //uint64 oldGuid = fields[0].GetUInt32(); // uint64 or uint32?
-            guid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, 0x000); // 4.3.4
-            name = fields[7].GetString(); // 4.3.4
-            race = fields[2].GetUInt8(); // 4.3.4
-            Class = fields[3].GetUInt8(); // 4.3.4
-            gender = fields[4].GetUInt8(); // 4.3.4
 
-            uint8 guid_a[8];
-            *(uint64*)guid_a = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, 0x000);
+            ObjectGuid guid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, 0x000);
 
-            uint32 _GID = fields[18].GetUInt32(); // guildId // 4.3.4
+            uint8 level = fields[1].GetUInt8();
+            uint8 race = fields[2].GetUInt8();
+            uint8 Class = fields[3].GetUInt8();
+            uint8 gender = fields[4].GetUInt8();
 
-            uint8 guidb[8];
-            *(uint64*)guidb = MAKE_NEW_GUID(_GID, 0, _GID ? uint32(0x1FF) : 0);
+            uint8 skin = uint8(fields[5].GetUInt32() & 0xFF);
+            uint8 face = uint8((fields[5].GetUInt32() >> 8) & 0xFF);
+            uint8 hairStyle = uint8((fields[5].GetUInt32() >> 16) & 0xFF);
+            uint8 hairColor = uint8((fields[5].GetUInt32() >> 24) & 0xFF);
+            uint8 facialHair = uint8(fields[6].GetUInt32() & 0xFF);
 
-            //uint64 guidb = MAKE_NEW_GUID(fields[13].GetUInt32(), 0, guildId ? uint32(0x1FF) : 0);
+            std::string name = fields[7].GetString();
+            float x = fields[8].GetFloat();
+            float y = fields[9].GetFloat();
+            float z = fields[10].GetFloat();
+            uint32 mapId = uint32(fields[11].GetUInt16());
+            uint32 zone = fields[12].GetUInt16();  // zoneId
+            uint32 banned = fields[13].GetUInt32();
 
-            uint8 guidb0, guidb1, guidb2, guidb3, guidb4, guidb5, guidb6, guidb7, guid0, guid1, guid2, guid3, guid4, guid5, guid6, guid7;
+            uint32 playerFlags = fields[14].GetUInt32();
 
-            guidb0 = guidb[0];
-            guidb1 = guidb[1];
-            guidb2 = guidb[2];
-            guidb3 = guidb[3];
-            guidb4 = guidb[4];
-            guidb5 = guidb[5];
-            guidb6 = guidb[6];
-            guidb7 = guidb[7];
+            uint32 atLoginFlags = fields[17].GetUInt32();
+            uint32 GuildId = fields[18].GetUInt32();
+            ObjectGuid guildGuid = MAKE_NEW_GUID(GuildId, 0, GuildId ? uint32(0x1FF) : 0);
 
-            guid0 = guid_a[0];
-            guid1 = guid_a[1];
-            guid2 = guid_a[2];
-            guid3 = guid_a[3];
-            guid4 = guid_a[4];
-            guid5 = guid_a[5];
-            guid6 = guid_a[6];
-            guid7 = guid_a[7];
+            /*
+            0      1     2      3      4       5      6      7       8          9         10       11      12
+            guid, level, race, class, gender, bytes, bytes2, name, positionX, positionY, positionZ, mapId, zoneId,
+            13       14           15            16                  17
+            banned, restState, deathstate, forced_rename_pending, player_flags,
+            18
+            guild_data.guildid
+            */
 
+            uint32 charFlags = 0;
 
+            if (banned && (banned < 10 || banned >(uint32)UNIXTIME))
+                charFlags |= CHARACTER_FLAG_LOCKED_BY_BILLING;
 
-            data.writeBit(guid3);
-            data.writeBit(guidb1);
-            data.writeBit(guidb7);
-            data.writeBit(guidb2);
-            data.writeBits(uint32(name.length()), 7);
-            data.writeBit(guid4);
-            data.writeBit(guid7);
-            data.writeBit(guidb3);
-            data.writeBit(guid5);
-            data.writeBit(guidb6);
-            data.writeBit(guid1);
-            data.writeBit(guidb5);
-            data.writeBit(guidb4);
-            data.writeBit(fields[15].GetUInt32() & 0x20); // atLoginFlags & 0x20 = AT_LOGIN_FIRST (trinitycore) // not 4.3.4, what to do?
-            data.writeBit(guid0);
-            data.writeBit(guid2);
-            data.writeBit(guid6);
-            data.writeBit(guidb0);
+            if (fields[15].GetUInt32() != 0) // deathstate
+                charFlags |= CHARACTER_FLAG_GHOST;
 
+            if (atLoginFlags & PLAYER_FLAG_NOHELM)
+                charFlags |= CHARACTER_FLAG_HIDE_HELM;
+
+            if (atLoginFlags & PLAYER_FLAG_NOCLOAK)
+                charFlags |= CHARACTER_FLAG_HIDE_CLOAK;
+
+            if (fields[16].GetUInt32() != 0) // forced_rename_pending
+                charFlags |= CHARACTER_FLAG_RENAME;
 
             if (_side < 0)
             {
                 // work out the side
-                static uint8 sides[RACE_WORGEN + 2] = { 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+                static uint8 sides[RACE_DRAENEI + 2] = { 0, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0 };
                 _side = sides[race];
             }
 
@@ -311,45 +282,56 @@ void WorldSession::CharacterEnumProc(QueryResult* result)
             has_level_55_char = has_level_55_char || (fields[7].GetUInt8() >= 55);
             has_dk = has_dk || (Class == 6);
 
+            data.writeBit(guid[3]);
+            data.writeBit(guildGuid[1]);
+            data.writeBit(guildGuid[7]);
+            data.writeBit(guildGuid[2]);
+            data.writeBits(uint32(name.length()), 7);
+            data.writeBit(guid[4]);
+            data.writeBit(guid[7]);
+            data.writeBit(guildGuid[3]);
+            data.writeBit(guid[5]);
+            data.writeBit(guildGuid[6]);
+            data.writeBit(guid[1]);
+            data.writeBit(guildGuid[5]);
+            data.writeBit(guildGuid[4]);
+            data.writeBit(atLoginFlags & 0x20); // 0x20 = AT_LOGIN_FIRST
+            data.writeBit(guid[0]);
+            data.writeBit(guid[2]);
+            data.writeBit(guid[6]);
+            data.writeBit(guildGuid[0]);
 
-            playerBytes = fields[5].GetUInt32(); // 4.3.4
-            playerBytes2 = fields[6].GetUInt32(); // 4.3.4
+            uint32 petDisplayId;
+            uint32 petLevel;
+            uint32 petFamily;
 
-            skin = uint8(playerBytes & 0xFF); // 4.3.4
-            face = uint8((playerBytes >> 8) & 0xFF); // 4.3.4
-            hairStyle = uint8((playerBytes >> 16) & 0xFF); // 4.3.4
-            hairColor = uint8((playerBytes >> 24) & 0xFF); // 4.3.4
-            facialHair = uint8(playerBytes2 & 0xFF); // 4.3.4
+            if (Class == WARLOCK || Class == HUNTER)
+            {
+                res = CharacterDatabase.Query("SELECT entry, level FROM playerpets WHERE ownerguid = %u AND MOD( active, 10 ) = 1 AND alive = TRUE;", Arcemu::Util::GUID_LOPART(guid));
 
-            level = fields[1].GetUInt8(); // 4.3.4
-            zone = fields[12].GetUInt16(); // 4.3.4 // zoneId
-            mapId = uint32(fields[11].GetUInt16()); // 4.3.4
-            x = fields[8].GetFloat(); // 4.3.4
-            y = fields[9].GetFloat(); // 4.3.4
-            z = fields[10].GetFloat(); // 4.3.4
-            guildId = fields[18].GetUInt32(); // 4.3.4
-            playerFlags = fields[14].GetUInt32(); // 4.3.4
-            //atLoginFlags = fields[15].GetUInt32();
-            atLoginFlags = 0;
+                if (res)
+                {
+                    petLevel = res->Fetch()[1].GetUInt32();
+                    petInfo = CreatureNameStorage.LookupEntry(res->Fetch()[0].GetUInt32());
+                    delete res;
+                }
+                else
+                    petInfo = NULL;
+            }
+            else
+                petInfo = NULL;
 
-            uint32 charFlags = 0;
-
-            // implement banned flag
-            // flags from 3.3.5a, maybe have changed
-
-            /* if(atLoginFlags != 0)
-            char_flags |= 0x00002000;	//Character is dead
-            if(flags & PLAYER_FLAG_NOHELM)
-            char_flags |= 0x00000400;	//Helm not displayed
-            if(flags & PLAYER_FLAG_NOCLOAK)
-            char_flags |= 0x00000800;	//Cloak not displayed*/
-
-
-            // toDo: show pet
-
-            uint32 petDisplayId = 0;
-            uint32 petLevel = 0;
-            uint32 petFamily = 0;
+            if (petInfo)
+            {
+                petDisplayId = uint32(petInfo->Male_DisplayID);
+                petFamily = uint32(petInfo->Family);
+            }
+            else
+            {
+                petDisplayId = 0;
+                petLevel = 0;
+                petFamily = 0;
+            }
 
             buffer << uint8(Class);
 
@@ -358,6 +340,7 @@ void WorldSession::CharacterEnumProc(QueryResult* result)
             memset(items, 0, sizeof(items));
             uint32 enchantid;
             EnchantEntry * enc;
+
             if (res)
             {
                 do
@@ -396,7 +379,7 @@ void WorldSession::CharacterEnumProc(QueryResult* result)
                 res = NULL;
             }
 
-            for (i = 0; i < INVENTORY_SLOT_BAG_END; ++i) //23 * 5 bytes
+            for (i = 0; i < INVENTORY_SLOT_BAG_END; ++i) // 23 * 5 bytes
             {
                 buffer << uint8(items[i].invtype);
                 buffer << uint32(items[i].displayid);
@@ -404,84 +387,47 @@ void WorldSession::CharacterEnumProc(QueryResult* result)
             }
 
             buffer << uint32(petFamily);
-
-            //buffer.WriteByteSeq(guidb[2]);
-            buffer.WriteByteSeq(guidb2);
-
-            //buffer << uint8(slot);
-            buffer << uint8(0);
+            buffer.WriteByteSeq(guildGuid[2]);
+            buffer << uint8(0); // slot
             buffer << uint8(hairStyle);
-
-            //buffer.WriteByteSeq(guidb[3]);
-            buffer.WriteByteSeq(guidb3);
-
+            buffer.WriteByteSeq(guildGuid[3]);
             buffer << uint32(petDisplayId);
             buffer << uint32(charFlags);
             buffer << uint8(hairColor);
-
-            //buffer.WriteByteSeq(guid[4]);
-            buffer.WriteByteSeq(guid4);
-
+            buffer.WriteByteSeq(guid[4]);
             buffer << uint32(mapId);
-
-            //buffer.WriteByteSeq(guidb[5]);
-            buffer.WriteByteSeq(guidb5);
-
+            buffer.WriteByteSeq(guildGuid[5]);
             buffer << float(z);
-
-            //buffer.WriteByteSeq(guidb[6]);
-            buffer.WriteByteSeq(guidb6);
-
+            buffer.WriteByteSeq(guildGuid[6]);
             buffer << uint32(petLevel);
-
-            //buffer.WriteByteSeq(guid[3]);
-            buffer.WriteByteSeq(guid3);
-
+            buffer.WriteByteSeq(guid[3]);
             buffer << float(y);
-            buffer << uint32(0x00000000); // customizationFlag (toDo: implement)
+            buffer << uint32(0x00000000); // TODO: implement customization flags
             buffer << uint8(facialHair);
-
-            //buffer.WriteByteSeq(guid[7]);
-            buffer.WriteByteSeq(guid7);
-
+            buffer.WriteByteSeq(guid[7]);
             buffer << uint8(gender);
             buffer.append(name.c_str(), name.length());
             buffer << uint8(face);
-
-            /*buffer.WriteByteSeq(guid[0]);
+            buffer.WriteByteSeq(guid[0]);
             buffer.WriteByteSeq(guid[2]);
-            buffer.WriteByteSeq(guidb[1]);
-            buffer.WriteByteSeq(guidb[7]);*/
-
-            buffer.WriteByteSeq(guid0);
-            buffer.WriteByteSeq(guid2);
-            buffer.WriteByteSeq(guidb1);
-            buffer.WriteByteSeq(guidb7);
-
-            buffer << float(x);                                    // X
-            buffer << uint8(skin);                                 // Skin
-            buffer << uint8(race);                                 // Race
-            buffer << uint8(level);                                // Level
-
-            /*buffer.WriteByteSeq(guid[6]);
-            buffer.WriteByteSeq(guidb[4]);
-            buffer.WriteByteSeq(guidb[0]);
+            buffer.WriteByteSeq(guildGuid[1]);
+            buffer.WriteByteSeq(guildGuid[7]);
+            buffer << float(x);
+            buffer << uint8(skin);
+            buffer << uint8(race);
+            buffer << uint8(level);
+            buffer.WriteByteSeq(guid[6]);
+            buffer.WriteByteSeq(guildGuid[4]);
+            buffer.WriteByteSeq(guildGuid[0]);
             buffer.WriteByteSeq(guid[5]);
-            buffer.WriteByteSeq(guid[1]);*/
-
-            buffer.WriteByteSeq(guid6);
-            buffer.WriteByteSeq(guidb4);
-            buffer.WriteByteSeq(guidb0);
-            buffer.WriteByteSeq(guid5);
-            buffer.WriteByteSeq(guid1);
-
+            buffer.WriteByteSeq(guid[1]);
             buffer << uint32(zone);
-        } while (result->NextRow()); // end do while
+        } while (result->NextRow());
 
         data.flushBits();
         data.append(buffer);
 
-    } // end if
+    }
 
     SendPacket(&data);
 }
@@ -1038,47 +984,24 @@ void WorldSession::FullLogin(Player* plr)
 
     plr->SendLoginVerifyWorld(VMapId, VX, VY, VZ, VO);
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    // send voicechat state - active/inactive
-    //
-    // {SERVER} Packet: (0x03C7) UNKNOWN PacketSize = 2
-    // |------------------------------------------------|----------------|
-    // |00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F |0123456789ABCDEF|
-    // |------------------------------------------------|----------------|
-    // |02 01                                            |..              |
-    // -------------------------------------------------------------------
-    //
-    //
-    // Old packetdump is OLD. This is probably from 2.2.0 (that was the patch when it was added to wow)!
-    //
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
-    WorldPacket datab(SMSG_FEATURE_SYSTEM_STATUS);
-
-    bool feature_bit4 = true;
-    datab.Initialize(SMSG_FEATURE_SYSTEM_STATUS, 7);
-    datab << uint8(2);
-    datab << uint32(1);
-    datab << uint32(1);
-    datab << uint32(2);
-    datab << uint32(0);
-    datab.writeBit(1);
-    datab.writeBit(1);
-    datab.writeBit(0);
-    datab.writeBit(feature_bit4);
-    datab.writeBit(0);
-    datab.writeBit(0);
-    datab.flushBits();
-    if (feature_bit4)
-    {
-        datab << uint32(1);
-        datab << uint32(0);
-        datab << uint32(10);
-        datab << uint32(60);
-    }
-
-    SendPacket(&datab);
+    WorldPacket datax(SMSG_FEATURE_SYSTEM_STATUS, 7);
+    datax << uint8(2);                                       // status
+    datax << uint32(1);                                      // Scrolls of Ressurection?
+    datax << uint32(1);
+    datax << uint32(2);
+    datax << uint32(0);
+    datax.writeBit(true);
+    datax.writeBit(true);
+    datax.writeBit(false);
+    datax.writeBit(true);
+    datax.writeBit(false);
+    datax.writeBit(false);                                   // enable(1)/disable(0) voice chat interface in client
+    datax.flushBits();
+    datax << uint32(1);
+    datax << uint32(0);
+    datax << uint32(10);
+    datax << uint32(60);
+    SendPacket(&datax);
 
     WorldPacket dataldm(SMSG_LEARNED_DANCE_MOVES, 4 + 4);
     dataldm << uint64(0);

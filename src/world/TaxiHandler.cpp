@@ -75,7 +75,7 @@ void WorldSession::SendTaxiList(Creature* pCreature)
 {
     uint32 curloc;
     uint8 field;
-    uint32 TaxiMask[12];
+    uint32 TaxiMask[TAXIMASK_SIZE];
     uint32 submask;
     uint64 guid = pCreature->GetGUID();
 
@@ -85,6 +85,12 @@ void WorldSession::SendTaxiList(Creature* pCreature)
 
     field = (uint8)((curloc - 1) / 32);
     submask = 1 << ((curloc - 1) % 32);
+
+    if (field >= TAXIMASK_SIZE)
+    {
+        ASSERT(false);
+        return;
+    }
 
     // Check for known nodes
     if (!(GetPlayer()->GetTaximask(field) & submask))
@@ -100,24 +106,24 @@ void WorldSession::SendTaxiList(Creature* pCreature)
     }
 
     //Set Mask
-    memset(TaxiMask, 0, sizeof(TaxiMask));
+    memset(TaxiMask, 0, sizeof(uint32)*TAXIMASK_SIZE);
     sTaxiMgr.GetGlobalTaxiNodeMask(curloc, TaxiMask);
-    TaxiMask[field] |= 1 << ((curloc - 1) % 32);
+    if (field < TAXIMASK_SIZE)
+        TaxiMask[field] |= submask;
 
     //Remove nodes unknown to player
-    for (uint8 i = 0; i < 12; i++)
+    for (uint8 i = 0; i < TAXIMASK_SIZE; i++)
     {
         TaxiMask[i] &= GetPlayer()->GetTaximask(i);
     }
 
-    WorldPacket data(64);
-    data.Initialize(SMSG_SHOWTAXINODES);
-    data << uint32(1) << guid;
+    WorldPacket data(SMSG_SHOWTAXINODES, 1 + 8 + TAXIMASK_SIZE * 4);
+    data << uint32(1);
+    data << guid;
     data << uint32(curloc);
-    for (int i = 0; i < 12; i++)
-    {
+    data << uint32(TAXIMASK_SIZE * 4);	//bytecount
+    for (int i = 0; i < TAXIMASK_SIZE; i++)
         data << TaxiMask[i];
-    }
     SendPacket(&data);
 
     LOG_DEBUG("WORLD: Sent SMSG_SHOWTAXINODES");
@@ -163,13 +169,20 @@ void WorldSession::HandleActivateTaxiOpcode(WorldPacket& recv_data)
     // Check for valid node
     if (!taxipath->GetNodeCount())
     {
+        data << uint32(1);
+        SendPacket(&data);
+        return;
+    }
+
+    if (!taxipath || !taxipath->GetNodeCount())
+    {
         data << uint32(2);
         SendPacket(&data);
         return;
     }
 
     // Check for gold
-    newmoney = (GetPlayer()->GetGold() - taxipath->GetPrice());
+    newmoney = ((GetPlayer()->GetGold()) - taxipath->GetPrice());
     if (newmoney < 0)
     {
         data << uint32(3);

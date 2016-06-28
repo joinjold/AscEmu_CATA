@@ -2421,6 +2421,8 @@ void Spell::SendChannelStart(uint32 duration)
         data << m_caster->GetNewGUID();
         data << GetProto()->Id;
         data << duration;
+        data << uint8(0);
+        data << uint8(0);
         m_caster->SendMessageToSet(&data, true);
     }
 
