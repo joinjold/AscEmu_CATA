@@ -256,23 +256,10 @@ enum Opcodes
     SMSG_RESURRECT_FAILED                           = 0x252,
     CMSG_TOGGLE_PVP                                 = 0x253,
     SMSG_ZONE_UNDER_ATTACK                          = 0x254,
-    MSG_AUCTION_HELLO                               = 0x255,
-    CMSG_AUCTION_SELL_ITEM                          = 0x256,
-    CMSG_AUCTION_REMOVE_ITEM                        = 0x257,
-    CMSG_AUCTION_LIST_ITEMS                         = 0x258,
-    CMSG_AUCTION_LIST_OWNER_ITEMS                   = 0x259,
-    CMSG_AUCTION_PLACE_BID                          = 0x25A,
-    SMSG_AUCTION_COMMAND_RESULT                     = 0x25B,
-    SMSG_AUCTION_LIST_RESULT                        = 0x25C,
-    SMSG_AUCTION_OWNER_LIST_RESULT                  = 0x25D,
-    SMSG_AUCTION_BIDDER_NOTIFICATION                = 0x25E,
-    SMSG_AUCTION_OWNER_NOTIFICATION                 = 0x25F,
     SMSG_PROCRESIST                                 = 0x260,
     SMSG_STANDSTATE_CHANGE_FAILURE_OBSOLETE         = 0x261,
     SMSG_DISPEL_FAILED                              = 0x262,
     SMSG_SPELLORDAMAGE_IMMUNE                       = 0x263,
-    CMSG_AUCTION_LIST_BIDDER_ITEMS                  = 0x264,
-    SMSG_AUCTION_BIDDER_LIST_RESULT                 = 0x265,
     CMSG_SET_AMMO                                   = 0x268,
     CMSG_PET_CANCEL_AURA                            = 0x26B,
     CMSG_PLAYER_AI_CHEAT                            = 0x26C,
@@ -303,7 +290,6 @@ enum Opcodes
     CMSG_DEL_PVP_MEDAL_CHEAT                        = 0x28A,
     CMSG_SET_PVP_TITLE                              = 0x28B,
     SMSG_PVP_CREDIT                                 = 0x28C,
-    SMSG_AUCTION_REMOVED_NOTIFICATION               = 0x28D,
     CMSG_GROUP_RAID_CONVERT                         = 0x28E,
     CMSG_GROUP_ASSISTANT_LEADER                     = 0x28F,
     SMSG_SERVER_MESSAGE                             = 0x291,
@@ -681,8 +667,6 @@ enum Opcodes
     CMSG_DUMP_OBJECTS                               = 0x48B,
     SMSG_DUMP_OBJECTS_DATA                          = 0x48C,
     CMSG_DISMISS_CRITTER                            = 0x48D,
-    CMSG_AUCTION_LIST_PENDING_SALES                 = 0x48F,
-    SMSG_AUCTION_LIST_PENDING_SALES                 = 0x490,
     SMSG_MODIFY_COOLDOWN                            = 0x491,
     SMSG_PET_UPDATE_COMBO_POINTS                    = 0x492,
     CMSG_ENABLETAXI                                 = 0x493,
@@ -1280,6 +1264,24 @@ enum Opcodes
     SMSG_ACTIVATETAXIREPLY                              = 0x06A37,
     SMSG_NEW_TAXI_PATH                                  = 0x04B35,
 
+    //Auction
+    MSG_AUCTION_HELLO                                   = 0x2307,
+    CMSG_AUCTION_SELL_ITEM                              = 0x4A06,
+    CMSG_AUCTION_REMOVE_ITEM                            = 0x6426,
+    CMSG_AUCTION_LIST_ITEMS                             = 0x0324,
+    CMSG_AUCTION_LIST_OWNER_ITEMS                       = 0x0206,
+    CMSG_AUCTION_PLACE_BID                              = 0x2306,
+    SMSG_AUCTION_COMMAND_RESULT                         = 0x4C25,
+    SMSG_AUCTION_LIST_RESULT                            = 0x6637,
+    SMSG_AUCTION_OWNER_LIST_RESULT                      = 0x6C34,
+    SMSG_AUCTION_BIDDER_NOTIFICATION                    = 0x4E27,
+    SMSG_AUCTION_OWNER_NOTIFICATION                     = 0x4116,
+    CMSG_AUCTION_LIST_PENDING_SALES                     = 0x2C17,
+    SMSG_AUCTION_LIST_PENDING_SALES                     = 0x6A27,
+    SMSG_AUCTION_REMOVED_NOTIFICATION                   = 0x2334,
+    CMSG_AUCTION_LIST_BIDDER_ITEMS                      = 0x6937,
+    SMSG_AUCTION_BIDDER_LIST_RESULT                     = 0x0027,
+
     //Player
     SMSG_CHAT_PLAYER_NOT_FOUND                          = 0x2526,
     CMSG_ATTACKSWING                                    = 0x0926,   // unchecked
@@ -1323,10 +1325,10 @@ enum Opcodes
     SMSG_START_TIMER                                    = 0x59A5,   // not implemented
     SMSG_STOP_MIRROR_TIMER                              = 0x0B06,
 
-    CMSG_CHAR_RENAME = 0x2327, // 15595
-    SMSG_CHAR_RENAME = 0x2024, // 15595
-    SMSG_FEATURE_SYSTEM_STATUS = 0x3DB7, // 15595
-    SMSG_LEARNED_DANCE_MOVES = 0x0E05, // 15595
+    CMSG_CHAR_RENAME                                    = 0x2327, // 15595
+    SMSG_CHAR_RENAME                                    = 0x2024, // 15595
+    SMSG_FEATURE_SYSTEM_STATUS                          = 0x3DB7, // 15595
+    SMSG_LEARNED_DANCE_MOVES                            = 0x0E05, // 15595
 
     //Item
     CMSG_AUTOEQUIP_GROUND_ITEM                          = 0x1107,   // unchecked

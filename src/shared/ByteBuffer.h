@@ -634,6 +634,9 @@ public:
         _rpos = 0;
     }
 
+    template<typename T>
+    void read_skip() { read_skip(sizeof(T)); }
+
     inline void read_skip(uint32 byte_count)
     {
         _rpos += byte_count;
