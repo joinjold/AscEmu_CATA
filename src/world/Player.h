@@ -31,6 +31,7 @@
 #include "AchievementMgr.h"
 #include "Unit.h"
 #include "DBC/DBCStores.h"
+#include "AuctionHouse.h"
 
 class QuestLogEntry;
 struct BGScore;
@@ -62,6 +63,7 @@ struct CharClassEntry;
 struct VendorRestrictionEntry;
 struct Trainer;
 class Aura;
+struct Auction;
 
 #define TAXIMASK_SIZE		86
 
@@ -1493,6 +1495,9 @@ class SERVER_DECL Player : public Unit
         bool IsSanctuaryFlagged();
         void SetSanctuaryFlag();
         void RemoveSanctuaryFlag();
+
+        void SendAuctionCommandResult(Auction* auction, uint32 Action, uint32 ErrorCode, uint32 bidError = 0);
+
 
         /////////////////////////////////////////////////
         // EASY FUNCTIONS - PLAYER GOLD

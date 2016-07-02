@@ -21,6 +21,9 @@
 #ifndef _AUCTIONHOUSE_H
 #define _AUCTIONHOUSE_H
 
+#define MIN_AUCTION_TIME (12*HOUR)
+#define MAX_AUCTION_ITEMS 160
+
 enum AuctionRemoveType
 {
     AUCTION_REMOVE_EXPIRED,
@@ -36,11 +39,15 @@ enum AUCTIONRESULT
 };
 enum AUCTIONRESULTERROR
 {
-    AUCTION_ERROR_NONE              = 0,
-    AUCTION_ERROR_INTERNAL          = 2,
-    AUCTION_ERROR_MONEY             = 3,
-    AUCTION_ERROR_ITEM              = 4,
-    AUCTION_ERROR_BID_OWN_AUCTION   = 10
+    ERR_AUCTION_OK                  = 0,
+    ERR_AUCTION_INVENTORY           = 1,
+    ERR_AUCTION_DATABASE_ERROR      = 2,
+    ERR_AUCTION_NOT_ENOUGHT_MONEY   = 3,
+    ERR_AUCTION_ITEM_NOT_FOUND      = 4,
+    ERR_AUCTION_HIGHER_BID          = 5,
+    ERR_AUCTION_BID_INCREMENT       = 7,
+    ERR_AUCTION_BID_OWN             = 10,
+    ERR_RESTRICTED_ACCOUNT          = 13,
 };
 enum AuctionMailResult
 {
@@ -69,9 +76,10 @@ struct Auction
     void DeleteFromDB();
     void SaveToDB(uint32 AuctionHouseId);
     void UpdateInDB();
-    void AddToPacket(WorldPacket& data);
     bool Deleted;
     uint32 DeletedReason;
+    uint32 GetAuctionOutBid();
+    bool BuildAuctionInfo(WorldPacket & data);
 };
 
 class AuctionHouse
@@ -99,7 +107,7 @@ class AuctionHouse
         void SendAuctionOutBidNotificationPacket(Auction* auct, uint64 newBidder, uint32 newHighestBid);
         void SendAuctionExpiredNotificationPacket(Auction* auct);
         void SendAuctionList(Player* plr, WorldPacket* packet);
-
+        
     private:
 
         RWLock auctionLock;
