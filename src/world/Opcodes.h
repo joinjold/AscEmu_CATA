@@ -1013,6 +1013,7 @@ enum Opcodes
 
     // Movement
     SMSG_MOVE_UPDATE_KNOCK_BACK                         = 0x3DB2,
+    MSG_MOVE_UPDATE_TELEPORT                            = 0x50B2,
     SMSG_PLAYER_MOVE                                    = 0x79A2,
     MSG_MOVE_HEARTBEAT                                  = 0x3914,   // forward/backward
     CMSG_MOVE_STOP                                      = 0x320A,

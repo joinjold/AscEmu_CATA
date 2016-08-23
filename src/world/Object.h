@@ -74,9 +74,180 @@ enum HIGHGUID_TYPE
 
 struct Position
 {
-    Position() : x(0.0f), y(0.0f), z(0.0f), o(0.0f) {}
-    Position(float _x, float _y, float _z, float _o) : x(_x), y(_y), z(_z), o(_o) {}
-    float x, y, z, o;
+    Position() : m_positionX(0.0f), m_positionY(0.0f), m_positionZ(0.0f), m_orientation(0.0f) {}
+    Position(float _x, float _y, float _z, float _o) : m_positionX(_x), m_positionY(_y), m_positionZ(_z), m_orientation(_o) {}
+    
+    void Relocate(float x, float y)
+    {
+        m_positionX = x; m_positionY = y;
+    }
+    void Relocate(float x, float y, float z)
+    {
+        m_positionX = x; m_positionY = y; m_positionZ = z;
+    }
+    void Relocate(float x, float y, float z, float orientation)
+    {
+        m_positionX = x; m_positionY = y; m_positionZ = z; SetOrientation(orientation);
+    }
+    void Relocate(const Position &pos)
+    {
+        m_positionX = pos.m_positionX; m_positionY = pos.m_positionY; m_positionZ = pos.m_positionZ; SetOrientation(pos.m_orientation);
+    }
+    void Relocate(const Position* pos)
+    {
+        m_positionX = pos->m_positionX; m_positionY = pos->m_positionY; m_positionZ = pos->m_positionZ; SetOrientation(pos->m_orientation);
+    }
+    void RelocateOffset(const Position &offset);
+    void SetOrientation(float orientation)
+    {
+        m_orientation = NormalizeOrientation(orientation);
+    }
+
+    float m_positionX, m_positionY, m_positionZ, m_orientation;
+
+    // modulos a radian orientation to the range of 0..2PI
+    static float NormalizeOrientation(float o)
+    {
+        // fmod only supports positive numbers. Thus we have
+        // to emulate negative numbers
+        if (o < 0)
+        {
+            float mod = o *-1;
+            mod = fmod(mod, 2.0f * static_cast<float>(M_PI));
+            mod = -mod + 2.0f * static_cast<float>(M_PI);
+            return mod;
+        }
+        return fmod(o, 2.0f * static_cast<float>(M_PI));
+    }
+};
+
+enum MovementFlags
+{
+    MOVEMENTFLAG_NONE = 0x00000000,   //old MOVEFLAG_MOVE_STOP
+    MOVEMENTFLAG_FORWARD = 0x00000001,   //old MOVEFLAG_MOVE_FORWARD
+    MOVEMENTFLAG_BACKWARD = 0x00000002,   //old MOVEFLAG_MOVE_BACKWARD
+    MOVEMENTFLAG_STRAFE_LEFT = 0x00000004,   //old MOVEFLAG_STRAFE_LEFT
+    MOVEMENTFLAG_STRAFE_RIGHT = 0x00000008,   //old MOVEFLAG_STRAFE_RIGHT
+    MOVEMENTFLAG_LEFT = 0x00000010,   //old MOVEFLAG_TURN_LEFT
+    MOVEMENTFLAG_RIGHT = 0x00000020,   //old MOVEFLAG_TURN_RIGHT
+    MOVEMENTFLAG_PITCH_UP = 0x00000040,   //old MOVEFLAG_PITCH_UP
+    MOVEMENTFLAG_PITCH_DOWN = 0x00000080,   //old MOVEFLAG_PITCH_DOWN
+    MOVEMENTFLAG_WALKING = 0x00000100,   //old MOVEFLAG_WALK 
+    MOVEMENTFLAG_DISABLE_GRAVITY = 0x00000200,   //old MOVEFLAG_TRANSPORT
+    MOVEMENTFLAG_ROOT = 0x00000400,   //old MOVEFLAG_ROOTED
+    MOVEMENTFLAG_FALLING = 0x00000800,   //old MOVEFLAG_FALLING
+    MOVEMENTFLAG_FALLING_FAR = 0x00001000,   //old MOVEFLAG_FALLING_FAR
+    MOVEMENTFLAG_PENDING_STOP = 0x00002000,   //old MOVEFLAG_TB_PENDING_STOP
+    MOVEMENTFLAG_PENDING_STRAFE_STOP = 0x00004000,   //old MOVEFLAG_TB_PENDING_UNSTRAFE
+    MOVEMENTFLAG_PENDING_FORWARD = 0x00008000,   //old MOVEFLAG_TB_PENDING_FORWARD
+    MOVEMENTFLAG_PENDING_BACKWARD = 0x00010000,   //old MOVEFLAG_TB_PENDING_BACKWARD
+    MOVEMENTFLAG_PENDING_STRAFE_LEFT = 0x00020000,
+    MOVEMENTFLAG_PENDING_STRAFE_RIGHT = 0x00040000,
+    MOVEMENTFLAG_PENDING_ROOT = 0x00080000,
+    MOVEMENTFLAG_SWIMMING = 0x00100000,   //old MOVEFLAG_SWIMMING
+    MOVEMENTFLAG_ASCENDING = 0x00200000,
+    MOVEMENTFLAG_DESCENDING = 0x00400000,
+    MOVEMENTFLAG_CAN_FLY = 0x00800000,   //old MOVEFLAG_CAN_FLY
+    MOVEMENTFLAG_FLYING = 0x01000000,   //old MOVEFLAG_AIR_SUSPENSION //old MOVEFLAG_AIR_SWIMMING
+    MOVEMENTFLAG_SPLINE_ELEVATION = 0x02000000,   //old MOVEFLAG_SPLINE_ELEVATION
+    MOVEMENTFLAG_WATERWALKING = 0x04000000,   //old MOVEFLAG_WATER_WALK
+    MOVEMENTFLAG_FALLING_SLOW = 0x08000000,   //old MOVEFLAG_FEATHER_FALL //old MOVEFLAG_FREE_FALLING //old MOVEFLAG_SPLINE_ENABLED
+    MOVEMENTFLAG_HOVER = 0x10000000,   //old MOVEFLAG_LEVITATE
+    MOVEMENTFLAG_NO_COLLISION = 0x20000000,   //old MOVEFLAG_NO_COLLISION //old MOVEFLAG_LOCAL
+
+    // Masks
+    MOVEMENTFLAG_MASK_MOVING =
+    MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_BACKWARD | MOVEMENTFLAG_STRAFE_LEFT | MOVEMENTFLAG_STRAFE_RIGHT |
+    MOVEMENTFLAG_PITCH_UP | MOVEMENTFLAG_PITCH_DOWN | MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR | MOVEMENTFLAG_ASCENDING | MOVEMENTFLAG_DESCENDING |
+    MOVEMENTFLAG_SPLINE_ELEVATION,
+
+    // to properly calculate all movement
+    MOVEMENTFLAG_MASK_CREATURE_ALLOWED =
+    MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_DISABLE_GRAVITY | MOVEMENTFLAG_ROOT | MOVEMENTFLAG_SWIMMING |
+    MOVEMENTFLAG_CAN_FLY | MOVEMENTFLAG_WATERWALKING | MOVEMENTFLAG_FALLING_SLOW | MOVEMENTFLAG_HOVER,
+
+    MOVEMENTFLAG_MASK_TURNING =
+    MOVEMENTFLAG_LEFT | MOVEMENTFLAG_RIGHT,
+
+    MOVEFLAG_FALLING_MASK = 0x6000,
+    MOVEFLAG_MOTION_MASK = 0xE00F,
+    MOVEFLAG_PENDING_MASK = 0x7F0000,
+    MOVEFLAG_PENDING_STRAFE_MASK = 0x600000,
+    MOVEFLAG_PENDING_MOVE_MASK = 0x180000,
+    MOVEFLAG_FULL_FALLING_MASK = 0xE000
+};
+
+enum MovementFlags2
+{
+    MOVEFLAG2_NONE = 0x0000,
+    MOVEFLAG2_NO_STRAFE = 0x0001,
+    MOVEFLAG2_NO_JUMPING = 0x0002,
+    MOVEFLAG2_FULLSPEED_TURNING = 0x0004,
+    MOVEFLAG2_FULLSPEED_PITCHING = 0x0008,
+    MOVEFLAG2_ALLOW_PITCHING = 0x0010,
+    MOVEFLAG2_UNK4 = 0x0020,
+    MOVEFLAG2_UNK5 = 0x0040,
+    MOVEFLAG2_UNK6 = 0x0080,   // transport related
+    MOVEFLAG2_UNK7 = 0x0100,
+    MOVEFLAG2_INTERP_MOVEMENT = 0x0200,
+    MOVEFLAG2_INTERP_TURNING = 0x0400,
+    MOVEFLAG2_INTERP_PITCHING = 0x0800,
+    MOVEFLAG2_INTERP_MASK = MOVEFLAG2_INTERP_MOVEMENT | MOVEFLAG2_INTERP_TURNING | MOVEFLAG2_INTERP_PITCHING
+};
+
+struct MovementInfo
+{
+    // common
+    uint64 guid;
+    uint32 flags;
+    uint16 flags2;
+    Position pos;
+    uint32 time;
+    // transport
+    uint64 t_guid;
+    Position t_pos;
+    int8 t_seat;
+    uint32 t_time;
+    uint32 t_time2;
+    uint32 t_time3;
+    // swimming/flying
+    float pitch;
+    // falling
+    uint32 fallTime;
+    // jumping
+    float j_zspeed, j_cosAngle, j_sinAngle, j_xyspeed;
+    // spline
+    float splineElevation;
+
+    MovementInfo()
+    {
+        pos.Relocate(0, 0, 0, 0);
+        guid = 0;
+        flags = 0;
+        flags2 = 0;
+        time = t_time = t_time2 = t_time3 = fallTime = 0;
+        splineElevation = 0;
+        pitch = j_zspeed = j_sinAngle = j_cosAngle = j_xyspeed = 0.0f;
+        t_guid = 0;
+        t_pos.Relocate(0, 0, 0, 0);
+        t_seat = -1;
+    }
+
+    float GetPitch() const { return pitch; }
+
+    uint32 GetMovementFlags() const { return flags; }
+    void SetMovementFlags(uint32 flag) { flags = flag; }
+    void AddMovementFlag(uint32 flag) { flags |= flag; }
+    void RemoveMovementFlag(uint32 flag) { flags &= ~flag; }
+    bool HasMovementFlag(uint32 flag) const { return flags & flag; }
+
+    uint16 GetExtraMovementFlags() const { return flags2; }
+    void AddExtraMovementFlag(uint16 flag) { flags2 |= flag; }
+    bool HasExtraMovementFlag(uint16 flag) const { return flags2 & flag; }
+
+    void SetFallTime(uint32 time) { fallTime = time; }
+
+    void OutDebug();
 };
 
 enum TYPE

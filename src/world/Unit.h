@@ -215,192 +215,6 @@ class SERVER_DECL CombatStatusHandler
         void ClearMyHealers();
 };
 
-enum MovementFlags
-{
-    MOVEMENTFLAG_NONE = 0x00000000,   //old MOVEFLAG_MOVE_STOP
-    MOVEMENTFLAG_FORWARD = 0x00000001,   //old MOVEFLAG_MOVE_FORWARD
-    MOVEMENTFLAG_BACKWARD = 0x00000002,   //old MOVEFLAG_MOVE_BACKWARD
-    MOVEMENTFLAG_STRAFE_LEFT = 0x00000004,   //old MOVEFLAG_STRAFE_LEFT
-    MOVEMENTFLAG_STRAFE_RIGHT = 0x00000008,   //old MOVEFLAG_STRAFE_RIGHT
-    MOVEMENTFLAG_LEFT = 0x00000010,   //old MOVEFLAG_TURN_LEFT
-    MOVEMENTFLAG_RIGHT = 0x00000020,   //old MOVEFLAG_TURN_RIGHT
-    MOVEMENTFLAG_PITCH_UP = 0x00000040,   //old MOVEFLAG_PITCH_UP
-    MOVEMENTFLAG_PITCH_DOWN = 0x00000080,   //old MOVEFLAG_PITCH_DOWN
-    MOVEMENTFLAG_WALKING = 0x00000100,   //old MOVEFLAG_WALK 
-    MOVEMENTFLAG_DISABLE_GRAVITY = 0x00000200,   //old MOVEFLAG_TRANSPORT
-    MOVEMENTFLAG_ROOT = 0x00000400,   //old MOVEFLAG_ROOTED
-    MOVEMENTFLAG_FALLING = 0x00000800,   //old MOVEFLAG_FALLING
-    MOVEMENTFLAG_FALLING_FAR = 0x00001000,   //old MOVEFLAG_FALLING_FAR
-    MOVEMENTFLAG_PENDING_STOP = 0x00002000,   //old MOVEFLAG_TB_PENDING_STOP
-    MOVEMENTFLAG_PENDING_STRAFE_STOP = 0x00004000,   //old MOVEFLAG_TB_PENDING_UNSTRAFE
-    MOVEMENTFLAG_PENDING_FORWARD = 0x00008000,   //old MOVEFLAG_TB_PENDING_FORWARD
-    MOVEMENTFLAG_PENDING_BACKWARD = 0x00010000,   //old MOVEFLAG_TB_PENDING_BACKWARD
-    MOVEMENTFLAG_PENDING_STRAFE_LEFT = 0x00020000,
-    MOVEMENTFLAG_PENDING_STRAFE_RIGHT = 0x00040000,
-    MOVEMENTFLAG_PENDING_ROOT = 0x00080000,
-    MOVEMENTFLAG_SWIMMING = 0x00100000,   //old MOVEFLAG_SWIMMING
-    MOVEMENTFLAG_ASCENDING = 0x00200000,
-    MOVEMENTFLAG_DESCENDING = 0x00400000,
-    MOVEMENTFLAG_CAN_FLY = 0x00800000,   //old MOVEFLAG_CAN_FLY
-    MOVEMENTFLAG_FLYING = 0x01000000,   //old MOVEFLAG_AIR_SUSPENSION //old MOVEFLAG_AIR_SWIMMING
-    MOVEMENTFLAG_SPLINE_ELEVATION = 0x02000000,   //old MOVEFLAG_SPLINE_ELEVATION
-    MOVEMENTFLAG_WATERWALKING = 0x04000000,   //old MOVEFLAG_WATER_WALK
-    MOVEMENTFLAG_FALLING_SLOW = 0x08000000,   //old MOVEFLAG_FEATHER_FALL //old MOVEFLAG_FREE_FALLING //old MOVEFLAG_SPLINE_ENABLED
-    MOVEMENTFLAG_HOVER = 0x10000000,   //old MOVEFLAG_LEVITATE
-    MOVEMENTFLAG_NO_COLLISION = 0x20000000,   //old MOVEFLAG_NO_COLLISION //old MOVEFLAG_LOCAL
-
-    // Masks
-    MOVEMENTFLAG_MASK_MOVING =
-    MOVEMENTFLAG_FORWARD | MOVEMENTFLAG_BACKWARD | MOVEMENTFLAG_STRAFE_LEFT | MOVEMENTFLAG_STRAFE_RIGHT |
-    MOVEMENTFLAG_PITCH_UP | MOVEMENTFLAG_PITCH_DOWN | MOVEMENTFLAG_FALLING | MOVEMENTFLAG_FALLING_FAR | MOVEMENTFLAG_ASCENDING | MOVEMENTFLAG_DESCENDING |
-    MOVEMENTFLAG_SPLINE_ELEVATION,
-
-    MOVEMENTFLAG_MASK_TURNING =
-    MOVEMENTFLAG_LEFT | MOVEMENTFLAG_RIGHT,
-
-    MOVEFLAG_FALLING_MASK = 0x6000,
-    MOVEFLAG_MOTION_MASK = 0xE00F,
-    MOVEFLAG_PENDING_MASK = 0x7F0000,
-    MOVEFLAG_PENDING_STRAFE_MASK = 0x600000,
-    MOVEFLAG_PENDING_MOVE_MASK = 0x180000,
-    MOVEFLAG_FULL_FALLING_MASK = 0xE000
-};
-
-enum MovementFlags2
-{
-    MOVEFLAG2_NONE = 0x0000,
-    MOVEFLAG2_NO_STRAFE = 0x0001,
-    MOVEFLAG2_NO_JUMPING = 0x0002,
-    MOVEFLAG2_FULLSPEED_TURNING = 0x0004,
-    MOVEFLAG2_FULLSPEED_PITCHING = 0x0008,
-    MOVEFLAG2_ALLOW_PITCHING = 0x0010,
-    MOVEFLAG2_UNK4 = 0x0020,
-    MOVEFLAG2_UNK5 = 0x0040,
-    MOVEFLAG2_UNK6 = 0x0080,   // transport related
-    MOVEFLAG2_UNK7 = 0x0100,
-    MOVEFLAG2_INTERP_MOVEMENT = 0x0200,
-    MOVEFLAG2_INTERP_TURNING = 0x0400,
-    MOVEFLAG2_INTERP_PITCHING = 0x0800,
-    MOVEFLAG2_INTERP_MASK = MOVEFLAG2_INTERP_MOVEMENT | MOVEFLAG2_INTERP_TURNING | MOVEFLAG2_INTERP_PITCHING
-};
-
-class SERVER_DECL MovementInfo
-{
-public:
-    MovementInfo() : moveFlags(0), moveFlags2(0), time(0),
-        t_time(0), t_seat(-1), t_time2(0), s_pitch(0.0f), fallTime(0), splineElevation(0.0f) {}
-
-    // Read/Write methods
-    void Read(ByteBuffer& data, uint16 opcode);
-    void Write(ByteBuffer& data, uint16 opcode) const;
-
-    // Movement flags manipulations
-    void AddMovementFlag(MovementFlags f) { moveFlags |= f; }
-    void RemoveMovementFlag(MovementFlags f) { moveFlags &= ~f; }
-    bool HasMovementFlag2(MovementFlags2 f) const { return moveFlags2 & f; }
-    void SetMovementFlags(MovementFlags f) { moveFlags = f; }
-    MovementFlags2 GetMovementFlags2() const { return MovementFlags2(moveFlags2); }	
-    MovementFlags GetMovementFlags() const { return MovementFlags(moveFlags); }
-    bool HasMovementFlag(MovementFlags f) const { return moveFlags & f; }
-
-    // Position manipulations
-    Position const* GetPos() const { return &pos; }
-    void SetTransportData(WoWGuid guid, float x, float y, float z, float o, uint32 time, int8 seat)
-    {
-        t_guid = guid;
-        t_pos.x = x;
-        t_pos.y = y;
-        t_pos.z = z;
-        t_pos.o = o;
-        t_time = time;
-        t_seat = seat;
-    }
-    void ClearTransportData()
-    {
-        t_guid = 0;
-        t_pos.x = 0.0f;
-        t_pos.y = 0.0f;
-        t_pos.z = 0.0f;
-        t_pos.o = 0.0f;
-        t_time = 0;
-        t_seat = -1;
-    }
-    WoWGuid const& GetGuid() const { return guid; }
-    WoWGuid const& GetTransportGuid() const { return t_guid; }
-    Position const* GetTransportPos() const { return &t_pos; }
-    int8 GetTransportSeat() const { return t_seat; }
-    uint32 GetTransportTime() const { return t_time; }
-    uint32 GetTransportTime2() const { return t_time2; }
-    uint32 GetFallTime() const { return fallTime; }
-    void ChangeOrientation(float o) { pos.o = o; }
-    void ChangePosition(float x, float y, float z, float o) { pos.x = x; pos.y = y; pos.z = z; pos.o = o; }
-    void UpdateTime(uint32 _time) { time = _time; }
-
-    struct JumpInfo
-    {
-        JumpInfo() : velocity(0.f), sinAngle(0.f), cosAngle(0.f), xyspeed(0.f) {}
-        float   velocity, sinAngle, cosAngle, xyspeed;
-    };
-
-    // used only for SMSG_PLAYER_MOVE currently
-    struct StatusInfo
-    {
-        StatusInfo() : hasFallData(false), hasFallDirection(false), hasOrientation(false),
-            hasPitch(false), hasSpline(false), hasSplineElevation(false),
-            hasTimeStamp(false), hasTransportTime2(false), hasTransportTime3(false) { }
-        bool hasFallData : 1;
-        bool hasFallDirection : 1;
-        bool hasOrientation : 1;
-        bool hasPitch : 1;
-        bool hasSpline : 1;
-        bool hasSplineElevation : 1;
-        bool hasTimeStamp : 1;
-        bool hasTransportTime2 : 1;
-        bool hasTransportTime3 : 1;
-    };
-
-    JumpInfo const& GetJumpInfo() const { return jump; }
-    StatusInfo const& GetStatusInfo() const { return si; }
-    float GetSplineElevation() const { return splineElevation; }
-    float GetPitch() const { return s_pitch; }
-
-private:
-    // common
-    WoWGuid guid;
-    uint32   moveFlags;                                 // see enum MovementFlags
-    uint16   moveFlags2;                                // see enum MovementFlags2
-    uint32   time;
-    Position pos;
-    // transport
-    WoWGuid t_guid;
-    Position t_pos;
-    uint32   t_time;
-    int8     t_seat;
-    uint32   t_time2;
-    // swimming and flying
-    float    s_pitch;
-    // last fall time
-    uint32   fallTime;
-    // jumping
-    JumpInfo jump;
-    // spline
-    float    splineElevation;
-    // status info
-    StatusInfo si;
-};
-
-inline WorldPacket& operator<< (WorldPacket& buf, MovementInfo const& mi)
-{
-    mi.Write(buf, buf.GetOpcode());
-    return buf;
-}
-
-inline WorldPacket& operator>> (WorldPacket& buf, MovementInfo& mi)
-{
-    mi.Read(buf, buf.GetOpcode());
-    return buf;
-}
-
 //====================================================================
 //  Unit
 //  Base class for Players and Creatures
@@ -1454,10 +1268,34 @@ class SERVER_DECL Unit : public Object
         
         void SendEnvironmentalDamageLog(uint64 guid, uint8 type, uint32 damage);
 
-        void BuildMovementPacket(ByteBuffer* data);
-        void BuildMovementPacket(ByteBuffer* data, float x, float y, float z, float o);
+        void BuildMovementPacket(ByteBuffer *data) const;
+        void ReadMovementInfo(WorldPacket& data, MovementInfo* mi);
+        void WriteMovementInfo(WorldPacket& data);
+
         MovementInfo* GetMovementInfo() { return &movement_info; }
         MovementInfo movement_info;
+
+        void AddUnitMovementFlag(uint32 f) { movement_info.flags |= f; }
+        void RemoveUnitMovementFlag(uint32 f) { movement_info.flags &= ~f; }
+        bool HasUnitMovementFlag(uint32 f) const { return (movement_info.flags & f) == f; }
+        uint32 GetUnitMovementFlags() const { return movement_info.flags; }
+        void SetUnitMovementFlags(uint32 f) { movement_info.flags = f; }
+
+        void AddExtraUnitMovementFlag(uint16 f) { movement_info.flags2 |= f; }
+        void RemoveExtraUnitMovementFlag(uint16 f) { movement_info.flags2 &= ~f; }
+        uint16 HasExtraUnitMovementFlag(uint16 f) const { return movement_info.flags2 & f; }
+        uint16 GetExtraUnitMovementFlags() const { return movement_info.flags2; }
+        void SetExtraUnitMovementFlags(uint16 f) { movement_info.flags2 = f; }
+
+        float GetPositionZMinusOffset() const
+        {
+            float offset = 0.0f;
+            if (HasUnitMovementFlag(MOVEMENTFLAG_HOVER))
+                offset = GetFloatValue(UNIT_FIELD_HOVERHEIGHT);
+
+            return GetPositionZ() - offset;
+        }
+
 
 };
 

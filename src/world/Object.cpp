@@ -305,7 +305,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags, uint32 flags2,
     data->writeBit(false);
     data->writeBit(false);
     data->writeBit(flags & UPDATEFLAG_ROTATION);
-    data->writeBit(flags & UPDATEFLAG_ANIMKITS);                                 
+    data->writeBit(flags & UPDATEFLAG_ANIMKITS);
     data->writeBit(flags & UPDATEFLAG_HAS_TARGET);
     data->writeBit(flags & UPDATEFLAG_SELF);
     data->writeBit(flags & UPDATEFLAG_VEHICLE);
@@ -337,8 +337,6 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags, uint32 flags2,
 
     if (flags & UPDATEFLAG_LIVING)  // UPDATEFLAG_LIVING
     {
-        Unit* self = static_cast<Unit*>(this);
-
         if ((pThis != NULL) && pThis->isRooted())
             flags2 |= MOVEMENTFLAG_ROOT; // MOVEFLAG_ROOTED
         else if ((uThis != NULL) && uThis->isRooted())
@@ -371,8 +369,8 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags, uint32 flags2,
         data->writeBit(false); // isSplineEnabled && GetTypeId() == TYPEID_PLAYER
         data->writeBit(!hasPitch);
         data->writeBit(isSplineEnabled);
-        data->writeBit(self->movement_info.GetStatusInfo().hasFallData);
-        data->writeBit(!self->movement_info.GetStatusInfo().hasSplineElevation);
+        data->writeBit(haveFallData);
+        data->writeBit(!hasElevation);
         data->writeBit(plrGuid[5]);
         data->writeBit(transporter_info.guid); // hasTransport | do we need pThis->?
         //data->writeBit(flags2 & MOVEMENTFLAG_TRANSPORT); // MOVEFLAG_TRANSPORT
@@ -403,8 +401,8 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags, uint32 flags2,
         }
 
         data->writeBit(plrGuid[6]);
-        if (self->movement_info.GetStatusInfo().hasFallData)
-            data->writeBit(self->movement_info.GetStatusInfo().hasFallDirection);
+        if (haveFallData)
+            data->writeBit(hasFallDirection);
 
         data->writeBit(plrGuid[0]);
         data->writeBit(plrGuid[1]);
@@ -467,7 +465,6 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags, uint32 flags2,
 
     if (flags & UPDATEFLAG_LIVING) // UPDATEFLAG_HAS_LIVING
     {
-        Unit* self = static_cast<Unit*>(this);
         ObjectGuid plrGuid = GetGUID();
 
         data->WriteByteSeq(plrGuid[4]);
@@ -478,13 +475,13 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags, uint32 flags2,
         {
             if (hasFallDirection)
             {
-                *data << (float)self->movement_info.GetJumpInfo().cosAngle; 
-                *data << (float)self->movement_info.GetJumpInfo().xyspeed;
-                *data << (float)self->movement_info.GetJumpInfo().cosAngle;
+                *data << (float)static_cast<Unit*>(this)->movement_info.j_cosAngle;   // cosAngle
+                *data << (float)static_cast<Unit*>(this)->movement_info.j_xyspeed;   // xyspeed
+                *data << (float)static_cast<Unit*>(this)->movement_info.j_sinAngle; // sinAngle
             }
 
-            *data << (uint32)self->movement_info.GetFallTime();
-            *data << (float)self->movement_info.GetJumpInfo().velocity;
+            *data << (uint32)static_cast<Unit*>(this)->movement_info.fallTime; // fall time - uint32 or float
+            *data << (float)static_cast<Unit*>(this)->movement_info.j_zspeed; // velocity
         }
 
         *data << m_backSwimSpeed;
