@@ -289,41 +289,6 @@ struct PlayerCooldown
     uint32 SpellId;
 };
 
-class PlayerSpec
-{
-    public:
-
-        PlayerSpec()
-        {
-            tp = 0;
-            for (uint8 i = 0; i < PLAYER_ACTION_BUTTON_COUNT; i++)
-            {
-                mActions[i].Action = 0;
-                mActions[i].Type = 0;
-                mActions[i].Misc = 0;
-            }
-        }
-
-        void SetTP(uint32 points){ tp = points; }
-
-        uint32 GetTP() const{ return tp; }
-
-        void Reset()
-        {
-            tp += talents.size();
-            talents.clear();
-        }
-
-        void AddTalent(uint32 talentid, uint8 rankid);
-
-        std::map<uint32, uint8> talents;
-        uint16 glyphs[GLYPHS_COUNT];
-        ActionButton mActions[PLAYER_ACTION_BUTTON_COUNT];
-    private:
-
-        uint32 tp;
-};
-
 //////////////////////////////////////////////////////////////////////////////////////////
 /// Player
 /// Class that holds every created character on the server.
@@ -343,6 +308,42 @@ typedef std::map<uint32, OnHitSpell >               StrikeSpellDmgMap;
 typedef std::map<uint32, PlayerSkill>               SkillMap;
 typedef std::set<Player**>                          ReferenceSet;
 typedef std::map<uint32, PlayerCooldown>            PlayerCooldownMap;
+
+class PlayerSpec
+{
+public:
+
+    PlayerSpec()
+    {
+        tp = 0;
+        for (uint8 i = 0; i < PLAYER_ACTION_BUTTON_COUNT; i++)
+        {
+            mActions[i].Action = 0;
+            mActions[i].Type = 0;
+            mActions[i].Misc = 0;
+        }
+    }
+
+    void SetTP(uint32 points){ tp = points; }
+
+    uint32 GetTP() const{ return tp; }
+
+    void Reset()
+    {
+        tp += talents.size();
+        talents.clear();
+    }
+
+    void AddTalent(uint32 talentid, uint8 rankid);
+
+    std::map<uint32, uint8> talents;
+    uint16 glyphs[GLYPHS_COUNT];
+    SpellSet SpecSpecificSpells;
+    ActionButton mActions[PLAYER_ACTION_BUTTON_COUNT];
+private:
+
+    uint32 tp;
+};
 
 class SERVER_DECL Player : public Unit
 {
@@ -1548,12 +1549,11 @@ class SERVER_DECL Player : public Unit
         uint32 GetXpToLevel() { return GetUInt32Value(PLAYER_NEXT_LEVEL_XP); }
         void SetNextLevelXp(uint32 xp) { SetUInt32Value(PLAYER_NEXT_LEVEL_XP, xp); }
 
-        /* 15595 disabled
         void SetTalentPointsForAllSpec(uint32 amt)
         {
             m_specs[0].SetTP(amt);
             m_specs[1].SetTP(amt);
-            SetUInt32Value(PLAYER_CHARACTER_POINTS1, amt);
+            SetUInt32Value(PLAYER_CHARACTER_POINTS, amt);
             smsg_TalentsInfo(false);
         }
 
@@ -1561,27 +1561,27 @@ class SERVER_DECL Player : public Unit
         {
             m_specs[0].SetTP(m_specs[0].GetTP() + amt);
             m_specs[1].SetTP(m_specs[1].GetTP() + amt);
-            SetUInt32Value(PLAYER_CHARACTER_POINTS1, GetUInt32Value(PLAYER_CHARACTER_POINTS1) + amt);
+            SetUInt32Value(PLAYER_CHARACTER_POINTS, GetUInt32Value(PLAYER_CHARACTER_POINTS) + amt);
             smsg_TalentsInfo(false);
         }
 
         void SetCurrentTalentPoints(uint32 points)
         {
             m_specs[m_talentActiveSpec].SetTP(points);
-            SetUInt32Value(PLAYER_CHARACTER_POINTS1, points);
+            SetUInt32Value(PLAYER_CHARACTER_POINTS, points);
             smsg_TalentsInfo(false);
         }
 
         uint32 GetCurrentTalentPoints()
         {
-            uint32 points = GetUInt32Value(PLAYER_CHARACTER_POINTS1);
+            uint32 points = GetUInt32Value(PLAYER_CHARACTER_POINTS);
             Arcemu::Util::ArcemuAssert(points == m_specs[m_talentActiveSpec].GetTP());
             return points;
         }
 
-        void SetPrimaryProfessionPoints(uint32 amt) { SetUInt32Value(PLAYER_CHARACTER_POINTS2, amt); }
-        void ModPrimaryProfessionPoints(int32 amt) { ModUnsigned32Value(PLAYER_CHARACTER_POINTS2, amt); }
-        uint32 GetPrimaryProfessionPoints() { return GetUInt32Value(PLAYER_CHARACTER_POINTS2); }*/
+        void SetPrimaryProfessionPoints(uint32 amt) { SetUInt32Value(PLAYER_CHARACTER_POINTS, amt); }
+        void ModPrimaryProfessionPoints(int32 amt) { ModUnsigned32Value(PLAYER_CHARACTER_POINTS, amt); }
+        uint32 GetPrimaryProfessionPoints() { return GetUInt32Value(PLAYER_CHARACTER_POINTS); }
 
         void ModPosDamageDoneMod(uint32 school, uint32 value) { ModUnsigned32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + school, value); }
         uint32 GetPosDamageDoneMod(uint32 school) { return GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + school); }
@@ -2009,6 +2009,8 @@ class SERVER_DECL Player : public Unit
         uint16 m_maxTalentPoints;
         uint8 m_talentSpecsCount;
         uint8 m_talentActiveSpec;
+        uint32 m_FirstTalentTreeLock;	//this is the spec ID where you put first talent point on
+        uint32 CalcTalentPointsHaveSpent(uint32 spec);
 
         PlayerSpec m_specs[MAX_SPEC_COUNT];
 

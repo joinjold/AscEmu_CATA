@@ -75,6 +75,7 @@ SERVER_DECL DBCStorage<SpellRange> dbcSpellRange;
 SERVER_DECL DBCStorage<SpellRuneCostEntry> dbcSpellRuneCost;
 SERVER_DECL DBCStorage<TalentEntry> dbcTalent;
 SERVER_DECL DBCStorage<TalentTabEntry> dbcTalentTab;
+SERVER_DECL DBCStorage<TalentPrimarySpellsEntry> dbcTalentPrimarySpells;
 SERVER_DECL DBCStorage<WorldMapOverlay> dbcWorldMapOverlayStore;
 
 SERVER_DECL DBCStorage<gtFloat> dbcBarberShopPrices;
@@ -145,6 +146,7 @@ const char* spellentryFormat = "uuuuuuuuuuuxuuuufuuuussssuuuuufuuuuuuuuuuuuuuuuu
 
 const char* talententryFormat = "uuuuuuuuuxuxxxxuxxx";
 const char* talenttabentryFormat = "uxxuuuxxxuu";
+const char* talentprimaryspellFormat = "uuux";
 const char* spellcasttimeFormat = "uuxx";
 const char* spellradiusFormat = "ufxf";
 const char* spellrangeFormat = "uffffxxx";
@@ -244,6 +246,7 @@ bool LoadDBCs()
     LOAD_DBC("DBC/Spell.dbc", spellentryFormat, true, dbcSpell, true);
     LOAD_DBC("DBC/Talent.dbc", talententryFormat, true, dbcTalent, false);
     LOAD_DBC("DBC/TalentTab.dbc", talenttabentryFormat, true, dbcTalentTab, false);
+    LOAD_DBC("DBC/TalentTreePrimarySpells.dbc", talentprimaryspellFormat, true, dbcTalentPrimarySpells, false);
     LOAD_DBC("DBC/SpellCastTimes.dbc", spellcasttimeFormat, true, dbcSpellCastTime, false);
     LOAD_DBC("DBC/SpellRadius.dbc", spellradiusFormat, true, dbcSpellRadius, false);
     LOAD_DBC("DBC/SpellRange.dbc", spellrangeFormat, true, dbcSpellRange, false);

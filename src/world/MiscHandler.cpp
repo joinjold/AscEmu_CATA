@@ -1087,10 +1087,30 @@ void WorldSession::HandleCorpseReclaimOpcode(WorldPacket& recv_data)
 {
     CHECK_INWORLD_RETURN
 
-        LOG_DETAIL("WORLD: Received CMSG_RECLAIM_CORPSE");
+    LOG_DETAIL("WORLD: Received CMSG_RECLAIM_CORPSE");
 
-    uint64 guid;
-    recv_data >> guid;
+    ObjectGuid guid;
+    
+    guid[1] = recv_data.readBit();
+    guid[5] = recv_data.readBit();
+    guid[7] = recv_data.readBit();
+    guid[2] = recv_data.readBit();
+    guid[6] = recv_data.readBit();
+    guid[3] = recv_data.readBit();
+    guid[0] = recv_data.readBit();
+    guid[4] = recv_data.readBit();
+    
+    recv_data.ReadByteSeq(guid[2]);
+    recv_data.ReadByteSeq(guid[5]);
+    recv_data.ReadByteSeq(guid[4]);
+    recv_data.ReadByteSeq(guid[6]);
+    recv_data.ReadByteSeq(guid[1]);
+    recv_data.ReadByteSeq(guid[0]);
+    recv_data.ReadByteSeq(guid[7]);
+    recv_data.ReadByteSeq(guid[3]);
+
+    if (guid == 0)
+        return;
 
     Corpse* pCorpse = objmgr.GetCorpse((uint32)guid);
     if (pCorpse == NULL)	return;

@@ -894,9 +894,9 @@ enum Opcodes
     SMSG_DEATH_RELEASE_LOC                              = 0x2F07, // 15595
     SMSG_PRE_RESURRECT                                  = 0x6C36, // 15595
     CMSG_RETURN_TO_GRAVEYARD                            = 0x301E, // 15595
-    CMSG_REPOP_REQUEST                                  = 0x6235,
-    SMSG_RESURRECT_REQUEST                              = 0x2905,
-    CMSG_RESURRECT_RESPONSE                             = 0x6827,
+    CMSG_REPOP_REQUEST                                  = 0x06B16,
+    SMSG_RESURRECT_REQUEST                              = 0x02905,
+    CMSG_RESURRECT_RESPONSE                             = 0x06827,
 
     //GM
     CMSG_GM_NUKE_CHARACTER                              = 0x507,   // unchecked
@@ -1312,13 +1312,12 @@ enum Opcodes
 
     SMSG_TALENTS_INFO                                   = 0x06F26,
     CMSG_LEARN_PREVIEW_TALENTS                          = 0x02415,
-    CMSG_LEARN_TALENT                                   = 0x06E24,
-    CMSG_LEARN_TALENTS_MULTIPLE                         = 0x4C1, // unk need new
-    CMSG_LEARN_PREVIEW_TALENTS_PET                      = 0x00000,
-    MSG_TALENT_WIPE_CONFIRM                             = 0x00107,
-    SMSG_INSPECT_TALENT                                 = 0x04014,
+    CMSG_LEARN_TALENT                                   = 0x0306,
+    CMSG_LEARN_PREVIEW_TALENTS_PET                      = 0x6E24,
+    MSG_TALENT_WIPE_CONFIRM                             = 0x0107,
+    SMSG_INSPECT_TALENT                                 = 0x4014,
     CMSG_PET_LEARN_TALENT                               = 0x00000,
-    SMSG_TALENTS_INVOLUNTARILY_RESET                    = 0x02C27,
+    SMSG_TALENTS_INVOLUNTARILY_RESET                    = 0x2C27,
     CMSG_WORLD_STATE_UI_TIMER_UPDATE                    = 0x4605,
     SMSG_WORLD_STATE_UI_TIMER_UPDATE                    = 0x4A14,
     SMSG_PAUSE_MIRROR_TIMER                             = 0x4015,

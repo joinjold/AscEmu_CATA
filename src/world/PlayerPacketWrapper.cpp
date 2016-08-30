@@ -84,13 +84,13 @@ void Player::SendLevelupInfo(uint32 level, uint32 Hp, uint32 Mana, uint32 Stat0,
 
     data << uint32(level);
     data << uint32(Hp);
+   
     data << uint32(Mana);
-
     data << uint32(0);
     data << uint32(0);
     data << uint32(0);
     data << uint32(0);
-
+    
     data << uint32(Stat0);
     data << uint32(Stat1);
     data << uint32(Stat2);
@@ -588,7 +588,7 @@ void Player::SendInitialLogonPackets()
     m_session->SendPacket(&data);
 
     // don't send this, it's just a sandbox
-    smsg_TalentsInfo(false); // not updated (15595)
+    smsg_TalentsInfo(false);
 
     smsg_InitialSpells(); // not sure if updated (15595)
 

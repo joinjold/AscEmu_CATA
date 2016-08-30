@@ -566,6 +566,13 @@ struct emoteentry
   //uint32 unk11;
 };
 
+struct TalentPrimarySpellsEntry
+{
+    uint32 ID;
+    uint32 tabID;
+    uint32 SpellID;
+};
+
 //SkillLineAbility.dbc
 struct skilllinespell
 {
@@ -1233,29 +1240,15 @@ struct SpellRuneCostEntry
 struct TalentTabEntry
 {
     uint32 TalentTabID;
-    //char* Name;
-    //uint32 unk3;
-    //uint32 unk4;
-    //uint32 unk5;
-    //uint32 unk6;
-    //uint32 unk7;
-    //uint32 unk8;
-    //uint32 unk9;
-    //uint32 unk10;
-    //uint32 unk11;
-    //uint32 unk12;
-    //uint32 unk13;
-    //uint32 unk14;
-    //uint32 unk15;
-    //uint32 unk16;
-    //uint32 unk17;
-    //uint32 unk18;
-    //uint32 unk19;
-    //uint32 unk20;
+    //char* name;                                           // 1, unused
+    //unit32  spellicon;                                    // 2
     uint32 ClassMask;
     uint32 PetTalentMask;
     uint32 TabPage;
-    //char* InternalName;
+    //char* internalname;                                   // 6
+    //char* description;                                    // 7
+    //uint32 rolesMask;                                     // 8 4.0.0
+    uint32  MasterySpellIds[2];                             // 9-10 passive mastery bonus spells?
 };
 
 struct Trainerspell
@@ -2249,6 +2242,7 @@ extern SERVER_DECL DBCStorage<DBCTaxiPathNode> dbcTaxiPathNode;
 extern SERVER_DECL DBCStorage<AuctionHouseDBC> dbcAuctionHouse;
 extern SERVER_DECL DBCStorage<TalentEntry> dbcTalent;
 extern SERVER_DECL DBCStorage<TalentTabEntry> dbcTalentTab;
+extern SERVER_DECL DBCStorage<TalentPrimarySpellsEntry> dbcTalentPrimarySpells;
 extern SERVER_DECL DBCStorage<CreatureSpellDataEntry> dbcCreatureSpellData;
 extern SERVER_DECL DBCStorage<CreatureFamilyEntry> dbcCreatureFamily;
 extern SERVER_DECL DBCStorage<CharClassEntry> dbcCharClass;

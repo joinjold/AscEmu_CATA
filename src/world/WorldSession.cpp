@@ -799,7 +799,7 @@ void WorldSession::InitPacketHandlerTable()
     WorldPacketHandlers[CMSG_CANCEL_AUTO_REPEAT_SPELL].handler = &WorldSession::HandleCancelAutoRepeatSpellOpcode;
     WorldPacketHandlers[CMSG_TOTEM_DESTROYED].handler = &WorldSession::HandleCancelTotem;
     WorldPacketHandlers[CMSG_LEARN_TALENT].handler = &WorldSession::HandleLearnTalentOpcode;
-    WorldPacketHandlers[CMSG_LEARN_TALENTS_MULTIPLE].handler = &WorldSession::HandleLearnMultipleTalentsOpcode;
+    WorldPacketHandlers[CMSG_LEARN_PREVIEW_TALENTS].handler = &WorldSession::HandleLearnMultipleTalentsOpcode;
     WorldPacketHandlers[CMSG_UNLEARN_TALENTS].handler = &WorldSession::HandleUnlearnTalents;
     WorldPacketHandlers[MSG_TALENT_WIPE_CONFIRM].handler = &WorldSession::HandleUnlearnTalents;
     //WorldPacketHandlers[CMSG_UPDATE_PROJECTILE_POSITION].handler = &WorldSession::HandleUpdateProjectilePosition;
@@ -1405,7 +1405,8 @@ void WorldSession::HandleUnlearnSkillOpcode(WorldPacket& recv_data)
 
 void WorldSession::HandleLearnMultipleTalentsOpcode(WorldPacket& recvPacket)
 {
-    CHECK_INWORLD_RETURN uint32 talentcount;
+    CHECK_INWORLD_RETURN 
+    uint32 talentcount;
     uint32 talentid;
     uint32 rank;
 
@@ -1431,6 +1432,9 @@ void WorldSession::HandleLearnMultipleTalentsOpcode(WorldPacket& recvPacket)
     //
     // //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    uint32 learn_talents_on_tab;
+    recvPacket >> learn_talents_on_tab;	//can be 0,1,2
+
     recvPacket >> talentcount;
 
     for (uint32 i = 0; i < talentcount; ++i)
@@ -1440,6 +1444,7 @@ void WorldSession::HandleLearnMultipleTalentsOpcode(WorldPacket& recvPacket)
 
         _player->LearnTalent(talentid, rank, true);
     }
+    _player->smsg_TalentsInfo(false);
 }
 
 void WorldSession::SendMOTD()
