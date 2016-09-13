@@ -116,6 +116,9 @@ SERVER_DECL DBCStorage<SpellTargetRestrictionsEntry>	dbcSpellTargetRestrictions;
 SERVER_DECL DBCStorage<SpellTotemsEntry>			dbcSpellTotems;
 SERVER_DECL DBCStorage<gtClassLevelFloat>			dbcGTSpellScale;
 SERVER_DECL DBCStorage<FactionEntry>                sFactionStore;
+SERVER_DECL DBCStorage <GuildPerkSpellsEntry>       sGuildPerkSpellsStore;
+
+
 
 const char* WorldMapOverlayStoreFormat = "nxiiiixxxxxxxxx";
 const char* BarberShopStyleEntryFormat = "nxxxxxxi";
@@ -158,6 +161,7 @@ const char* areatableFormat = "uuuuuxxxxxusuxxxxxxxxxxxxx";
 const char* factiontemplatedbcFormat = "uuuuuuuuuuuuuu";
 const char* auctionhousedbcFormat = "uuuux";
 const char* factiondbcFormat = "uiuuuuuuuuiiiiuuuuuxxxxsxx";
+const char* GuildPerkSpellsfmt = "dii";
 
 const char* dbctaxinodeFormat = "uufffxuuuff";
 const char* dbctaxipathFormat = "uuuu";
@@ -314,6 +318,8 @@ bool LoadDBCs()
     LOAD_DBC("DBC/Vehicle.dbc", VehicleEntryfmt, true, dbcVehicle, true);
     LOAD_DBC("DBC/VehicleSeat.dbc", VehicleSeatEntryfmt, true, dbcVehicleSeat, false);
     LOAD_DBC("DBC/Faction.dbc", FactionEntryfmt, false, sFactionStore, false);
+    LOAD_DBC("DBC/GuildPerkSpells.dbc", GuildPerkSpellsfmt, false, sGuildPerkSpellsStore, false);
+
 
 
 

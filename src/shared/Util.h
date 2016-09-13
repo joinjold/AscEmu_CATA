@@ -31,6 +31,7 @@ std::vector<std::string> StrSplit(const std::string & src, const std::string & s
 // This HAS to be called outside the threads __try / __except block!
 void SetThreadName(const char* format, ...);
 time_t convTimePeriod(uint32 dLength, char dType);
+unsigned int TimeToGametime(time_t unixtime);
 
 inline uint32 secsToTimeBitFields(time_t secs)
 {
@@ -105,6 +106,23 @@ inline uint32 getMSTime()
 #endif
     return MSTime;
 }
+
+inline uint32 getMSTimeDiff(uint32 oldMSTime, uint32 newMSTime)
+{
+    // getMSTime() have limited data range and this is case when it overflow in this tick
+    if (oldMSTime > newMSTime)
+        return (0xFFFFFFFF - oldMSTime) + newMSTime;
+    else
+        return newMSTime - oldMSTime;
+}
+
+inline uint32 GetMSTimeDiffToNow(uint32 oldMSTime)
+{
+    return getMSTimeDiff(oldMSTime, getMSTime());
+}
+
+std::string ByteArrayToHexStr(uint8 const* bytes, uint32 length, bool reverse = false);
+
 #ifndef _FLAG96
 #define _FLAG96
 

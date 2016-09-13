@@ -104,7 +104,7 @@ bool ChatHandler::CreateGuildCommand(const char* args, WorldSession* m_session)
     Player* ptarget = getSelectedChar(m_session);
     if (!ptarget) return false;
 
-    if (ptarget->IsInGuild())
+    if (ptarget->GetGuild())
     {
         RedSystemMessage(m_session, "%s is already in a guild.", ptarget->GetName());
         return true;
@@ -128,21 +128,21 @@ bool ChatHandler::CreateGuildCommand(const char* args, WorldSession* m_session)
         }
     }
 
-    Guild* pGuild = NULL;
-    pGuild = objmgr.GetGuildByGuildName(std::string(args));
-
-    if (pGuild)
-    {
-        RedSystemMessage(m_session, "Guild name is already taken.");
-        return true;
-    }
-
     Charter tempCharter(0, ptarget->GetLowGUID(), CHARTER_TYPE_GUILD);
     tempCharter.SignatureCount = 0;
     tempCharter.GuildName = std::string(args);
 
-    pGuild = Guild::Create();
-    pGuild->CreateFromCharter(&tempCharter, ptarget->GetSession());
+    Guild* guild = new Guild;
+    if (!guild->Create(ptarget, std::string(args)))
+    {
+        delete guild;
+        SystemMessage(m_session, "Guild not created");
+        return true;
+    }
+
+    sGuildMgr.AddGuild(guild);
+
+    //pGuild->CreateFromCharter(&tempCharter, ptarget->GetSession());
     GreenSystemMessage(m_session, "Guild created");
     sGMLog.writefromsession(m_session, "Created guild '%s'", args);
     return true;

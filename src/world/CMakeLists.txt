@@ -65,7 +65,9 @@ set(sources
 	Group.cpp 
 	GroupHandler.cpp 
 	Guild.cpp 
-	GuildHandler.cpp 
+	GuildHandler.cpp
+	GuildFinderMgr.cpp
+	GuildMgr.cpp 
 	HonorHandler.cpp 
 	InstanceCommands.cpp 
 	Item.cpp 
@@ -238,6 +240,8 @@ set(headers
 	Group.h
 	Entities/Summons/GuardianSummon.h
 	Guild.h
+	GuildMgr.h
+	GuildFinderMgr.h
 	HonorHandler.h
 	Hunter.h
 	Item.h

@@ -147,7 +147,7 @@ void DatabaseCleaner::CleanCharacters()
     for (std::vector<uint32>::iterator itr = tokill_mail.begin(); itr != tokill_mail.end(); ++itr)
         CharacterDatabase.WaitExecute("DELETE FROM mailbox WHERE message_id = %u", *itr);
     Log.Notice("DatabaseCleaner", "Deleted %u mail messages.", tokill_mail.size());
-    Log.Notice("DatabaseCleaner", "Cleaning guilds table...");
+    /*Log.Notice("DatabaseCleaner", "Cleaning guilds table...");
 
     result = CharacterDatabase.Query("SELECT guildId FROM guilds");
     std::vector<uint32> tokill_guilds;
@@ -167,7 +167,8 @@ void DatabaseCleaner::CleanCharacters()
     for (std::vector<uint32>::iterator itr = tokill_guilds.begin(); itr != tokill_guilds.end(); ++itr)
         CharacterDatabase.WaitExecute("DELETE FROM guilds WHERE guildId = %u", *itr);
 
-    Log.Notice("DatabaseCleaner", "Deleted %u guilds.", tokill_guilds.size());
+    Log.Notice("DatabaseCleaner", "Deleted %u guilds.", tokill_guilds.size());*/
+    /*
     Log.Notice("DatabaseCleaner", "Cleaning guild_ranks table...");
 
     result = CharacterDatabase.Query("SELECT guildId FROM guild_ranks");
@@ -186,8 +187,10 @@ void DatabaseCleaner::CleanCharacters()
     }
     for (std::set<uint32>::iterator itr = tokill_guildranks.begin(); itr != tokill_guildranks.end(); ++itr)
         CharacterDatabase.WaitExecute("DELETE FROM guild_ranks WHERE guildId = %u", *itr);
-
+        */
+    /*
     Log.Notice("DatabaseCleaner", "Deleted %u guild rank rows.", tokill_guildranks.size());
+    */
     Log.Notice("DatabaseCleaner", "Cleaning social table...");
 
     result = CharacterDatabase.Query("SELECT * FROM social");

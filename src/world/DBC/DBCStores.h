@@ -1708,6 +1708,13 @@ struct FactionEntry
     //uint32                                                // 25                                                       // 56 string flags
 };
 
+struct GuildPerkSpellsEntry
+{
+    //uint32 Id;
+    uint32 Level;
+    uint32 SpellId;
+};
+
 #define MAX_VEHICLE_SEATS 8
 
 enum VehicleFlags
@@ -2298,6 +2305,7 @@ extern SERVER_DECL DBCStorage<SpellTargetRestrictionsEntry>			dbcSpellTargetRest
 extern SERVER_DECL DBCStorage<SpellTotemsEntry>						dbcSpellTotems;
 extern SERVER_DECL DBCStorage<gtClassLevelFloat>					dbcGTSpellScale;
 extern SERVER_DECL DBCStorage<FactionEntry>                         sFactionStore;
+extern SERVER_DECL DBCStorage<GuildPerkSpellsEntry>                 sGuildPerkSpellsStore;
 
 bool LoadDBCs();
 

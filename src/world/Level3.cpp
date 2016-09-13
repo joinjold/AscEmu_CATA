@@ -3702,7 +3702,7 @@ bool ChatHandler::HandleRenameGuildCommand(const char* args, WorldSession* m_ses
     if (!plr || !plr->GetGuildId() || !plr->GetGuild() || !args || !strlen(args))
         return false;
 
-    Guild* pGuild = objmgr.GetGuildByGuildName(std::string(args));
+    Guild* pGuild = sGuildMgr.GetGuildByName(std::string(args));
 
     if (pGuild)
     {
@@ -3710,9 +3710,9 @@ bool ChatHandler::HandleRenameGuildCommand(const char* args, WorldSession* m_ses
         return false;
     }
 
-    GreenSystemMessage(m_session, "Changed guild name of %s to %s. This will take effect next restart.", plr->GetGuild()->GetGuildName(), args);
-    CharacterDatabase.Execute("UPDATE guilds SET `guildName` = \'%s\' WHERE `guildId` = '%u'", CharacterDatabase.EscapeString(std::string(args)).c_str(), plr->GetGuild()->GetGuildId());
-    sGMLog.writefromsession(m_session, "Changed guild name of '%s' to '%s'", plr->GetGuild()->GetGuildName(), args);
+    GreenSystemMessage(m_session, "Changed guild name of %s to %s. This will take effect next restart.", plr->GetGuild()->GetName(), args);
+    CharacterDatabase.Execute("UPDATE guilds SET `guildName` = \'%s\' WHERE `guildId` = '%u'", CharacterDatabase.EscapeString(std::string(args)).c_str(), plr->GetGuild()->GetId());
+    sGMLog.writefromsession(m_session, "Changed guild name of '%s' to '%s'", plr->GetGuild()->GetName(), args);
     return true;
 }
 
@@ -3720,15 +3720,15 @@ bool ChatHandler::HandleRenameGuildCommand(const char* args, WorldSession* m_ses
 bool ChatHandler::HandleGuildRemovePlayerCommand(const char* args, WorldSession* m_session)
 {
     Player* plr = getSelectedChar(m_session);
-    if (!plr || !plr->GetGuildId() || !plr->GetGuild() || plr->GetGuild()->GetGuildLeader() == plr->GetLowGUID())
+    if (!plr || !plr->GetGuildId() || !plr->GetGuild() || plr->GetGuild()->GetLeaderGUID() == plr->GetGUID())
         return false;
 
-    GreenSystemMessage(m_session, "Kicked %s from Guild: %s", plr->GetName(), plr->GetGuild()->GetGuildName());
+    GreenSystemMessage(m_session, "Kicked %s from Guild: %s", plr->GetName(), plr->GetGuild()->GetName());
 
     if (plr->GetLowGUID() != m_session->GetPlayer()->GetLowGUID())
-        sGMLog.writefromsession(m_session, "Kicked %s from Guild %s", plr->GetName(), plr->GetGuild()->GetGuildName());
+        sGMLog.writefromsession(m_session, "Kicked %s from Guild %s", plr->GetName(), plr->GetGuild()->GetName());
 
-    plr->GetGuild()->RemoveGuildMember(plr->getPlayerInfo(), plr->GetSession());
+    plr->GetGuild()->HandleRemoveMember(plr->GetSession(), plr->GetGUID());
     return true;
 }
 
@@ -3739,8 +3739,8 @@ bool ChatHandler::HandleGuildDisbandCommand(const char* args, WorldSession* m_se
     if (!plr || !plr->GetGuildId() || !plr->GetGuild())
         return false;
 
-    GreenSystemMessage(m_session, "Disbanded Guild: %s", plr->GetGuild()->GetGuildName());
-    sGMLog.writefromsession(m_session, "Disbanded Guild %s", plr->GetGuild()->GetGuildName());
+    GreenSystemMessage(m_session, "Disbanded Guild: %s", plr->GetGuild()->GetName().c_str());
+    sGMLog.writefromsession(m_session, "Disbanded Guild %s", plr->GetGuild()->GetName().c_str());
     plr->GetGuild()->Disband();
     return true;
 }
@@ -3753,30 +3753,28 @@ bool ChatHandler::HandleGuildJoinCommand(const char* args, WorldSession* m_sessi
     Player* ptarget = getSelectedChar(m_session);
     if (!ptarget) return false;
 
-    if (ptarget->IsInGuild())
+    if (ptarget->GetGuild())
     {
         RedSystemMessage(m_session, "%s is already in a guild.", ptarget->GetName());
         return true;
     }
 
     Guild* pGuild = NULL;
-    pGuild = objmgr.GetGuildByGuildName(std::string(args));
+    pGuild = sGuildMgr.GetGuildByName(std::string(args));
 
     if (pGuild)
     {
-        pGuild->getLock().Acquire();
-        uint32 memberCount = pGuild->GetNumMembers();
-        pGuild->getLock().Release();
+        uint32 memberCount = pGuild->GetMembersCount();
 
-        if (memberCount >= MAX_GUILD_MEMBERS)
+        if (memberCount >= sWorld.m_guild.MaxMembers)
         {
             m_session->SystemMessage("That guild is full.");
             return true;
         }
 
-        pGuild->AddGuildMember(ptarget->getPlayerInfo(), m_session, -2);
-        GreenSystemMessage(m_session, "You have joined the guild '%s'", pGuild->GetGuildName());
-        sGMLog.writefromsession(m_session, "Force joined guild '%s'", pGuild->GetGuildName());
+        pGuild->AddMember(ptarget->GetGUID(), 4);
+        GreenSystemMessage(m_session, "You have joined the guild '%s'", pGuild->GetName().c_str());
+        sGMLog.writefromsession(m_session, "Force joined guild '%s'", pGuild->GetName().c_str());
         return true;
     }
 
@@ -3786,20 +3784,7 @@ bool ChatHandler::HandleGuildJoinCommand(const char* args, WorldSession* m_sessi
 //-DGM
 bool ChatHandler::HandleGuildMembersCommand(const char* args, WorldSession* m_session)
 {
-    Player* plr = getSelectedChar(m_session);
-    if (!plr || !plr->GetGuildId() || !plr->GetGuild())
-        return false;
-    GreenSystemMessage(m_session, "Now showing guild members for %s", plr->GetGuild()->GetGuildName());
-    plr->GetGuild()->Lock();
-    for (GuildMemberMap::iterator itr = plr->GetGuild()->GetGuildMembersBegin(); itr != plr->GetGuild()->GetGuildMembersEnd(); ++itr)
-    {
-        GuildMember* member = itr->second;
-        if (!member || !member->pPlayer)
-            continue;
-
-        BlueSystemMessage(m_session, "%s (Rank: %s)", member->pPlayer->name, member->pRank->szRankName);
-    }
-    plr->GetGuild()->Unlock();
+    // TODO
     return true;
 }
 

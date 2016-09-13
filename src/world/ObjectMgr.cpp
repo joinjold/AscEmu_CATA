@@ -316,14 +316,6 @@ void ObjectMgr::DeletePlayerInfo(uint32 guid)
         pl->m_Group->RemovePlayer(pl);
     }
 
-    if (pl->guild)
-    {
-        if (pl->guild->GetGuildLeader() == pl->guid)
-            pl->guild->Disband();
-        else
-            pl->guild->RemoveGuildMember(pl, NULL);
-    }
-
     std::string pnam = std::string(pl->name);
     arcemu_TOLOWER(pnam);
     i2 = m_playersInfoByName.find(pnam);
@@ -441,9 +433,8 @@ void ObjectMgr::LoadPlayersInfo()
             pn->m_Group = 0;
             pn->subGroup = 0;
             pn->m_loggedInPlayer = NULL;
-            pn->guild = NULL;
-            pn->guildRank = NULL;
-            pn->guildMember = NULL;
+            pn->m_guild = 0;
+            pn->guildRank = GUILD_RANK_NONE;
 
             // Raid & heroic Instance IDs
             // Must be done before entering world...
@@ -513,7 +504,6 @@ void ObjectMgr::LoadPlayersInfo()
         delete result;
     }
     Log.Success("ObjectMgr", "%u players loaded.", m_playersinfo.size());
-    LoadGuilds();
 }
 
 PlayerInfo* ObjectMgr::GetPlayerInfoByName(const char* name)
@@ -684,35 +674,6 @@ void ObjectMgr::LoadPlayerCreateInfo()
     Log.Success("ObjectMgr", "%u player create infos loaded.", mPlayerCreateInfo.size());
     LoadXpToLevelTable();
     GenerateLevelUpInfo();
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////
-// DK:LoadGuilds()
-void ObjectMgr::LoadGuilds()
-{
-    QueryResult* result = CharacterDatabase.Query("SELECT * FROM guilds");
-    if (result)
-    {
-        uint32 period = (result->GetRowCount() / 20) + 1;
-        uint32 c = 0;
-        do
-        {
-            Guild* pGuild = Guild::Create();
-            if (!pGuild->LoadFromDB(result->Fetch()))
-            {
-                delete pGuild;
-            }
-            else
-                mGuild.insert(std::make_pair(pGuild->GetGuildId(), pGuild));
-
-            if (!((++c) % period))
-                Log.Notice("Guilds", "Done %u/%u, %u%% complete.", c, result->GetRowCount(), c * 100 / result->GetRowCount());
-
-        }
-        while (result->NextRow());
-        delete result;
-    }
-    Log.Success("ObjectMgr", "%u guilds loaded.", mGuild.size());
 }
 
 Corpse* ObjectMgr::LoadCorpse(uint32 guid)
@@ -1099,7 +1060,7 @@ void ObjectMgr::SetHighestGuids()
         delete result;
     }
 
-    result = CharacterDatabase.Query("SELECT MAX(guildid) FROM guilds");
+    result = CharacterDatabase.Query("SELECT MAX(guildid) FROM guild");
     if (result)
     {
         m_hiGuildId.SetVal(result->Fetch()[0].GetUInt32());
@@ -1309,60 +1270,6 @@ PlayerCreateInfo* ObjectMgr::GetPlayerCreateInfo(uint8 race, uint8 class_) const
     }
     return NULL;
 }
-
-void ObjectMgr::AddGuild(Guild* pGuild)
-{
-    ARCEMU_ASSERT(pGuild != NULL);
-    mGuild[pGuild->GetGuildId()] = pGuild;
-}
-
-uint32 ObjectMgr::GetTotalGuildCount()
-{
-    return (uint32)mGuild.size();
-}
-
-bool ObjectMgr::RemoveGuild(uint32 guildId)
-{
-    GuildMap::iterator i = mGuild.find(guildId);
-    if (i == mGuild.end())
-    {
-        return false;
-    }
-
-    mGuild.erase(i);
-    return true;
-}
-
-Guild* ObjectMgr::GetGuild(uint32 guildId)
-{
-    GuildMap::const_iterator itr = mGuild.find(guildId);
-    if (itr == mGuild.end())
-        return NULL;
-    return itr->second;
-}
-
-Guild* ObjectMgr::GetGuildByLeaderGuid(uint64 leaderGuid)
-{
-    GuildMap::const_iterator itr;
-    for (itr = mGuild.begin(); itr != mGuild.end(); ++itr)
-    {
-        if (itr->second->GetGuildLeader() == leaderGuid)
-            return itr->second;
-    }
-    return NULL;
-}
-
-Guild* ObjectMgr::GetGuildByGuildName(std::string guildName)
-{
-    GuildMap::const_iterator itr;
-    for (itr = mGuild.begin(); itr != mGuild.end(); ++itr)
-    {
-        if (itr->second->GetGuildName() == guildName)
-            return itr->second;
-    }
-    return NULL;
-}
-
 
 void ObjectMgr::AddGMTicket(GM_Ticket* ticket, bool startup)
 {

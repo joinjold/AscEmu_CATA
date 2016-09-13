@@ -57,6 +57,7 @@ enum HIGHGUID_TYPE
     HIGHGUID_TYPE_PET = 0xF1400000,
     HIGHGUID_TYPE_VEHICLE = 0xF1500000,
     HIGHGUID_TYPE_GROUP = 0x1F500000,
+    HIGHGUID_TYPE_GUILD = 0x1FF5,                       // new 4.x
     //===============================================
     HIGHGUID_TYPE_MASK = 0xFFF00000,
     LOWGUID_ENTRY_MASK = 0x00FFFFFF,
@@ -262,6 +263,7 @@ enum TYPE
     TYPE_CORPSE		    = 128,
     TYPE_AIGROUP		= 256,
     TYPE_AREATRIGGER	= 512,
+    TYPE_IN_GUILD       = 0x10000,
 };
 
 enum TYPEID
@@ -580,6 +582,7 @@ class SERVER_DECL Object : public EventableObject
 
 		void EventSetUInt32Value(uint32 index, uint32 value);
 		void SetUInt32Value(const uint32 index, const uint32 value);
+        void SetUInt16Value(uint16 index, uint8 offset, uint16 value);
 
 		/// Set uint64 property
 		void SetUInt64Value(const uint32 index, const uint64 value);
@@ -596,6 +599,11 @@ class SERVER_DECL Object : public EventableObject
 			ARCEMU_ASSERT(index < m_valuesCount);
 			return m_uint32Values[index] & flag;
 		}
+
+        void ApplyModFlag(uint16 index, uint32 flag, bool apply)
+        {
+            if (apply) SetFlag(index, flag); else RemoveFlag(index, flag);
+        }
 
 		////////////////////////////////////////
 		void ClearUpdateMask()

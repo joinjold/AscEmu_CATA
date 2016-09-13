@@ -308,6 +308,8 @@ enum PlayerFlags
     PLAYER_FLAG_NEED_REST_5_HOURS   = 0x2000,
     PLAYER_FLAG_DEVELOPER           = 0x8000,
     PLAYER_FLAG_PVP                 = 0x40000,
+    PLAYER_FLAGS_AUTO_DECLINE_GUILD = 0x08000000,       // Automatically declines guild invites
+    PLAYER_FLAGS_GUILD_LEVEL_ENABLED = 0x10000000,       // Lua_GetGuildLevelEnabled() - enables guild leveling related UI
 };
 
 enum CharacterFlags

@@ -575,14 +575,6 @@ class SERVER_DECL ObjectMgr : public Singleton < ObjectMgr >, public EventableOb
         void DeletePlayerInfo(uint32 guid);
         PlayerCreateInfo* GetPlayerCreateInfo(uint8 race, uint8 class_) const;
 
-        // Guild
-        void AddGuild(Guild* pGuild);
-        uint32 GetTotalGuildCount();
-        bool RemoveGuild(uint32 guildId);
-        Guild* GetGuild(uint32 guildId);
-        Guild* GetGuildByLeaderGuid(uint64 leaderGuid);
-        Guild* GetGuildByGuildName(std::string guildName);
-
         //Corpse Stuff
         Corpse* GetCorpseByOwner(uint32 ownerguid);
         void CorpseCollectorUnload();
@@ -651,7 +643,6 @@ class SERVER_DECL ObjectMgr : public Singleton < ObjectMgr >, public EventableOb
         void LoadQuests();
         void LoadPlayersInfo();
         void LoadPlayerCreateInfo();
-        void LoadGuilds();
         Corpse* LoadCorpse(uint32 guid);
         void LoadCorpses(MapMgr* mgr);
         void LoadGMTickets();
